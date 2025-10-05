@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { authService } from "@/lib/api/auth.service";
@@ -5,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, CheckCircle2, Eye, EyeOff, Loader2, Lock, Mail, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { type Resolver, type SubmitHandler, useForm } from "react-hook-form";
 import { z } from "zod";
 
 // Zod Schema
@@ -40,7 +41,7 @@ const signupSchema = z
 
     phoneNumber: z.string().optional(),
 
-    role: z.enum(["STUDENT", "INSTRUCTOR"]),
+    role: z.enum(["STUDENT", "INSTRUCTOR"]).default("STUDENT"),
 
     bio: z.string().max(150, "Bio must be less than 150 characters").optional(),
 
@@ -69,7 +70,7 @@ export default function SignupPage() {
     reset,
     setError,
   } = useForm<SignupFormData>({
-    resolver: zodResolver(signupSchema),
+    resolver: zodResolver(signupSchema) as Resolver<SignupFormData>,
     defaultValues: {
       firstName: "",
       lastName: "",
@@ -87,21 +88,16 @@ export default function SignupPage() {
     setApiError(null);
 
     try {
-      // Call backend API
-      const payload: any = {
+      // Call backend API (cookies are set automatically by backend)
+      const response = await authService.register({
         firstName: data.firstName,
         lastName: data.lastName,
         email: data.email,
         password: data.password,
+        phoneNumber: data.phoneNumber || undefined,
         role: data.role,
-      };
-      if (data.phoneNumber) {
-        payload.phoneNumber = data.phoneNumber;
-      }
-      if (data.bio) {
-        payload.bio = data.bio;
-      }
-      const response = await authService.register(payload);
+        bio: data.bio || undefined,
+      });
 
       if (!response.success) {
         // Handle validation errors from backend
@@ -132,13 +128,14 @@ export default function SignupPage() {
         return;
       }
 
-      // Success!
+      // Success! Cookies are automatically set by backend
       setIsSuccess(true);
       reset();
 
-      // Redirect to dashboard after 2 seconds
+      // Show success message with email verification instructions
+      // Instead of auto-redirecting to dashboard, show verification message
       setTimeout(() => {
-        router.push("/dashboard");
+        router.push("/auth/verification-sent");
       }, 2000);
     } catch (error) {
       console.error("Signup error:", error);
@@ -204,11 +201,14 @@ export default function SignupPage() {
       )}
 
       {/* Main Container */}
-      <div className='relative z-10 w-1/2'>
+      <div className='relative z-10 w-full max-w-md'>
         {/* Glassmorphism Card */}
         <div className='backdrop-blur-xl bg-white/80 border border-white/20 rounded-3xl shadow-2xl p-8 md:p-10'>
           {/* Header */}
           <div className='text-center mb-8'>
+            <div className='w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg'>
+              <User className='w-8 h-8 text-white' />
+            </div>
             <h1 className='text-3xl font-bold text-gray-900 mb-2'>Create Account</h1>
             <p className='text-gray-600'>Join us today and start your journey</p>
           </div>
@@ -231,7 +231,7 @@ export default function SignupPage() {
 
           {/* Form */}
           <form
-            onSubmit={handleSubmit(onSubmit)}
+            onSubmit={handleSubmit(onSubmit as SubmitHandler<unknown>)}
             className='space-y-5'
           >
             {/* Role Selection */}
@@ -394,7 +394,7 @@ export default function SignupPage() {
                 Confirm Password
               </label>
               <div className='relative'>
-                <Lock className='absolute left-3 top-1/2 -translate-                -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none' />
+                <Lock className='absolute left-3 top-1/2 -translate--y-1/2 w-5 h-5 text-gray-400 pointer-events-none' />
                 <input
                   id='confirmPassword'
                   type={showConfirmPassword ? "text" : "password"}
@@ -425,23 +425,25 @@ export default function SignupPage() {
               )}
             </div>
 
-            {/* Phone Number (optional) */}
+            {/* Phone Number */}
             <div>
               <label
                 htmlFor='phoneNumber'
                 className='block text-sm font-semibold text-gray-700 mb-2'
               >
-                Phone Number (optional)
+                Phone Number (Optional)
               </label>
-              <div className='relative'>
-                <input
-                  id='phoneNumber'
-                  type='text'
-                  {...register("phoneNumber")}
-                  placeholder='e.g. +8801XXXXXXXXX'
-                  className='w-full pl-3 pr-4 py-3 bg-white/50 border-2 rounded-xl outline-none transition-all border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100'
-                />
-              </div>
+              <input
+                id='phoneNumber'
+                type='tel'
+                {...register("phoneNumber")}
+                placeholder='+8801XXXXXXXXX'
+                className={`w-full px-4 py-3 bg-white/50 border-2 rounded-xl outline-none transition-all ${
+                  errors.phoneNumber
+                    ? "border-red-400 focus:border-red-500 focus:ring-4 focus:ring-red-100"
+                    : "border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                }`}
+              />
               {errors.phoneNumber && (
                 <p className='mt-1.5 text-sm text-red-600 font-medium'>
                   {errors.phoneNumber.message}
@@ -449,94 +451,120 @@ export default function SignupPage() {
               )}
             </div>
 
-            {/* Bio (optional) */}
+            {/* Bio */}
             <div>
               <label
                 htmlFor='bio'
                 className='block text-sm font-semibold text-gray-700 mb-2'
               >
-                Bio (optional)
+                Short Bio (Optional)
               </label>
               <textarea
                 id='bio'
                 {...register("bio")}
-                placeholder='Tell us about yourself'
-                className='w-full pl-3 pr-4 py-3 bg-white/50 border-2 rounded-xl outline-none transition-all border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 resize-none'
+                placeholder='Tell us a little about yourself...'
                 rows={3}
+                className={`w-full px-4 py-3 bg-white/50 border-2 rounded-xl outline-none resize-none transition-all ${
+                  errors.bio
+                    ? "border-red-400 focus:border-red-500 focus:ring-4 focus:ring-red-100"
+                    : "border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                }`}
               />
               {errors.bio && (
                 <p className='mt-1.5 text-sm text-red-600 font-medium'>{errors.bio.message}</p>
               )}
             </div>
 
-            {/* Terms & Conditions */}
-            <div>
-              <label className='flex items-start gap-3 cursor-pointer group'>
-                <div className='relative flex items-center justify-center mt-0.5'>
-                  <input
-                    type='checkbox'
-                    {...register("acceptTerms")}
-                    className='w-5 h-5 border-2 border-gray-300 rounded cursor-pointer checked:bg-blue-500 checked:border-blue-500 transition-all focus:ring-4 focus:ring-blue-100'
-                  />
-                </div>
-                <span className='text-sm text-gray-600 group-hover:text-gray-900 transition-colors'>
-                  I agree to the{" "}
-                  <a
-                    href='#'
-                    className='text-blue-600 hover:text-blue-700 font-semibold underline'
-                  >
-                    Terms & Conditions
-                  </a>{" "}
-                  and{" "}
-                  <a
-                    href='#'
-                    className='text-blue-600 hover:text-blue-700 font-semibold underline'
-                  >
-                    Privacy Policy
-                  </a>
-                </span>
+            {/* Accept Terms */}
+            <div className='flex items-start space-x-3'>
+              <input
+                id='acceptTerms'
+                type='checkbox'
+                {...register("acceptTerms")}
+                className='mt-1 w-5 h-5 accent-blue-600'
+              />
+              <label
+                htmlFor='acceptTerms'
+                className='text-sm text-gray-700'
+              >
+                I agree to the{" "}
+                <a
+                  href='/terms'
+                  className='text-blue-600 font-semibold hover:underline'
+                >
+                  Terms of Service
+                </a>{" "}
+                and{" "}
+                <a
+                  href='/privacy'
+                  className='text-blue-600 font-semibold hover:underline'
+                >
+                  Privacy Policy
+                </a>
+                .
               </label>
-              {errors.acceptTerms && (
-                <p className='mt-1.5 text-sm text-red-600 font-medium'>
-                  {errors.acceptTerms.message}
-                </p>
-              )}
             </div>
+            {errors.acceptTerms && (
+              <p className='mt-1.5 text-sm text-red-600 font-medium'>
+                {errors.acceptTerms.message}
+              </p>
+            )}
 
             {/* Submit Button */}
             <button
               type='submit'
               disabled={isSubmitting}
-              className='w-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white font-bold py-3.5 rounded-xl hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 mt-6'
+              className='w-full py-3 rounded-xl text-white font-semibold bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 shadow-lg transition-all flex items-center justify-center'
             >
               {isSubmitting ? (
-                <span className='flex items-center justify-center gap-2'>
-                  <Loader2 className='w-5 h-5 animate-spin' />
+                <>
+                  <Loader2 className='w-5 h-5 animate-spin mr-2' />
                   Creating Account...
-                </span>
+                </>
               ) : (
-                "Create Account"
+                "Sign Up"
               )}
             </button>
 
-            {/* Sign In Link */}
-            <p className='text-center text-sm text-gray-600 mt-6'>
+            {/* Footer */}
+            <p className='text-center text-sm text-gray-600 mt-5'>
               Already have an account?{" "}
               <a
                 href='/auth/signin'
-                className='text-blue-600 hover:text-blue-700 font-semibold hover:underline'
+                className='text-blue-600 font-semibold hover:underline'
               >
                 Sign in
               </a>
             </p>
           </form>
-
-          {/* Footer Note */}
-          <p className='text-center text-xs text-gray-500 mt-6'>
-            Protected by industry-leading security standards
-          </p>
         </div>
       </div>
+
+      {/* Blob Animation Keyframes */}
+      <style jsx>{`
+        @keyframes blob {
+          0%,
+          100% {
+            transform: translate(0px, 0px) scale(1);
+          }
+          33% {
+            transform: translate(30px, -50px) scale(1.1);
+          }
+          66% {
+            transform: translate(-20px, 20px) scale(0.9);
+          }
+        }
+        @keyframes slide-in {
+          from {
+            opacity: 0;
+            transform: translateX(100%);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+      `}</style>
     </div>
   );
 }

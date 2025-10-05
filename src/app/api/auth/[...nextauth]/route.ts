@@ -16,30 +16,27 @@ declare module "next-auth" {
       status: UserStatus;
       isEmailVerified: boolean;
       profilePicture?: string | null;
-      accessToken: string;
-      refreshToken: string;
       name?: string | null;
       image?: string | null;
     };
-    accessToken: string;
-    refreshToken: string;
     error?: string;
   }
 }
 
 // Type definitions
-
 export enum UserRole {
   STUDENT = "STUDENT",
   INSTRUCTOR = "INSTRUCTOR",
   ADMIN = "ADMIN",
 }
+
 export enum UserStatus {
   ACTIVE = "ACTIVE",
   INACTIVE = "INACTIVE",
   SUSPENDED = "SUSPENDED",
   PENDING_VERIFICATION = "PENDING_VERIFICATION",
 }
+
 interface BackendUser {
   id: string;
   email: string;
@@ -49,8 +46,6 @@ interface BackendUser {
   status: UserStatus;
   isEmailVerified: boolean;
   profilePicture?: string;
-  accessToken: string;
-  refreshToken: string;
 }
 
 interface ExtendedUser extends User {
@@ -62,8 +57,6 @@ interface ExtendedUser extends User {
   status: UserStatus;
   isEmailVerified: boolean;
   profilePicture?: string;
-  accessToken: string;
-  refreshToken: string;
 }
 
 export const authOptions: NextAuthOptions = {
@@ -81,11 +74,13 @@ export const authOptions: NextAuthOptions = {
         }
 
         try {
+          // 🔑 KEY CHANGE: Add credentials: "include" to send/receive cookies
           const response = await fetch(`${process.env["BACKEND_API_URL"]}/auth/login`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
+            credentials: "include", // 🔑 Enable cookie handling
             body: JSON.stringify({
               email: credentials.email,
               password: credentials.password,
@@ -98,7 +93,9 @@ export const authOptions: NextAuthOptions = {
             throw new Error(data.message || "Invalid credentials");
           }
 
-          const user: BackendUser = data.data;
+          // ✅ Backend sets cookies automatically
+          // Response only contains user data, not tokens
+          const user: BackendUser = data.data.user || data.data;
 
           return {
             id: user.id,
@@ -110,8 +107,6 @@ export const authOptions: NextAuthOptions = {
             status: user.status,
             isEmailVerified: user.isEmailVerified,
             profilePicture: user.profilePicture,
-            accessToken: user.accessToken,
-            refreshToken: user.refreshToken,
             image: user.profilePicture,
           } as ExtendedUser;
         } catch (error: unknown) {
@@ -152,6 +147,7 @@ export const authOptions: NextAuthOptions = {
 
   callbacks: {
     async jwt({ token, user, account, trigger, session }) {
+      // Initial sign-in
       if (user) {
         const extendedUser = user as ExtendedUser;
 
@@ -163,10 +159,12 @@ export const authOptions: NextAuthOptions = {
         token["status"] = extendedUser.status;
         token["isEmailVerified"] = extendedUser.isEmailVerified;
         token["profilePicture"] = extendedUser.profilePicture;
-        token["accessToken"] = extendedUser.accessToken;
-        token["refreshToken"] = extendedUser.refreshToken;
+        
+        // ❌ REMOVED: No longer storing tokens in JWT
+        // Tokens are in cookies managed by backend
       }
-      // http://localhost:3000/api/auth/callback/google
+
+      // Google OAuth sign-in
       if (account?.provider === "google") {
         try {
           const response = await fetch(`${process.env["BACKEND_API_URL"]}/auth/google`, {
@@ -174,6 +172,7 @@ export const authOptions: NextAuthOptions = {
             headers: {
               "Content-Type": "application/json",
             },
+            credentials: "include", // 🔑 Enable cookie handling
             body: JSON.stringify({
               googleId: account.providerAccountId,
               email: token.email,
@@ -184,49 +183,28 @@ export const authOptions: NextAuthOptions = {
           });
 
           const data = await response.json();
-          const backendUser: BackendUser = data.data;
+          const backendUser: BackendUser = data.data.user || data.data;
 
           token["id"] = backendUser.id;
           token["role"] = backendUser.role;
           token["status"] = backendUser.status;
           token["isEmailVerified"] = backendUser.isEmailVerified;
-          token["accessToken"] = backendUser.accessToken;
-          token["refreshToken"] = backendUser.refreshToken;
+          
+          // ✅ Backend sets cookies automatically
         } catch (error) {
           console.error("Google auth backend error:", error);
         }
       }
 
+      // Session update (when calling update() from client)
       if (trigger === "update" && session) {
         return { ...token, ...session };
       }
 
-      const now = Math.floor(Date.now() / 1000);
-      const tokenIat = typeof token["iat"] === "number" ? token["iat"] : now;
-      const tokenAge = now - tokenIat;
-
-      if (tokenAge > 23 * 60 * 60) {
-        try {
-          const response = await fetch(`${process.env["BACKEND_API_URL"]}/auth/refresh`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              refreshToken: token["refreshToken"],
-            }),
-          });
-
-          if (response.ok) {
-            const data = await response.json();
-            token["accessToken"] = data.data.accessToken;
-            token["refreshToken"] = data.data.refreshToken;
-          }
-        } catch (error) {
-          console.error("Token refresh failed:", error);
-          return { ...token, error: "RefreshAccessTokenError" };
-        }
-      }
+      // ❌ REMOVED: Token refresh logic
+      // Your backend handles token refresh automatically via cookies
+      // When access token expires, backend checks refresh token cookie
+      // and issues new tokens automatically
 
       return token;
     },
@@ -242,8 +220,6 @@ export const authOptions: NextAuthOptions = {
             role: UserRole.STUDENT,
             status: UserStatus.ACTIVE,
             isEmailVerified: false,
-            accessToken: "",
-            refreshToken: "",
             name: null,
             image: null,
             profilePicture: null,
@@ -258,8 +234,10 @@ export const authOptions: NextAuthOptions = {
         session.user.status = token["status"] as UserStatus;
         session.user.isEmailVerified = token["isEmailVerified"] as boolean;
         session.user.profilePicture = token["profilePicture"] as string | null;
-        session.accessToken = token["accessToken"] as string;
-        session.refreshToken = token["refreshToken"] as string;
+        
+        // ❌ REMOVED: No tokens in session
+        // session.accessToken and session.refreshToken removed
+        
         session.error = token["error"] as string;
       }
 
@@ -284,6 +262,7 @@ export const authOptions: NextAuthOptions = {
             headers: {
               "Content-Type": "application/json",
             },
+            credentials: "include", // 🔑 Send cookies
             body: JSON.stringify({
               userId: user.id,
               provider: account?.provider,
@@ -299,20 +278,17 @@ export const authOptions: NextAuthOptions = {
     async signOut({ token }) {
       console.log(`👋 User ${token?.email} signed out`);
 
-      if (token?.["refreshToken"]) {
-        try {
-          await fetch(`${process.env["BACKEND_API_URL"]}/auth/logout`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              refreshToken: token["refreshToken"],
-            }),
-          });
-        } catch (error) {
-          console.error("Failed to logout from backend:", error);
-        }
+      try {
+        // ✅ Backend uses cookies for logout
+        await fetch(`${process.env["BACKEND_API_URL"]}/auth/logout`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include", // 🔑 Send refresh token cookie
+        });
+      } catch (error) {
+        console.error("Failed to logout from backend:", error);
       }
     },
   },

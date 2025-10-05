@@ -3,7 +3,7 @@
 
 import { UserRole } from "@/app/api/auth/[...nextauth]/route.js";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { useAuth } from "@/lib/hooks/useAuth";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function StudentDashboard() {
   const { user } = useAuth(UserRole.STUDENT);

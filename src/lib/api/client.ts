@@ -1,4 +1,4 @@
-// lib/api/client.ts
+// lib/api/client.ts - FOR COOKIE-BASED AUTH
 
 const API_BASE_URL = process.env["NEXT_PUBLIC_BACKEND_API_URL"] || "http://localhost:4000/api";
 
@@ -9,10 +9,6 @@ interface ApiResponse<T = unknown> {
   errors?: unknown[];
 }
 
-interface RequestOptions extends RequestInit {
-  token?: string | undefined;
-}
-
 class ApiClient {
   private baseURL: string;
 
@@ -20,26 +16,21 @@ class ApiClient {
     this.baseURL = baseURL;
   }
 
-  private async request<T>(
-    endpoint: string,
-    options: RequestOptions = {}
-  ): Promise<ApiResponse<T>> {
-    const { token, ...fetchOptions } = options;
-
-    const headers: Record<string, string> = {
+  /**
+   * Make HTTP request with automatic cookie handling
+   * Cookies are sent automatically by the browser
+   */
+  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
+    const headers: HeadersInit = {
       "Content-Type": "application/json",
-      ...(fetchOptions.headers as Record<string, string>),
+      ...options.headers,
     };
-
-    // Add authorization token if provided
-    if (token) {
-      headers["Authorization"] = `Bearer ${token}`;
-    }
 
     try {
       const response = await fetch(`${this.baseURL}${endpoint}`, {
-        ...fetchOptions,
+        ...options,
         headers,
+        credentials: "include", // 🔑 THIS IS THE KEY - Sends cookies automatically
       });
 
       const data = await response.json();
@@ -66,45 +57,40 @@ class ApiClient {
   }
 
   // GET request
-  async get<T>(endpoint: string, token?: string): Promise<ApiResponse<T>> {
+  async get<T>(endpoint: string): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, {
       method: "GET",
-      token,
     });
   }
 
   // POST request
-  async post<T>(endpoint: string, body?: any, token?: string): Promise<ApiResponse<T>> {
+  async post<T>(endpoint: string, body?: unknown): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, {
       method: "POST",
       body: JSON.stringify(body),
-      token,
     });
   }
 
   // PUT request
-  async put<T>(endpoint: string, body?: any, token?: string): Promise<ApiResponse<T>> {
+  async put<T>(endpoint: string, body?: unknown): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, {
       method: "PUT",
       body: JSON.stringify(body),
-      token,
     });
   }
 
   // PATCH request
-  async patch<T>(endpoint: string, body?: any, token?: string): Promise<ApiResponse<T>> {
+  async patch<T>(endpoint: string, body?: unknown): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, {
       method: "PATCH",
       body: JSON.stringify(body),
-      token,
     });
   }
 
   // DELETE request
-  async delete<T>(endpoint: string, token?: string): Promise<ApiResponse<T>> {
+  async delete<T>(endpoint: string): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, {
       method: "DELETE",
-      token,
     });
   }
 }
@@ -112,5 +98,5 @@ class ApiClient {
 // Export singleton instance
 export const apiClient = new ApiClient(API_BASE_URL);
 
-// Export base URL for other uses
+// Export base URL
 export { API_BASE_URL };

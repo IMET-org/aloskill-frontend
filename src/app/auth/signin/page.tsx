@@ -38,7 +38,7 @@ export default function SignInPage() {
       }
     } catch (err) {
       setError("An unexpected error occurred");
-      console.log(err);
+      // console.log(err);
     } finally {
       setIsLoading(false);
     }

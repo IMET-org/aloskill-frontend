@@ -53,6 +53,13 @@ const nextConfig: NextConfig = {
   // === Security Headers ===
   async headers() {
     return [
+      // {
+      //   source: '/api/:path*',
+      //   headers: [
+      //     { key: 'Access-Control-Allow-Credentials', value: 'true' },
+      //     { key: 'Access-Control-Allow-Origin', value: process.env["NEXT_PUBLIC_BACKEND_API_URL"] },
+      //   ],
+      // },
       {
         source: "/(.*)",
         headers: securityHeaders,
@@ -155,7 +162,7 @@ const securityHeaders = [
       style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
       img-src 'self' data: https: blob:;
       font-src 'self' https://fonts.gstatic.com;
-      connect-src 'self' https://vitals.vercel-insights.com;
+      connect-src 'self' http://localhost:5000/;
       frame-ancestors 'none';
       frame-src 'none',
       object-src 'none',
