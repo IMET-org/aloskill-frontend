@@ -1,0 +1,112 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 48px;
+  padding: 0 32px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(-45deg, #cc522b, #E8BA79, #D14C00, #E8BA79);
+  background-size: 400% 400%;
+  color: white;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s;
+  animation: gradient 8s ease infinite;
+}
+
+.button:hover {
+  transform: scale(1.05);
+  animation: gradient 3s ease infinite;
+}
+
+.button:active {
+  transform: scale(0.95);
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.button:disabled:hover {
+  transform: scale(1);
+}
+
+.icon {
+  transition: transform 0.3s ease;
+}
+
+.button:hover .icon {
+  animation: iconBounce 0.6s ease;
+}
+
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.iconSpin {
+  animation: iconSpin 2s linear infinite;
+}
+
+.iconPulse {
+  animation: iconPulse 2s ease-in-out infinite;
+}
+
+.iconBounce {
+  animation: iconBounce 1s ease-in-out infinite;
+}
+
+.iconSlide {
+  animation: iconSlide 1s ease-in-out infinite;
+}
+
+@keyframes iconSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes iconPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+}
+
+@keyframes iconBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes iconSlide {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(4px);
+  }
+}

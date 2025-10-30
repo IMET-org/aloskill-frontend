@@ -73,10 +73,7 @@ export default function RootLayout({
           } as React.CSSProperties
         }
       >
-        <AuthProvider>
-          {/* <NavBar /> */}
-          {children}
-        </AuthProvider>
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );

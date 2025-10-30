@@ -1,8 +1,8 @@
 "use client";
-import InstructorCard from "@/components/instructor/InstructorCard.tsx";
-import { instructorsData } from "@/components/instructor/instructorsData.ts";
 import Link from "next/link";
 import { useState } from "react";
+import InstructorCard from "./InstructorCard.tsx";
+import { instructorsData } from "./instructorsData.ts";
 
 export default function AllInstructorsPage() {
   const [hoveredId, setHoveredId] = useState<number | null>(null);

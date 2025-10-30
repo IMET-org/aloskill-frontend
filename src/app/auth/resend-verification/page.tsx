@@ -1,6 +1,6 @@
 "use client";
 
-import AuthButton from "@/components/buttons/AuthButton.tsx";
+import AuthButton from "@/components/shared/buttons/AuthButton";
 import { apiClient } from "@/lib/api/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, CheckCircle2, Loader2, Mail } from "lucide-react";

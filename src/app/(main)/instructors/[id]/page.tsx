@@ -1,5 +1,5 @@
 "use client";
-import { instructorDetailsData } from "@/components/instructor/instructor-details.ts";
+import { instructorDetailsData } from "@/app/(main)/instructors/instructor-details.ts";
 import { BookOpen, Facebook, Globe, Instagram, Linkedin, Star, Twitter, Users } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";

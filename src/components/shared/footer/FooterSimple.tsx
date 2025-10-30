@@ -78,29 +78,29 @@ export default function FooterSimple() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className='relative bg-white overflow-hidden'>
+    <footer className='relative bg-white overflow-hidden w-full mx-auto'>
       {/* Decorative Gradient Blobs */}
       <div className='absolute inset-0 overflow-hidden pointer-events-none'>
         {/* Purple Blob */}
-        <div className='absolute -bottom-32 -left-32 w-96 h-96 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob'></div>
+        <div className='absolute -bottom-32 -left-32 w-96 h-96 bg-linear-to-br from-purple-400 to-purple-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob'></div>
 
         {/* Orange Blob */}
-        <div className='absolute -top-32 -right-32 w-96 h-96 bg-gradient-to-br from-orange-400 to-[#DA7C36] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000'></div>
+        <div className='absolute -top-32 -right-32 w-96 h-96 bg-linear-to-br from-orange-400 to-[#DA7C36] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000'></div>
 
         {/* Pink Blob */}
-        <div className='absolute bottom-1/2 right-1/4 w-80 h-80 bg-gradient-to-br from-pink-400 to-rose-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000'></div>
+        <div className='absolute bottom-1/2 right-1/4 w-80 h-80 bg-linear-to-br from-pink-400 to-rose-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000'></div>
 
         {/* Additional Gradient Circle */}
-        <div className='absolute bottom-0 right-0 w-[600px] h-[600px] bg-gradient-to-tl from-purple-200 via-orange-200 to-pink-200 rounded-full mix-blend-multiply filter blur-3xl opacity-10'></div>
+        <div className='absolute bottom-0 right-0 w-[600px] h-[600px] bg-linear-to-tl from-purple-200 via-orange-200 to-pink-200 rounded-full mix-blend-multiply filter blur-3xl opacity-10'></div>
       </div>
 
-      <div className='relative z-10 mx-auto max-w-screen-xl px-4 pt-16 pb-6 sm:px-6 lg:px-8'>
+      <div className='relative z-10 mx-auto max-w-7xl px-4 pt-16 pb-6 sm:px-6 lg:px-8'>
         {/* Top Section */}
         <div className='grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-12'>
           {/* Brand Section - Spans 3 columns */}
           <div className='lg:col-span-3'>
             <div className='flex items-center gap-2 mb-6'>
-              <div className='w-12 h-12 bg-gradient-to-br from-[#DA7C36] to-[#B85C1A] rounded-xl flex items-center justify-center shadow-lg'>
+              <div className='w-12 h-12 bg-linear-to-br from-[#DA7C36] to-[#B85C1A] rounded-xl flex items-center justify-center shadow-lg'>
                 <span className='text-white font-bold text-2xl'>আ</span>
               </div>
               <span className='text-2xl font-bold text-gray-900'>
@@ -226,7 +226,7 @@ export default function FooterSimple() {
                   href='#'
                   className='flex items-start justify-center sm:justify-start gap-3 text-gray-700 hover:text-[#DA7C36] transition-colors group'
                 >
-                  <div className='w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center group-hover:bg-[#DA7C36]/10 transition-colors flex-shrink-0'>
+                  <div className='w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center group-hover:bg-[#DA7C36]/10 transition-colors shrink-0'>
                     <MapPin className='w-5 h-5' />
                   </div>
                   <span className='text-left'>
@@ -264,7 +264,7 @@ export default function FooterSimple() {
                 ))}
               </div>
             </div>
-            <div className='flex-shrink-0'>
+            <div className='shrink-0'>
               <a
                 href='https://www.sslcommerz.com'
                 target='_blank'

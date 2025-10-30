@@ -192,29 +192,6 @@ h6 {
     @apply absolute bottom-[50px] right-[200px] w-[600px] h-[600px] bg-orange-200 opacity-40 blur-[120px] rounded-full;
   }
 
-  .sidebar::-webkit-scrollbar {
-    width: 3px;
-    height: min-content;
-  }
-
-  .sidebar::-webkit-scrollbar-track {
-    background: transparent;
-    margin-top: 40px;
-    /* visually shortens scrollbar at top */
-    /* margin-bottom: 80vh; */
-  }
-
-  /* Scrollbar thumb (the draggable part) */
-  .sidebar::-webkit-scrollbar-thumb {
-    background: #f97316;
-    border-radius: 9999px;
-  }
-
-  /* Hover effect */
-  .sidebar::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(180deg, #ea580c, #f97316);
-  }
-
   /* Gradient Text Utility */
   .gradient-text {
     background: linear-gradient(to right, #faffbd, #ffbbf8, #5b61ff);
@@ -309,19 +286,6 @@ h6 {
   }
 }
 
-/* 
-<div className="relative">
-  <div className="bg-gradient-creamy-panda">
-    <div className="panda-blue"></div>
-    <div className="panda-orange"></div>
-  </div>
-
-  <div className="relative z-10 text-center text-2xl font-bold text-gray-800">
-    Your main content here
-  </div>
-</div>
-
-*/
 /* ========== 🎞️ Animations ========== */
 @keyframes blob {
   0%,
