@@ -70,7 +70,7 @@ export default function RightSidebar() {
   const CurrentIcon = currentCard.icon;
 
   return (
-    <aside className=' xl:block sticky top-28 right-0 xl:w-65  h-[calc(100vh-7rem)] z-40'>
+    <aside className='hidden lg:block sticky top-28 right-0 xl:w-65  h-[calc(100vh-7rem)] z-40'>
       <div
         className='h-full overflow-y-auto px-4 py-6'
         onMouseEnter={() => setIsPaused(true)}
