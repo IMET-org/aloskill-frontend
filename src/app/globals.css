@@ -21,11 +21,9 @@
   --color-text-light: #ffffff;
 
   /* === 🍊 Accent Colors === */
-  --color-orange: #DA7C36;
+  --color-orange: #da7c36;
   --color-orange-dark: #d15100;
   --color-orange-light: #fc9759;
-
-
 }
 
 /* =======================================================
@@ -45,7 +43,9 @@ body {
   line-height: 1.6;
   color: var(--color-text-dark);
   background-color: var(--color-bg-light);
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
 /* .bangla {
@@ -67,10 +67,7 @@ h6 {
   line-height: 1.2;
 }
 
-
-
 /* === Scalable Heading Sizes === */
-
 
 h1 {
   font-size: var(--font-size-2xl);
@@ -106,9 +103,28 @@ h6 {
 
   /* === Gradient Backgrounds === */
   --background-image-gradient-bpy: linear-gradient(135deg, #faffbd, #ffbbf8, #5b61ff);
-  --background-image-gradient-bpyg: radial-gradient(circle at 40% 20%, rgba(91, 97, 255, 0.2) 0%, rgba(255, 187, 248, 0.5) 30%, rgba(250, 255, 189, 0.3) 60%, rgba(234, 255, 255, 1) 100%);
-  --background-image-gradient-soft-hero: radial-gradient(ellipse at 50% 10%, rgba(91, 97, 255, 0.2) 0%, rgba(255, 187, 248, 0.3) 30%, rgba(250, 255, 189, 0.2) 60%, rgba(234, 255, 255, 1) 100%);
-  --background-image-gradient-blob: radial-gradient(ellipse at 40% 20%, rgba(255, 187, 248, 0.45) 0%, rgba(250, 255, 189, 0.35) 25%, rgba(187, 255, 255, 0.35) 50%, rgba(255, 229, 189, 0.35) 75%, rgba(255, 255, 255, 0.7) 100%);
+  --background-image-gradient-bpyg: radial-gradient(
+    circle at 40% 20%,
+    rgba(91, 97, 255, 0.2) 0%,
+    rgba(255, 187, 248, 0.5) 30%,
+    rgba(250, 255, 189, 0.3) 60%,
+    rgba(234, 255, 255, 1) 100%
+  );
+  --background-image-gradient-soft-hero: radial-gradient(
+    ellipse at 50% 10%,
+    rgba(91, 97, 255, 0.2) 0%,
+    rgba(255, 187, 248, 0.3) 30%,
+    rgba(250, 255, 189, 0.2) 60%,
+    rgba(234, 255, 255, 1) 100%
+  );
+  --background-image-gradient-blob: radial-gradient(
+    ellipse at 40% 20%,
+    rgba(255, 187, 248, 0.45) 0%,
+    rgba(250, 255, 189, 0.35) 25%,
+    rgba(187, 255, 255, 0.35) 50%,
+    rgba(255, 229, 189, 0.35) 75%,
+    rgba(255, 255, 255, 0.7) 100%
+  );
 }
 
 /* =======================================================
@@ -143,7 +159,6 @@ h6 {
 
 /* Optional: Detect Bangla Unicode Range directly */
 @supports (font-family: var(--font-bangla)) {
-
   *:not(code, pre):lang(bn),
   [lang="bn"],
   [class*="bangla"],
@@ -153,19 +168,17 @@ h6 {
 }
 
 @layer utilities {
-
-
   .bg-gradient-creamy-panda {
     @apply absolute inset-0;
   }
 
   .bg-gradient-creamy-panda::before {
-    content: '';
+    content: "";
     @apply absolute top-[-100px] left-[100px] w-[600px] h-[600px] bg-pink-300 opacity-40 blur-[120px] rounded-full;
   }
 
   .bg-gradient-creamy-panda::after {
-    content: '';
+    content: "";
     @apply absolute top-[0px] left-[400px] w-[500px] h-[500px] bg-purple-300 opacity-40 blur-[140px] rounded-full;
   }
 
@@ -189,11 +202,13 @@ h6 {
 
   /* Custom Radial Gradient Background */
   .bg-gradient-radial {
-    background: radial-gradient(ellipse at center,
-        rgba(252, 231, 243, 0.5) 0%,
-        rgba(243, 232, 255, 0.5) 33%,
-        rgba(255, 237, 213, 0.5) 66%,
-        rgba(255, 250, 240, 0.5) 100%);
+    background: radial-gradient(
+      ellipse at center,
+      rgba(252, 231, 243, 0.5) 0%,
+      rgba(243, 232, 255, 0.5) 33%,
+      rgba(255, 237, 213, 0.5) 66%,
+      rgba(255, 250, 240, 0.5) 100%
+    );
   }
 
   /* Smooth Scrollbar */
@@ -273,7 +288,6 @@ h6 {
 
 /* ========== 🎞️ Animations ========== */
 @keyframes blob {
-
   0%,
   100% {
     transform: translate(0, 0) scale(1);

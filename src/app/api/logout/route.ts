@@ -9,8 +9,8 @@ async function logoutCurrentDevice(refreshToken: string) {
 }
 
 async function logoutAllDevices(refreshToken: string) {
- const logoutallResponse = await authService.logoutAllDevices(refreshToken);
- return logoutallResponse;
+  const logoutallResponse = await authService.logoutAllDevices(refreshToken);
+  return logoutallResponse;
 }
 
 export async function POST(request: Request) {

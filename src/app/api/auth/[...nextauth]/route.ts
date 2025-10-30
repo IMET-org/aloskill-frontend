@@ -54,6 +54,54 @@ export enum UserStatus {
   PENDING_VERIFICATION = "PENDING_VERIFICATION",
 }
 
+type RefreshResponseType = ReturnType<typeof authService.refreshToken>;
+type RefreshResolvedType = Awaited<RefreshResponseType>;
+
+// semantic: serialize refresh requests per token
+const refreshCache = new Map<string, {
+  promise: RefreshResponseType;
+  timestamp: number;
+  result?: RefreshResolvedType;
+}>();
+const REFRESH_CACHE_TTL_MS = 3000;
+
+const getRefreshedTokens = async (refreshToken: string): Promise<RefreshResolvedType> => {
+  const now = Date.now();
+  const existing = refreshCache.get(refreshToken);
+
+  if (existing) {
+    if (existing.result && now - existing.timestamp < REFRESH_CACHE_TTL_MS) {
+      return existing.result;
+    }
+
+    return existing.promise;
+  }
+
+  const promise = authService.refreshToken(refreshToken);
+  refreshCache.set(refreshToken, { promise, timestamp: now });
+
+  try {
+    const result = await promise;
+    refreshCache.set(refreshToken, {
+      promise: Promise.resolve(result),
+      timestamp: Date.now(),
+      result,
+    });
+
+    return result;
+  } catch (error) {
+    refreshCache.delete(refreshToken);
+    throw error;
+  } finally {
+    setTimeout(() => {
+      const entry = refreshCache.get(refreshToken);
+      if (entry && Date.now() - entry.timestamp >= REFRESH_CACHE_TTL_MS) {
+        refreshCache.delete(refreshToken);
+      }
+    }, REFRESH_CACHE_TTL_MS);
+  }
+};
+
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
@@ -221,7 +269,8 @@ export const authOptions: NextAuthOptions = {
             time: new Date().toLocaleTimeString(),
             token: token["refreshToken"],
           });
-          const refreshResponse = await authService.refreshToken(token["refreshToken"] as string);
+          const refreshTokenValue = token["refreshToken"] as string;
+          const refreshResponse = await getRefreshedTokens(refreshTokenValue);
 
           console.log("Refreshed successfully at: ", {
             time: new Date().toLocaleTimeString(),

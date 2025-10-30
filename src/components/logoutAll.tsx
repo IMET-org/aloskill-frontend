@@ -25,11 +25,11 @@ export default function LogoutButton() {
           type: "error",
         });
         redirect("/auth/signin");
-      };
+      }
 
-      const response = await fetch('/api/logout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/logout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ logoutAll: true }),
       });
 
@@ -41,9 +41,11 @@ export default function LogoutButton() {
         redirect("/auth/signin");
       } else {
         await signOut({ callbackUrl: "/auth/signin" });
-        setToast({ message: data.message || "Logout failed, but local session cleared.", type: "error" });
+        setToast({
+          message: data.message || "Logout failed, but local session cleared.",
+          type: "error",
+        });
       }
-
     } catch (_err) {
       await signOut({ callbackUrl: "/auth/signin" });
       setToast({
