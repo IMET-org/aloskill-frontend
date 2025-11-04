@@ -3,15 +3,15 @@ import { apiClient } from "./client";
 
 // === INTERFACES ===
 export interface RegisterPayload {
-  firstName: string;
-  lastName: string;
+  displayName: string;
   email: string;
+  gender: "MALE" | "FEMALE";
   password?: string;
   phoneNumber?: string;
-  role?: "STUDENT" | "INSTRUCTOR";
+  role: "STUDENT" | "INSTRUCTOR";
   bio?: string | undefined;
   googleId?: string;
-  profilePicture?: string | null;
+  avatarUrl?: string | null;
 }
 
 export interface LoginPayload {
@@ -23,8 +23,7 @@ export interface LoginPayload {
 export interface UserData {
   id: string;
   email: string;
-  firstName: string;
-  lastName: string;
+  displayName: string;
   role: UserRole;
   status: UserStatus;
   isEmailVerified: boolean;
@@ -35,8 +34,7 @@ export interface UserData {
 export interface AuthResponse {
   id: string;
   email: string;
-  firstName: string;
-  lastName: string;
+  displayName: string;
   role: UserRole;
   status: UserStatus;
   isEmailVerified: boolean;
@@ -130,7 +128,6 @@ export const authService = {
 
   // Refresh access token (automatic via cookies)
   async refreshToken(token: string) {
-    console.log("Step: 1: Refresh triggerd......", new Date().toLocaleTimeString());
     const response = await apiClient.post<AuthResponse>(
       "/auth/refresh",
       {},

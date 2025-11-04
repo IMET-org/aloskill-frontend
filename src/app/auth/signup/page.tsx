@@ -86,9 +86,9 @@ export default function SignupPage() {
     try {
       // Call backend API (cookies are set automatically by backend)
       const response = await authService.register({
-        firstName: data.firstName,
-        lastName: data.lastName,
+        displayName: `${data.firstName} ${data.lastName}`,
         email: data.email,
+        gender: "MALE",
         password: data.password,
         phoneNumber: String(data.phoneNumber),
         role: data.role,

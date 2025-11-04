@@ -12,8 +12,6 @@ declare module "next-auth" {
     user: {
       id: string;
       email: string;
-      firstName: string;
-      lastName: string;
       role: UserRole;
       status: UserStatus;
       isEmailVerified: boolean;
@@ -34,8 +32,7 @@ declare module "next-auth" {
     refreshToken: string;
   }
   interface Profile {
-    given_name: string;
-    family_name: string;
+    phoneNumber: string;
     picture: string;
   }
 }
@@ -58,11 +55,14 @@ type RefreshResponseType = ReturnType<typeof authService.refreshToken>;
 type RefreshResolvedType = Awaited<RefreshResponseType>;
 
 // semantic: serialize refresh requests per token
-const refreshCache = new Map<string, {
-  promise: RefreshResponseType;
-  timestamp: number;
-  result?: RefreshResolvedType;
-}>();
+const refreshCache = new Map<
+  string,
+  {
+    promise: RefreshResponseType;
+    timestamp: number;
+    result?: RefreshResolvedType;
+  }
+>();
 const REFRESH_CACHE_TTL_MS = 3000;
 
 const getRefreshedTokens = async (refreshToken: string): Promise<RefreshResolvedType> => {
@@ -135,7 +135,7 @@ export const authOptions: NextAuthOptions = {
           return {
             id: user.id,
             email: user.email,
-            name: `${user.firstName} ${user.lastName}`,
+            name: user.displayName,
             role: user.role,
             profilePicture: user.profilePicture as string,
             accessToken: user.accessToken,
@@ -196,11 +196,13 @@ export const authOptions: NextAuthOptions = {
           console.log(`User ${user.email} not found, creating new user...`);
 
           const registerResponse = await authService.register({
-            firstName: profile?.given_name || profile?.given_name || "",
-            lastName: profile?.family_name || profile?.family_name || "",
+            displayName: profile?.name || "",
             email: user.email,
+            role: UserRole.STUDENT,
+            phoneNumber: "01332446466",
+            gender: "MALE",
             googleId: profile?.sub || account.providerAccountId || "",
-            profilePicture: user?.image ?? null,
+            avatarUrl: user?.image ?? null,
           });
 
           if (!registerResponse.success) {
@@ -221,7 +223,7 @@ export const authOptions: NextAuthOptions = {
           user.id = result.id;
           user.email = result.email;
           user.role = result.role;
-          user.name = `${result.firstName} ${result.lastName}`;
+          user.name = result.displayName;
           user.profilePicture = result.profilePicture ?? "";
           user.accessToken = result.accessToken;
           user.refreshToken = result.refreshToken;
