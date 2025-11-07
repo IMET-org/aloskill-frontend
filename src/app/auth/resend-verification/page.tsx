@@ -50,7 +50,7 @@ export default function ResendVerificationPage() {
 
   if (isSuccess) {
     return (
-      <div className='min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4'>
+      <div className='min-h-screen bg-linear-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4'>
         <div className='max-w-md w-full'>
           <div className='bg-white rounded-2xl shadow-xl p-8 text-center'>
             <div className='w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6'>
@@ -86,7 +86,7 @@ export default function ResendVerificationPage() {
   }
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4'>
+    <div className='min-h-screen bg-linear-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4'>
       <div className='max-w-md w-full'>
         <div className='bg-white rounded-2xl shadow-xl p-8'>
           {/* Header */}
@@ -103,7 +103,7 @@ export default function ResendVerificationPage() {
           {/* Error Alert */}
           {apiError && (
             <div className='mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3'>
-              <AlertCircle className='w-5 h-5 text-red-600 flex-shrink-0 mt-0.5' />
+              <AlertCircle className='w-5 h-5 text-red-600 shrink-0 mt-0.5' />
               <div className='flex-1'>
                 <p className='text-sm text-red-800 font-medium'>{apiError}</p>
               </div>

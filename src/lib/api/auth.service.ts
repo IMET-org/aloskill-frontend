@@ -1,4 +1,4 @@
-import type { UserRole, UserStatus } from "@/app/api/auth/[...nextauth]/route.ts";
+import type { UserRole, UserStatus } from "@/types/next-auth.js";
 import { apiClient } from "./client";
 
 // === INTERFACES ===
@@ -8,7 +8,6 @@ export interface RegisterPayload {
   gender: "MALE" | "FEMALE";
   password?: string;
   phoneNumber?: string;
-  role: "STUDENT" | "INSTRUCTOR";
   bio?: string | undefined;
   googleId?: string;
   avatarUrl?: string | null;
@@ -24,7 +23,7 @@ export interface UserData {
   id: string;
   email: string;
   displayName: string;
-  role: UserRole;
+  role: UserRole[];
   status: UserStatus;
   isEmailVerified: boolean;
   profilePicture?: string | null;
@@ -35,7 +34,7 @@ export interface AuthResponse {
   id: string;
   email: string;
   displayName: string;
-  role: UserRole;
+  role: UserRole[];
   status: UserStatus;
   isEmailVerified: boolean;
   profilePicture?: string | null;

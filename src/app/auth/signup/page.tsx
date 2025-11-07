@@ -17,30 +17,22 @@ const signupSchema = z
       .min(2, "First name must be at least 2 characters")
       .max(50, "First name is too long")
       .regex(/^[a-zA-Z\s]+$/, "Only letters and spaces allowed"),
-
     lastName: z
       .string()
       .min(2, "Last name must be at least 2 characters")
       .max(50, "Last name is too long")
       .regex(/^[a-zA-Z\s]+$/, "Only letters and spaces allowed"),
-
     email: z.email("Please enter a valid email address").toLowerCase(),
-
     password: z
       .string()
       .min(8, "Password must be at least 8 characters")
       .regex(/[A-Z]/, "Must contain at least one uppercase letter")
       .regex(/[a-z]/, "Must contain at least one lowercase letter")
       .regex(/[0-9]/, "Must contain at least one number"),
-
     confirmPassword: z.string().min(1, "Please confirm your password"),
-
     phoneNumber: z.string().optional(),
-
-    role: z.enum(["STUDENT", "INSTRUCTOR"]).default("STUDENT"),
-
+    gender: z.enum(["MALE", "FEMALE"]),
     bio: z.string().max(150, "Bio must be less than 150 characters").optional(),
-
     acceptTerms: z.boolean().refine(val => val === true, {
       message: "You must accept the terms and conditions",
     }),
@@ -74,7 +66,7 @@ export default function SignupPage() {
       password: "",
       confirmPassword: "",
       phoneNumber: "",
-      role: "STUDENT",
+      gender: "MALE",
       bio: "",
       acceptTerms: false,
     },
@@ -84,19 +76,16 @@ export default function SignupPage() {
     setApiError(null);
 
     try {
-      // Call backend API (cookies are set automatically by backend)
       const response = await authService.register({
         displayName: `${data.firstName} ${data.lastName}`,
         email: data.email,
-        gender: "MALE",
+        gender: data.gender,
         password: data.password,
         phoneNumber: String(data.phoneNumber),
-        role: data.role,
         bio: data.bio || undefined,
       });
 
       if (!response.success) {
-        // Handle validation errors from backend
         if (response.errors && Array.isArray(response.errors)) {
           response.errors.forEach((err: any) => {
             const field = err.path?.[0] || err.field;
@@ -124,12 +113,9 @@ export default function SignupPage() {
         return;
       }
 
-      // Success! Cookies are automatically set by backend
       setIsSuccess(true);
       reset();
 
-      // Show success message with email verification instructions
-      // Instead of auto-redirecting to dashboard, show verification message
       setTimeout(() => {
         router.push("/auth/verification-sent");
       }, 2000);
@@ -231,7 +217,7 @@ export default function SignupPage() {
             className='space-y-5'
           >
             {/* Role Selection */}
-            <div>
+            {/* <div>
               <label className='block text-sm font-semibold text-gray-700 mb-3'>I want to</label>
               <div className='grid grid-cols-2 gap-3'>
                 <label className='cursor-pointer'>
@@ -259,7 +245,7 @@ export default function SignupPage() {
                   </div>
                 </label>
               </div>
-            </div>
+            </div> */}
 
             {/* Name Fields */}
             <div className='grid grid-cols-2 gap-4'>
@@ -369,6 +355,36 @@ export default function SignupPage() {
                   <p className='mt-1.5 text-sm text-red-600 font-medium'>
                     {errors.phoneNumber.message}
                   </p>
+                )}
+              </div>
+            </div>
+
+            {/* Gender */}
+            <div className='grid grid-cols-1 gap-4'>
+              <div>
+                <label
+                  htmlFor='gender'
+                  className='block text-sm font-semibold text-gray-700 mb-2'
+                >
+                  Gender
+                </label>
+                <div className='relative'>
+                  <User className='absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none' />
+                  <select
+                    id='gender'
+                    {...register("gender")}
+                    className={`w-full pl-10 pr-4 py-3 bg-white/50 border-2 rounded-xl outline-none transition-all ${
+                      errors.gender
+                        ? "border-red-400 focus:border-red-500 focus:ring-4 focus:ring-red-100"
+                        : "border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                    }`}
+                  >
+                    <option value='MALE'>MALE</option>
+                    <option value='FEMALE'>FEMALE</option>
+                  </select>
+                </div>
+                {errors.gender && (
+                  <p className='mt-1.5 text-sm text-red-600 font-medium'>{errors.gender.message}</p>
                 )}
               </div>
             </div>

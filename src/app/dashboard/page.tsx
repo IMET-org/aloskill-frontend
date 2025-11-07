@@ -1,10 +1,13 @@
 import LogoutButton from "@/components/logOut.tsx";
 import LogoutAllDevicesButton from "@/components/logoutAll.tsx";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../api/auth/[...nextauth]/route.ts";
 
 const Dashboard = async () => {
+  const user = await getServerSession(authOptions);
   return (
     <div className='flex flex-col items-center justify-center h-screen '>
-      <h3>hello I am Dashboard page</h3>
+      <h3>hello I am Dashboard page {user?.user.role}</h3>
       <LogoutButton />
       <LogoutAllDevicesButton />
     </div>
