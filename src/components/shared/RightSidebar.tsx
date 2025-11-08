@@ -70,7 +70,7 @@ export default function RightSidebar() {
   const CurrentIcon = currentCard.icon;
 
   return (
-    <aside className='hidden lg:block sticky top-28 right-0 xl:w-65  h-[calc(100vh-7rem)] z-40'>
+    <aside className='hidden lg:block sticky top-28 right-0 lg:w-65  h-screen z-40'>
       <div
         className='h-full overflow-y-auto px-4 py-6'
         onMouseEnter={() => setIsPaused(true)}
@@ -81,7 +81,7 @@ export default function RightSidebar() {
         flex-row flex-wrap xl:flex-col justify-center gap-4 '
         >
           {/* Image Slider */}
-          <div className='relative group rounded-2xl overflow-hidden flex-1 shadow-sm hover:shadow-md transition-shadow duration-300'>
+          <div className='relative group rounded-md overflow-hidden flex-1 shadow-sm hover:shadow-md transition-shadow duration-300'>
             <div className='relative h-48 bg-gray-100'>
               {images.map((image, index) => (
                 <Image
@@ -135,7 +135,7 @@ export default function RightSidebar() {
           {/* Card Slider */}
           <div className='relative flex-1 group'>
             <div
-              className={`bg-linear-to-br ${currentCard.gradient} rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer border border-gray-100 min-h-[180px]`}
+              className={`bg-linear-to-br ${currentCard.gradient} rounded-md p-6 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer border border-gray-100 min-h-[180px]`}
             >
               <div className={`${currentCard.iconColor} mb-3`}>
                 <CurrentIcon className='w-10 h-10' />

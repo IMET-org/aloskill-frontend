@@ -3,7 +3,7 @@
 import FooterSimple from "@/components/shared/footer/FooterSimple.tsx";
 import AnnouncementBar from "@/components/shared/header/AnnouncementBar";
 import NavBar from "@/components/shared/header/NavBar";
-import LeftSidebar from "@/components/shared/leftSidebar/LeftSidebar";
+import LeftSidebar from "@/components/shared/leftsidebar/LeftSidebar";
 
 import RightSidebar from "@/components/shared/RightSidebar";
 import { useState } from "react";
@@ -33,7 +33,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         </div>
 
         {/* Main content */}
-        <main className='flex-1 min-h-screen   pt-20 w-full'>{children}</main>
+        <main className='flex-1 min-h-screen   pt-20 '>{children}</main>
 
         {/* Right Sidebar */}
 
