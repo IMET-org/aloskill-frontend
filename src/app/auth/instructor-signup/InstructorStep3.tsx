@@ -42,13 +42,6 @@ const InstructorStep3 = ({
     setCurrentStep(currentStep - 1);
   };
 
-  //   const checkPositiveValue = (selectedValue: number) => {
-  //     if (!selectedValue) {
-  //       return false;
-  //     }
-  //     return selectedValue > 0;
-  //   };
-
   return (
     <div className='space-y-4'>
       <form
