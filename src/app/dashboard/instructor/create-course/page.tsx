@@ -31,7 +31,7 @@ export default function CourseCreationForm() {
               <React.Fragment key={step.id}>
                 <button
                   onClick={() => setCurrentStep(step.id)}
-                  className={`flex items-center gap-2 px-5 py-4 border-b-1 transition-colors relative cursor-pointer ${
+                  className={`flex items-center gap-2 px-5 py-4 border-b transition-colors relative cursor-pointer ${
                     isActive
                       ? "border-orange-light text-gray-900"
                       : isCompleted

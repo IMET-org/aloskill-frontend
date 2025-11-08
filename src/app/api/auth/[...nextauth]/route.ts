@@ -2,67 +2,24 @@
 
 import { config as envConfig } from "@/config/env";
 import { authService } from "@/lib/api/auth.service.ts";
+import { type UserRole } from "@/types/next-auth.js";
 import { jwtDecode } from "jwt-decode";
 import NextAuth, { type NextAuthOptions, type User } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 
-declare module "next-auth" {
-  interface Session {
-    user: {
-      id: string;
-      email: string;
-      firstName: string;
-      lastName: string;
-      role: UserRole;
-      status: UserStatus;
-      isEmailVerified: boolean;
-      profilePicture?: string | null;
-      name?: string | null;
-      image?: string | null;
-      provider: string;
-    };
-    accessToken: string | null;
-    accessTokenExpires?: number | undefined;
-    error?: string | null;
-  }
-  interface User {
-    email: string;
-    role: string;
-    profilePicture?: string;
-    accessToken: string;
-    refreshToken: string;
-  }
-  interface Profile {
-    given_name: string;
-    family_name: string;
-    picture: string;
-  }
-}
-
-// Type definitions
-export enum UserRole {
-  STUDENT = "STUDENT",
-  INSTRUCTOR = "INSTRUCTOR",
-  ADMIN = "ADMIN",
-}
-
-export enum UserStatus {
-  ACTIVE = "ACTIVE",
-  INACTIVE = "INACTIVE",
-  SUSPENDED = "SUSPENDED",
-  PENDING_VERIFICATION = "PENDING_VERIFICATION",
-}
-
 type RefreshResponseType = ReturnType<typeof authService.refreshToken>;
 type RefreshResolvedType = Awaited<RefreshResponseType>;
 
 // semantic: serialize refresh requests per token
-const refreshCache = new Map<string, {
-  promise: RefreshResponseType;
-  timestamp: number;
-  result?: RefreshResolvedType;
-}>();
+const refreshCache = new Map<
+  string,
+  {
+    promise: RefreshResponseType;
+    timestamp: number;
+    result?: RefreshResolvedType;
+  }
+>();
 const REFRESH_CACHE_TTL_MS = 3000;
 
 const getRefreshedTokens = async (refreshToken: string): Promise<RefreshResolvedType> => {
@@ -135,7 +92,7 @@ export const authOptions: NextAuthOptions = {
           return {
             id: user.id,
             email: user.email,
-            name: `${user.firstName} ${user.lastName}`,
+            name: user.displayName,
             role: user.role,
             profilePicture: user.profilePicture as string,
             accessToken: user.accessToken,
@@ -180,9 +137,6 @@ export const authOptions: NextAuthOptions = {
 
   callbacks: {
     async signIn({ user, account, profile }) {
-      console.log(
-        `signIn callback called for ${user.email}, account: ${JSON.stringify(account)}, profile: ${JSON.stringify(profile)}`
-      );
       if (account?.provider !== "google") return true;
 
       try {
@@ -193,14 +147,13 @@ export const authOptions: NextAuthOptions = {
 
         let result;
         if (!userFromDB.success) {
-          console.log(`User ${user.email} not found, creating new user...`);
-
           const registerResponse = await authService.register({
-            firstName: profile?.given_name || profile?.given_name || "",
-            lastName: profile?.family_name || profile?.family_name || "",
+            displayName: profile?.name || "",
             email: user.email,
+            phoneNumber: "01332446466",
+            gender: "MALE",
             googleId: profile?.sub || account.providerAccountId || "",
-            profilePicture: user?.image ?? null,
+            avatarUrl: user?.image ?? null,
           });
 
           if (!registerResponse.success) {
@@ -221,7 +174,7 @@ export const authOptions: NextAuthOptions = {
           user.id = result.id;
           user.email = result.email;
           user.role = result.role;
-          user.name = `${result.firstName} ${result.lastName}`;
+          user.name = result.displayName;
           user.profilePicture = result.profilePicture ?? "";
           user.accessToken = result.accessToken;
           user.refreshToken = result.refreshToken;
@@ -246,17 +199,14 @@ export const authOptions: NextAuthOptions = {
           token["accessTokenExpires"] = Date.now() + 15 * 60 * 1000;
         }
       }
-      if (account && user) {
+      if (user && account) {
         token["id"] = user.id;
         token["accessToken"] = user.accessToken;
         token["refreshToken"] = user.refreshToken;
-
-        if (user) {
-          token["name"] = user.name as string;
-          token["email"] = user.email as string;
-          token["role"] = user.role;
-          token["profilePicture"] = user.profilePicture;
-        }
+        token["name"] = user.name as string;
+        token["email"] = user.email as string;
+        token["role"] = user.role;
+        token["profilePicture"] = user.profilePicture;
       }
 
       // Check if access token needs refresh (with 1-minute buffer)
@@ -265,17 +215,8 @@ export const authOptions: NextAuthOptions = {
 
       if (shouldRefresh) {
         try {
-          console.log("Attempting to refresh access token with : ", {
-            time: new Date().toLocaleTimeString(),
-            token: token["refreshToken"],
-          });
           const refreshTokenValue = token["refreshToken"] as string;
           const refreshResponse = await getRefreshedTokens(refreshTokenValue);
-
-          console.log("Refreshed successfully at: ", {
-            time: new Date().toLocaleTimeString(),
-            data: refreshResponse.data,
-          });
 
           if (refreshResponse.success) {
             token["accessToken"] = refreshResponse.data?.accessToken;
@@ -305,14 +246,14 @@ export const authOptions: NextAuthOptions = {
     },
 
     async session({ session, token }) {
-      console.log("Session token refreshed successfully token : ", token["refreshToken"]);
-      if (token) {
-        session.user.id = token["id"] as string;
-        session.user.email = token.email as string;
-        session.user.name = token.name as string;
-        session.user.role = token["role"] as UserRole;
-        session.user.profilePicture =
-          typeof token["profilePicture"] === "string" ? token["profilePicture"] : null;
+      if (token && session.user) {
+        session.user = {
+          ...session.user,
+          id: token["id"] as string,
+          role: token["role"] as [UserRole],
+          profilePicture:
+            typeof token["profilePicture"] === "string" ? token["profilePicture"] : null,
+        };
         session.accessToken = token["accessToken"] as string;
         if (token["error"]) {
           session.error = (token["error"] as string) || null;

@@ -1,10 +1,10 @@
 "use client";
 
+import { ChevronLeft } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Suspense } from "react";
-import { ChevronLeft } from "lucide-react";
 
 export default function StudentLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -20,7 +20,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
   ];
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-pink-100 via-purple-100 to-pink-100'>
+    <div className='min-h-screen bg-linear-to-br from-pink-100 via-purple-100 to-pink-100'>
       <div className='w-full px-4 pt-4'>
         <Link
           href='/'
@@ -51,7 +51,10 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
                 <p className='text-gray-500 text-sm'>Web Designer & Best-Selling Instructor</p>
               </div>
             </div>
-            <button className='px-4 py-2 bg-orange-50 text-orange-500 rounded font-medium hover:bg-orange-100 transition-colors flex items-center gap-2'>
+            <Link
+              href={"/auth/instructor-signup"}
+              className='px-4 py-2 bg-orange-50 text-orange-500 rounded font-medium hover:bg-orange-100 transition-colors flex items-center gap-2'
+            >
               Become Instructor
               <svg
                 className='w-4 h-4'
@@ -66,7 +69,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
                   d='M9 5l7 7-7 7'
                 />
               </svg>
-            </button>
+            </Link>
           </div>
 
           {/* Navigation - Works with browser back/forward */}

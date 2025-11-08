@@ -33,7 +33,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         </div>
 
         {/* Main content */}
-        <main className='flex-1 min-h-screen   pt-20 '>{children}</main>
+        <main className='flex-1 min-h-screen pt-20 w-full'>{children}</main>
 
         {/* Right Sidebar */}
 

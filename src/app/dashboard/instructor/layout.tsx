@@ -27,8 +27,8 @@ const InstructorsLayout = ({ children }: { children: React.ReactNode }) => {
     { icon: LogOut, label: "SignOut", path: "/dashboard" },
   ];
   return (
-    <div className='w-screen h-screen bg-gradient-to-br from-pink-100 via-purple-100 to-pink-100 overflow-y-auto overflow-x-hidden flex items-center gap-2'>
-      <div className='w-[20%] h-full bg-gradient-to-t from-[#0F172A] to-[#0B1120] text-white flex flex-col'>
+    <div className='w-screen h-screen bg-linear-to-br from-pink-100 via-purple-100 to-pink-100 overflow-y-auto overflow-x-hidden flex items-center gap-2'>
+      <div className='w-[20%] h-full bg-linear-to-t from-[#0F172A] to-[#0B1120] text-white flex flex-col'>
         <Link
           href='/'
           className='hover:text-orange p-5 text-2xl font-semibold'
@@ -82,7 +82,7 @@ const InstructorsLayout = ({ children }: { children: React.ReactNode }) => {
                 <Bell className='w-5 h-5 text-gray-500' />
                 <span className='absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full'></span>
               </button>
-              <div className='w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center'>
+              <div className='w-10 h-10 rounded-full bg-linear-to-br from-orange-400 to-orange-600 flex items-center justify-center'>
                 <span className='text-white'>VS</span>
               </div>
             </div>

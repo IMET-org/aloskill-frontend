@@ -7,7 +7,7 @@
   padding: 0 32px;
   border: none;
   border-radius: 8px;
-  background: linear-gradient(-45deg, #cc522b, #E8BA79, #D14C00, #E8BA79);
+  background: linear-gradient(-45deg, #cc522b, #e8ba79, #d14c00, #e8ba79);
   background-size: 400% 400%;
   color: white;
   font-size: 17px;
@@ -83,7 +83,8 @@
 }
 
 @keyframes iconPulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
     transform: scale(1);
   }
@@ -94,7 +95,8 @@
 }
 
 @keyframes iconBounce {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {
@@ -103,7 +105,8 @@
 }
 
 @keyframes iconSlide {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateX(0);
   }
   50% {

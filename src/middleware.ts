@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { config as envConfig } from "@/config/env";
-import { getToken } from "next-auth/jwt";
+import { getToken, type JWT } from "next-auth/jwt";
 import { withAuth } from "next-auth/middleware";
 import { type NextRequest, NextResponse } from "next/server";
 import {
@@ -53,13 +53,12 @@ export default withAuth(
       return new NextResponse("Server configuration error", { status: 500 });
     }
 
-    let token;
+    let token: JWT | null = null;
     try {
       token = await getToken({
         req: request,
         secret: secret,
       });
-      console.log("token", token);
     } catch (error) {
       console.error("Error retrieving token:", error);
       // Continue without token, let withAuth handle authentication
@@ -87,15 +86,26 @@ export default withAuth(
     }
 
     // Role-based access control
-    if (pathname.startsWith("/dashboard/student") && token?.["role"] !== "STUDENT") {
+    if (
+      pathname.startsWith("/dashboard/student") &&
+      !(token?.["role"] && Array.isArray(token["role"]) && token["role"].includes("STUDENT"))
+    ) {
       return NextResponse.redirect(new URL("/unauthorized", request.url));
     }
 
-    if (pathname.startsWith("/dashboard/instructor") && token?.["role"] !== "INSTRUCTOR") {
+    // if (pathname.startsWith("/dashboard/instructor") && token?.["role"] !== "INSTRUCTOR")
+
+    if (
+      pathname.startsWith("/dashboard/instructor") &&
+      !(token?.["role"] && Array.isArray(token["role"]) && token["role"].includes("INSTRUCTOR"))
+    ) {
       return NextResponse.redirect(new URL("/unauthorized", request.url));
     }
 
-    if (pathname.startsWith("/admin") && token?.["role"] !== "ADMIN") {
+    if (
+      pathname.startsWith("/admin") &&
+      !(token?.["role"] && Array.isArray(token["role"]) && token["role"].includes("ADMIN"))
+    ) {
       return NextResponse.redirect(new URL("/unauthorized", request.url));
     }
 
