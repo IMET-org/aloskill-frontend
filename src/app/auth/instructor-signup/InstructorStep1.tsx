@@ -1,7 +1,7 @@
 import { type Dispatch, type SetStateAction } from "react";
+import { type SubmitHandler, useForm } from "react-hook-form";
 import InstructorRegistrationFooterAction from "./InstructorRegistrationFooterAction.tsx";
 import type { FormData } from "./page.tsx";
-import { type SubmitHandler, useForm } from "react-hook-form";
 
 type Inputs = {
   displayName: string;
@@ -9,6 +9,7 @@ type Inputs = {
   gender: string;
   nationality: string;
   phoneNumber: string;
+  email: string;
   city: string;
   address: string;
 };
@@ -172,6 +173,28 @@ const InstructorStep1 = ({
             />
             {errors.phoneNumber && (
               <span className='text-xs text-red-500 mt-1'>{errors.phoneNumber.message}</span>
+            )}
+          </div>
+          {/* Email */}
+          <div>
+            <label className='block text-sm font-medium text-gray-700 mb-1'>
+              <span className=''>Email *</span>
+            </label>
+            <input
+              {...register("email", {
+                required: "Enter your Email.",
+                pattern: {
+                  value: /^[a-zA-Z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/,
+                  message: "Enter a valid email address.",
+                },
+              })}
+              type='text'
+              defaultValue={instructorData.email}
+              placeholder='Enter Your Email'
+              className={`w-full text-sm px-3 py-2 rounded border focus:ring-1 focus:ring-orange focus:border-transparent focus:outline-none transition placeholder:text-sm resize-none ${errors.email ? "border-red-200 bg-red-50" : "border-gray-200"}`}
+            />
+            {errors.email && (
+              <span className='text-xs text-red-500 mt-1'>{errors.email.message}</span>
             )}
           </div>
 

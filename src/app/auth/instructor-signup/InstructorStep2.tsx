@@ -1,7 +1,7 @@
 import { type Dispatch, type SetStateAction } from "react";
+import { type SubmitHandler, useForm } from "react-hook-form";
 import InstructorRegistrationFooterAction from "./InstructorRegistrationFooterAction.tsx";
 import type { FormData } from "./page.tsx";
-import { type SubmitHandler, useForm } from "react-hook-form";
 
 type Inputs = {
   qualifications: string;
@@ -60,7 +60,7 @@ const InstructorStep2 = ({
           {/* Qualifications */}
           <div>
             <label className='block text-sm font-medium text-gray-700 mb-1'>
-              <span className=''>Qualifications *</span>
+              <span className=''>Highest Education Qualification *</span>
             </label>
             <input
               {...register("qualifications", {
@@ -73,7 +73,7 @@ const InstructorStep2 = ({
               })}
               type='text'
               defaultValue={instructorData.qualifications}
-              placeholder='Your Qualifications'
+              placeholder='Your Last educational Qualifications'
               className={`w-full text-sm px-3 py-2 rounded border focus:ring-1 focus:ring-orange focus:border-transparent focus:outline-none transition placeholder:text-sm resize-none ${errors.qualifications ? "border-red-200 bg-red-50" : "border-gray-200"}`}
             />
             {errors.qualifications && (
@@ -84,7 +84,7 @@ const InstructorStep2 = ({
           {/* Years of Experience */}
           <div>
             <label className='block text-sm font-medium text-gray-700 mb-1'>
-              <span className=''>Years of Experience</span>
+              <span className=''>Years of Teaching Experience</span>
             </label>
             <input
               {...register("experience", {

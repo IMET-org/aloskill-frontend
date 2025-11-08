@@ -4,6 +4,8 @@ import { Award, BookOpen, Briefcase, CheckCircle2, User } from "lucide-react";
 import React, { useState } from "react";
 import InstructorStep1 from "./InstructorStep1.tsx";
 import InstructorStep2 from "./InstructorStep2.tsx";
+import InstructorStep3 from "./InstructorStep3.tsx";
+import InstructorStep4 from "./InstructorStep4.tsx";
 
 export interface FormData {
   displayName: string;
@@ -11,13 +13,14 @@ export interface FormData {
   gender: string;
   nationality: string;
   phoneNumber: string;
+  email: string;
   address: string;
   city: string;
   qualifications: string;
   experience: number;
   expertise: string;
   currentOrg: string;
-  proposedCourse: string;
+  proposedCourseCategory: string;
   courseLevel: string;
   courseType: string;
   courseInfo: string;
@@ -41,13 +44,14 @@ const InstructorRegistrationForm = () => {
     gender: "",
     nationality: "",
     phoneNumber: "",
+    email: "",
     address: "",
     city: "",
     qualifications: "",
     experience: 0,
     expertise: "",
     currentOrg: "",
-    proposedCourse: "",
+    proposedCourseCategory: "",
     courseLevel: "",
     courseType: "",
     courseInfo: "",
@@ -138,6 +142,22 @@ const InstructorRegistrationForm = () => {
 
             {currentStep === 2 && (
               <InstructorStep2
+                currentStep={currentStep}
+                setCurrentStep={setCurrentStep}
+                instructorData={instructorData}
+                setInstructorData={setInstructorData}
+              />
+            )}
+            {currentStep === 3 && (
+              <InstructorStep3
+                currentStep={currentStep}
+                setCurrentStep={setCurrentStep}
+                instructorData={instructorData}
+                setInstructorData={setInstructorData}
+              />
+            )}
+            {currentStep === 4 && (
+              <InstructorStep4
                 currentStep={currentStep}
                 setCurrentStep={setCurrentStep}
                 instructorData={instructorData}
