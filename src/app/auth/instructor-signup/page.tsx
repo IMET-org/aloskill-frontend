@@ -23,13 +23,9 @@ export interface FormData {
   proposedCourseCategory: string;
   courseLevel: string;
   courseType: string;
-  courseInfo: string;
-  duration: string;
-  proposedPrice: string;
   teachingExperience: number;
   prevTeachingApproach: string;
   language: string;
-  demoVideo: string;
   bio: string;
   skills: string[];
   website: string;
@@ -54,13 +50,9 @@ const InstructorRegistrationForm = () => {
     proposedCourseCategory: "",
     courseLevel: "",
     courseType: "",
-    courseInfo: "",
-    duration: "",
-    proposedPrice: "",
     teachingExperience: 0,
     prevTeachingApproach: "",
     language: "",
-    demoVideo: "",
     bio: "",
     skills: [],
     website: "",

@@ -223,21 +223,21 @@ const InstructorStep1 = ({
           </div>
 
           {/* Address */}
-          <div className='md:col-span-2'>
+          <div>
             <label className='block text-sm font-medium text-gray-700 mb-1'>
               <span className=''>Address *</span>
             </label>
-            <textarea
+            <input
               {...register("address", {
                 required: "Enter your Address",
                 pattern: {
-                  value: /^[A-z0-9,._ -]+$/,
+                  value: /^[A-z0-9,._/ -]+$/,
                   message:
-                    "Address can only contain letters, numbers, commas, dots, hyphens, underscores and spaces.",
+                    "Address can only contain letters, numbers, commas, dots, hyphens, underscores, forwardSlash and spaces.",
                 },
                 maxLength: 200,
               })}
-              rows={4}
+              type="text"
               defaultValue={instructorData.address}
               placeholder='Your Full Address'
               className={`w-full text-sm px-3 py-2 rounded border focus:ring-1 focus:ring-orange focus:border-transparent focus:outline-none transition placeholder:text-sm resize-none ${errors.address ? "border-red-200 bg-red-50" : "border-gray-200"}`}

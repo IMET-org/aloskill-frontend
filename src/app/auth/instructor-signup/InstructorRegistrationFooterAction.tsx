@@ -39,9 +39,9 @@ const InstructorRegistrationFooterAction = ({
             <Loader2 className='w-5 h-5 animate-spin' />
             Saving...
           </span>
-        ) : (
-          "Save & Next"
-        )}
+        ) :
+          currentStep === 4 ? 'Submit' : 'Save and Next'
+        }
       </button>
     </div>
   );

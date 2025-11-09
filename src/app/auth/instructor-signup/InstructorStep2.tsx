@@ -42,13 +42,6 @@ const InstructorStep2 = ({
     setCurrentStep(currentStep - 1);
   };
 
-  const checkPositiveValue = (selectedValue: number) => {
-    if (!selectedValue) {
-      return false;
-    }
-    return selectedValue > 0;
-  };
-
   return (
     <div className='space-y-4'>
       <form
@@ -87,9 +80,7 @@ const InstructorStep2 = ({
               <span className=''>Years of Teaching Experience</span>
             </label>
             <input
-              {...register("experience", {
-                validate: value => checkPositiveValue(value) || "Must be a positive Value",
-              })}
+              {...register("experience")}
               type='number'
               defaultValue={instructorData.experience}
               min={0}
@@ -107,9 +98,7 @@ const InstructorStep2 = ({
               <span className=''>Years of Teaching Experience</span>
             </label>
             <input
-              {...register("teachingExperience", {
-                validate: value => checkPositiveValue(value) || "Must be a positive Value",
-              })}
+              {...register("teachingExperience")}
               type='number'
               defaultValue={instructorData.teachingExperience}
               min={0}
