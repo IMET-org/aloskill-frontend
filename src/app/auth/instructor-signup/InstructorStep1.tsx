@@ -41,8 +41,8 @@ const InstructorStep1 = ({
     });
   };
 
-  const handleCancel = () => {
-    confirm("Are you sure you want to cancel? Unsaved changes will be lost.");
+  const handlePrevious = () => {
+    setCurrentStep(currentStep - 1);
   };
 
   const isEighteenOrOlder = (selectedValue: string) => {
@@ -249,7 +249,7 @@ const InstructorStep1 = ({
         </div>
         {/* Footer Actions */}
         <InstructorRegistrationFooterAction
-          handleCancel={handleCancel}
+          handlePrevious={handlePrevious}
           isSubmitting={isSubmitting}
           currentStep={currentStep}
         />
