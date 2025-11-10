@@ -132,9 +132,9 @@ const InstructorStep3 = ({
               className={`w-full text-sm px-3 py-2 rounded border focus:ring-1 focus:ring-orange focus:border-transparent focus:outline-none transition placeholder:text-sm resize-none ${errors.prevTeachingApproach ? "border-red-200 bg-red-50" : "border-gray-200"}`}
             >
               <option value=''>Select Approach</option>
-              <option value='ACTIVITY_BASED'>Activity Based</option>
-              <option value='LECTURE_BASED'>Lecture Based</option>
-              <option value='FLIPPED_CLASSROOM'>Flipped Classroom</option>
+              <option value='INTERACTIVE'>Activity Based</option>
+              <option value='VIDEO'>Lecture Based</option>
+              <option value='LIVE'>Flipped Classroom</option>
               <option value='PROJECT_BASED'>Project Based</option>
             </select>
             {errors.prevTeachingApproach && (

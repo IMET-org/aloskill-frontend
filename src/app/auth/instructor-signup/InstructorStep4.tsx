@@ -8,6 +8,7 @@ type Inputs = {
   bio: string;
   website: string;
   terms: boolean;
+  demovideo: string;
 };
 
 const InstructorStep4 = ({
@@ -43,7 +44,10 @@ const InstructorStep4 = ({
       website: data.website,
     });
 
-    console.log("Instructor Data : ", instructorData);
+    console.log("Instructor Data : ", {
+      ...instructorData,
+      ...data
+    });
   };
 
   const handlePrevious = () => {
@@ -98,6 +102,16 @@ const InstructorStep4 = ({
     }))
   };
 
+  const validateUrlFormat = (value:string) => {
+    if (!value) return true;
+    try {
+      new URL(value);
+      return true;
+    } catch (_e) {
+      return "Please enter a valid URL, including http:// or https://.";
+    }
+  };
+
   return (
     <div className='space-y-4'>
       <form
@@ -127,6 +141,23 @@ const InstructorStep4 = ({
               className={`w-full text-sm px-3 py-2 rounded border focus:ring-1 focus:ring-orange focus:border-transparent focus:outline-none transition placeholder:text-sm resize-none ${errors.bio ? "border-red-200 bg-red-50" : "border-gray-200"}`}
             />
             {errors.bio && <span className='text-xs text-red-500 mt-1'>{errors.bio.message}</span>}
+          </div>
+
+          {/* Course Demo Video */}
+          <div className="md:col-span-2">
+            <label className='block text-sm font-medium text-gray-700 mb-1'>
+              <span className=''>Course Demo Video Link *</span>
+            </label>
+            <input
+              {...register("demovideo", {
+                validate: validateUrlFormat,
+              })}
+              type="url"
+              defaultValue={instructorData.demovideo}
+              placeholder='Course demo video link'
+              className={`w-full text-sm px-3 py-2 rounded border focus:ring-1 focus:ring-orange focus:border-transparent focus:outline-none transition placeholder:text-sm resize-none ${errors.demovideo ? "border-red-200 bg-red-50" : "border-gray-200"}`}
+            />
+            {errors.demovideo && <span className='text-xs text-red-500 mt-1'>{errors.demovideo.message}</span>}
           </div>
 
           {/* Skills */}
@@ -185,11 +216,11 @@ const InstructorStep4 = ({
                 className='flex-1 px-3 py-2 text-sm rounded border border-gray-200 focus:ring-1 focus:ring-orange focus:border-transparent focus:outline-none transition'
               >
                 <option value="">Select Platform</option>
-                <option value="Facebook">Facebook</option>
-                <option value="Twitter">Twitter</option>
-                <option value="LinkedIn">LinkedIn</option>
-                <option value="Instagram">Instagram</option>
-                <option value="YouTube">YouTube</option>
+                <option value="FACEBOOK">Facebook</option>
+                <option value="TWITTER">Twitter</option>
+                <option value="LINKEDIN">LinkedIn</option>
+                <option value="INSTAGRAM">Instagram</option>
+                <option value="YOUTUBE">YouTube</option>
               </select>
               <input
                 type='url'
@@ -238,7 +269,9 @@ const InstructorStep4 = ({
               <span className=''>Website</span>
             </label>
             <input
-              {...register("website")}
+              {...register("website", {
+                validate: validateUrlFormat
+              })}
               type="url"
               defaultValue={instructorData.website}
               placeholder="https://yourwebsite.com"

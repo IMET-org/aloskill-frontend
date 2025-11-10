@@ -235,7 +235,7 @@ const InstructorStep1 = ({
                   message:
                     "Address can only contain letters, numbers, commas, dots, hyphens, underscores, forwardSlash and spaces.",
                 },
-                maxLength: 200,
+                maxLength: 255,
               })}
               type="text"
               defaultValue={instructorData.address}
