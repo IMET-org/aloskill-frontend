@@ -10,7 +10,7 @@
   --font-size-base: clamp(1rem, 0.9rem + 0.5vw, 1.125rem);
   --font-size-lg: clamp(1.25rem, 1rem + 0.8vw, 1.5rem);
   --font-size-xl: clamp(1.5rem, 1.2rem + 1vw, 2rem);
-  --font-size-2xl: clamp(2rem, 1.5rem + 1.5vw, 3rem);
+  --font-size-2xl: clamp(1.5rem, 1.5rem + 1.5vw, 2.5rem);
   /* --font-size-3xl: clamp(2.5rem, 2rem + 2vw, 4rem);
   --font-size-4xl: clamp(3rem, 2.5rem + 2.5vw, 5rem); */
 
@@ -103,7 +103,7 @@ h6 {
   --color-orange-light: #df7633;
 
   /* === Gradient Backgrounds === */
-  --background-image-gradient-bpy: linear-gradient(135deg, #faffbd, #ffbbf8, #5b61ff);
+
   --background-image-gradient-bpyg: radial-gradient(circle at 40% 20%,
       rgba(91, 97, 255, 0.2) 0%,
       rgba(255, 187, 248, 0.5) 30%,
@@ -114,12 +114,7 @@ h6 {
       rgba(255, 187, 248, 0.3) 30%,
       rgba(250, 255, 189, 0.2) 60%,
       rgba(234, 255, 255, 1) 100%);
-  --background-image-gradient-blob: radial-gradient(ellipse at 40% 20%,
-      rgba(255, 187, 248, 0.45) 0%,
-      rgba(250, 255, 189, 0.35) 25%,
-      rgba(187, 255, 255, 0.35) 50%,
-      rgba(255, 229, 189, 0.35) 75%,
-      rgba(255, 255, 255, 0.7) 100%);
+
 }
 
 /* =======================================================

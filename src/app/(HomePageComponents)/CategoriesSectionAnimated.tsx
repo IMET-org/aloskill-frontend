@@ -181,7 +181,7 @@ export function CategoriesSectionAnimated() {
         </div>
 
         {/* View All Button */}
-        <div className='text-center mt-12'>
+        <div className='text-center'>
           <BorderGradientButton
             onClick={() => console.log("View all button clicked")}
             icon={ArrowRight}
