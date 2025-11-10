@@ -42,7 +42,7 @@ const SectionHeader = memo(function SectionHeader({
         <button
           onClick={onButtonClick}
           disabled={isLoading}
-          className='group flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-full hover:from-orange-600 hover:to-orange-700 transition-all duration-300 shadow-lg hover:shadow-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed'
+          className='group flex items-center gap-2 px-6 py-3 bg-linear-to-r from-orange-500 to-orange-600 text-white rounded-full hover:from-orange-600 hover:to-orange-700 transition-all duration-300 shadow-lg hover:shadow-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed'
           aria-label={buttonText}
         >
           <span>{isLoading ? "Loading..." : buttonText}</span>

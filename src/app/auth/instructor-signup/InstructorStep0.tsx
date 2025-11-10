@@ -1,12 +1,12 @@
+import { apiClient } from "@/lib/api/client.ts";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Eye, EyeOff } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { useState, type Dispatch, type SetStateAction } from "react";
-import { type SubmitHandler, useForm } from "react-hook-form";
+import { useForm, type SubmitHandler } from "react-hook-form";
+import z from "zod";
 import InstructorRegistrationFooterAction from "./InstructorRegistrationFooterAction.tsx";
 import type { FormData } from "./page.tsx";
-import z from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useSession } from "next-auth/react";
-import { Eye, EyeOff } from "lucide-react";
-import { apiClient } from "@/lib/api/client.ts";
 
 type registerForm = {
   email: string;
@@ -24,7 +24,7 @@ const InstructorStep0 = ({
   setCurrentStep: Dispatch<SetStateAction<number>>;
   instructorData: FormData;
   setInstructorData: Dispatch<SetStateAction<FormData>>;
-  }) => {
+}) => {
   const { data } = useSession();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -34,28 +34,37 @@ const InstructorStep0 = ({
   const InstructorRegisterSchema = z
     .object({
       email: z.string().email({ message: "Invalid email format." }),
-      password: isLoggedIn ? z.string().optional() : z
-        .string()
-        .min(8, "Password must be at least 8 characters")
-        .regex(/[A-Z]/, "Must contain at least one uppercase letter")
-        .regex(/[a-z]/, "Must contain at least one lowercase letter")
-        .regex(/[0-9]/, "Must contain at least one number"),
-      confirmPassword: isLoggedIn ? z.string().optional() : z.string().min(1, "Confirm your password"),
+      password: isLoggedIn
+        ? z.string().optional()
+        : z
+            .string()
+            .min(8, "Password must be at least 8 characters")
+            .regex(/[A-Z]/, "Must contain at least one uppercase letter")
+            .regex(/[a-z]/, "Must contain at least one lowercase letter")
+            .regex(/[0-9]/, "Must contain at least one number"),
+      confirmPassword: isLoggedIn
+        ? z.string().optional()
+        : z.string().min(1, "Confirm your password"),
     })
-    .refine(async (data) => {
-      if (!data.email) return true;
-      try {
-        const response = await apiClient.get(`/user/${data.email}`);
-        if (!response?.success) return false;
-        const userData = response?.data as {email: string};
-        return !userData?.email;
-      } catch (_error) {
-        return true;
+    .refine(
+      async data => {
+        if (!data.email) return true;
+        try {
+          const response = await apiClient.get(`/user/${data.email}`);
+          console.log("mr. response:", response);
+          if (!response?.success) return false;
+          const userData = response?.data as { result: { canProceed: boolean } };
+          return userData?.result?.canProceed;
+        } catch (_error) {
+          console.log("error m: ", _error);
+          return false;
+        }
+      },
+      {
+        message: "This email is already registered.Please enter a new Email",
+        path: ["email"],
       }
-    }, {
-      message: "This email is already registered. Please enter a new Email",
-      path: ["email"],
-    })
+    )
     .refine(data => isLoggedIn || (data.password && data.password === data.confirmPassword), {
       message: "Passwords do not match",
       path: ["confirmPassword"],
@@ -65,7 +74,7 @@ const InstructorStep0 = ({
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<registerForm>({ resolver: zodResolver(InstructorRegisterSchema)});
+  } = useForm<registerForm>({ resolver: zodResolver(InstructorRegisterSchema) });
 
   const onSubmit: SubmitHandler<registerForm> = async data => {
     setInstructorData({
@@ -91,7 +100,7 @@ const InstructorStep0 = ({
         <h2 className='mb-4'>Login Information</h2>
         <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
           {/* Email */}
-          <div className="md:col-span-2">
+          <div className='md:col-span-2'>
             <label className='block text-sm font-medium text-gray-700 mb-1'>
               <span className=''>Email *</span>
             </label>
@@ -111,9 +120,9 @@ const InstructorStep0 = ({
           {/* Password */}
           <div>
             <label className='block text-sm font-medium text-gray-700 mb-1'>
-              <span className=''>Password{!isLoggedIn ? ' *' : ''}</span>
+              <span className=''>Password{!isLoggedIn ? " *" : ""}</span>
             </label>
-            <div className="relative">
+            <div className='relative'>
               <input
                 {...register("password")}
                 type={showPassword ? "text" : "password"}
@@ -137,9 +146,9 @@ const InstructorStep0 = ({
           {/* Confirm Password */}
           <div>
             <label className='block text-sm font-medium text-gray-700 mb-1'>
-              <span className=''>Confirm Password{!isLoggedIn ? ' *' : ''}</span>
+              <span className=''>Confirm Password{!isLoggedIn ? " *" : ""}</span>
             </label>
-            <div className="relative">
+            <div className='relative'>
               <input
                 {...register("confirmPassword")}
                 type={showConfirm ? "text" : "password"}
@@ -159,7 +168,6 @@ const InstructorStep0 = ({
               <span className='text-xs text-red-500 mt-1'>{errors.confirmPassword.message}</span>
             )}
           </div>
-
         </div>
         {/* Footer Actions */}
         <InstructorRegistrationFooterAction

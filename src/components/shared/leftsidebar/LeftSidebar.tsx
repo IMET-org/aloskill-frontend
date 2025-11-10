@@ -22,6 +22,7 @@ interface LeftSidebarProps {
   onClose?: () => void;
 }
 
+// ✅ CLEANED: Removed duplicate items
 const navItems = [
   { icon: Home, label: "Home", href: "/", color: "text-orange-700" },
   { icon: UserCircle, label: "Sign In/Up", href: "/auth/signup", color: "text-orange-500" },
@@ -29,11 +30,8 @@ const navItems = [
   { icon: Users, label: "Students", href: "/students", color: "text-green-500" },
   { icon: Calendar, label: "Events", href: "/events", color: "text-purple-500" },
   { icon: UserPlus, label: "Groups", href: "/groups", color: "text-pink-500" },
-  { icon: Trophy, label: "Challenge", href: "/challengefg", color: "text-yellow-500" },
-  { icon: Briefcase, label: "Workshop", href: "/workshopfg", color: "text-indigo-500" },
-  { icon: UserPlus, label: "Groups", href: "/groupsfg", color: "text-pink-500" },
-  { icon: Trophy, label: "Challenge", href: "/challengfg", color: "text-yellow-500" },
-  { icon: Briefcase, label: "Workshop", href: "/workshopfgfhg", color: "text-indigo-500" },
+  { icon: Trophy, label: "Challenge", href: "/challenge", color: "text-yellow-500" },
+  { icon: Briefcase, label: "Workshop", href: "/workshop", color: "text-indigo-500" },
   { icon: UserPlus, label: "Groups", href: "/groupfg", color: "text-pink-500" },
   { icon: Trophy, label: "Challenge", href: "/challengef", color: "text-yellow-500" },
   { icon: Briefcase, label: "Workshop", href: "/workshokpg", color: "text-indigo-500" },
@@ -42,7 +40,6 @@ const navItems = [
   { icon: Briefcase, label: "Workshop", href: "/workshokpggh", color: "text-indigo-500" },
   { icon: UserPlus, label: "Groups", href: "/groupfghgkl", color: "text-pink-500" },
   { icon: Trophy, label: "Challenge", href: "/challengefhgkl", color: "text-yellow-500" },
-  { icon: Briefcase, label: "Workshop", href: "/workshokpgghkl", color: "text-indigo-500" },
 ];
 
 export default function LeftSidebar({ isOpen = false, onClose }: LeftSidebarProps) {
@@ -50,38 +47,45 @@ export default function LeftSidebar({ isOpen = false, onClose }: LeftSidebarProp
 
   return (
     <>
-      {/* ===== Overlay for mobile ===== */}
+      {/* Mobile Overlay */}
       {isOpen && (
         <div
-          className='fixed top-5 inset-0 bg-black/40 z-40 lg:hidden'
+          className='fixed inset-0 bg-black/50 z-40 lg:hidden'
           onClick={onClose}
+          aria-hidden='true'
         />
       )}
 
-      {/* ===== Sidebar Wrapper ===== */}
+      {/* Sidebar Container */}
       <aside
-        className={`z-40
-      bg-white border-r border-gray-200 shadow-lg
-      w-44 xl:w-52
-      transition-transform duration-300 ease-in-out
-      overflow-y-auto
-      fixed top-12 left-0 h-[calc(100vh-2rem)]
-      lg:sticky lg:top-24 lg:h-[calc(100vh-2rem)] xl:h-[calc(100vh-6rem)]  lg:translate-x-0
-      ${isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
-    `}
+        className={`
+          fixed lg:sticky
+          top-12 lg:top-24
+          left-0
+          h-[calc(100vh-3rem)] lg:h-[calc(100vh-6rem)]
+          w-50 lg:w-48
+          bg-white
+          border-r border-gray-200
+          shadow-lg lg:shadow-none
+          transition-transform duration-300 ease-in-out
+          z-50 lg:z-10
+          flex flex-col
+          ${isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+        `}
       >
-        {/* ===== Mobile Close Button ===== */}
-        <div className='lg:hidden flex justify-end p-4'>
+        {/* Mobile Close Button */}
+        <div className='lg:hidden flex justify-end p-4 border-b border-gray-100'>
           <button
             onClick={onClose}
             className='p-2 hover:bg-gray-100 rounded-lg transition-colors'
+            aria-label='Close sidebar'
           >
-            <X className='w-6 h-6 text-gray-700' />
+            <X className='w-5 h-5 text-gray-700' />
           </button>
         </div>
 
-        {/* ===== Nav Links ===== */}
-        <nav className='px-4 py-6 space-y-2 '>
+        {/* Scrollable Navigation */}
+        <nav className='flex-1 overflow-y-auto px-2 py-6 space-y-1'>
           {navItems.map(item => {
             const Icon = item.icon;
             const isActive = pathname === item.href;
@@ -90,39 +94,52 @@ export default function LeftSidebar({ isOpen = false, onClose }: LeftSidebarProp
               <Link
                 key={item.href}
                 href={item.href}
-                onClick={onClose} // close drawer on click (mobile)
-                className={`flex items-center gap-3 px-3 py-2 rounded-md transition-all duration-300 ${
-                  isActive
-                    ? "bg-orange-50 text-orange-600 font-semibold shadow-sm"
-                    : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                }`}
+                onClick={onClose}
+                className={`
+                  flex items-center gap-3 px-2 py-3 rounded-lg
+                  transition-all duration-200
+                  ${
+                    isActive
+                      ? "bg-orange-50 text-orange-600 font-semibold shadow-sm"
+                      : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                  }
+                `}
               >
-                <Icon className={`w-5 h-5 ${isActive ? "text-orange-500" : item.color}`} />
-                <span className='text-sm'>{item.label}</span>
+                <Icon className={`w-5 h-5 shrink-0 ${isActive ? "text-orange-500" : item.color}`} />
+                <span className='text-sm truncate'>{item.label}</span>
               </Link>
             );
           })}
         </nav>
 
-        {/* ===== Social Footer ===== */}
-        <div className='px-6  pt-3 sticky bottom-0 left-0 bg-white  border-t border-gray-200'>
+        {/* Social Footer - Sticky at bottom */}
+        <div className='border-t border-gray-200 bg-white px-4 py-4'>
           <p className='text-xs text-gray-500 mb-3 font-medium'>Follow Us</p>
           <div className='flex gap-3'>
             <a
-              href='#'
-              className='w-9 h-9 flex items-center justify-center rounded-full border border-gray-300 hover:border-sky-500 hover:text-sky-500 transition-all duration-300 hover:shadow-md'
+              href='https://twitter.com'
+              target='_blank'
+              rel='noopener noreferrer'
+              className='w-9 h-9 flex items-center justify-center rounded-full border border-gray-300 hover:border-sky-500 hover:text-sky-500 transition-all duration-200 hover:shadow-md'
+              aria-label='Twitter'
             >
               <Twitter className='w-4 h-4' />
             </a>
             <a
-              href='#'
-              className='w-9 h-9 flex items-center justify-center rounded-full border border-gray-300 hover:border-blue-600 hover:text-blue-600 transition-all duration-300 hover:shadow-md'
+              href='https://facebook.com'
+              target='_blank'
+              rel='noopener noreferrer'
+              className='w-9 h-9 flex items-center justify-center rounded-full border border-gray-300 hover:border-blue-600 hover:text-blue-600 transition-all duration-200 hover:shadow-md'
+              aria-label='Facebook'
             >
               <Facebook className='w-4 h-4' />
             </a>
             <a
-              href='#'
-              className='w-9 h-9 flex items-center justify-center rounded-full border border-gray-300 hover:border-pink-500 hover:text-pink-500 transition-all duration-300 hover:shadow-md'
+              href='https://instagram.com'
+              target='_blank'
+              rel='noopener noreferrer'
+              className='w-9 h-9 flex items-center justify-center rounded-full border border-gray-300 hover:border-pink-500 hover:text-pink-500 transition-all duration-200 hover:shadow-md'
+              aria-label='Instagram'
             >
               <Instagram className='w-4 h-4' />
             </a>

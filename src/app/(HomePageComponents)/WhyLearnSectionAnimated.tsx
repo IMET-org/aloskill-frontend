@@ -1,5 +1,6 @@
 "use client";
 
+import SectionMiddleHeader from "@/components/sections/SectionMiddleHeader.tsx";
 import { ArrowRight, Briefcase, GraduationCap, Monitor } from "lucide-react";
 import { useState } from "react";
 
@@ -34,20 +35,15 @@ export function WhyLearnSectionAnimated() {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   return (
-    <section className='py-16 md:py-24 bg-gradient-to-b from-gray-50 to-white'>
+    <section className='py-16 md:py-24 bg-linear-to-b from-gray-50 to-white'>
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
         {/* Section Header */}
-        <div className='text-center mb-12 md:mb-16 animate-fade-in'>
-          <h2 className='text-3xl md:text-4xl lg:text-5xl font-black text-gray-900 mb-4'>
-            Why learn with our courses?
-          </h2>
-          <p className='text-gray-600 text-base md:text-lg max-w-3xl mx-auto leading-relaxed'>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempordunt ut
-            labore vanum...
-          </p>
-        </div>
+        <SectionMiddleHeader
+          title='Why Learn With Us?'
+          description='Our Courses are designed to help you achieve your goals. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempordunt ut
+            labore vanum...'
+        />
 
-        {/* Features Grid */}
         <div className='grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-0'>
           {features.map((feature, index) => {
             const Icon = feature.icon;
@@ -79,7 +75,7 @@ export function WhyLearnSectionAnimated() {
                     >
                       <Icon
                         className={`
-                          w-12 h-12 stroke-[1.5] transition-colors duration-300
+                          w-10 h-10 stroke-[1.5] transition-colors duration-300
                           ${isHovered ? "text-white" : "text-orange-200"}
                         `}
                       />
@@ -90,12 +86,11 @@ export function WhyLearnSectionAnimated() {
                   <div className='space-y-2'>
                     <h3
                       className={`
-                      text-xl md:text-2xl font-bold transition-colors duration-300
+                      text-xl  transition-colors duration-300
                       ${isHovered ? "text-orange-600" : "text-gray-900"}
                     `}
                     >
-                      <span className='text-gray-900'>{feature.step}. </span>
-                      {feature.title}
+                      {feature.step}. {feature.title}{" "}
                     </h3>
                     <p className='text-gray-600 text-sm md:text-base leading-relaxed'>
                       {feature.description}
@@ -112,10 +107,10 @@ export function WhyLearnSectionAnimated() {
 
                 {/* Animated Divider for Desktop */}
                 {isNotLast && (
-                  <div className='hidden lg:block absolute top-1/4 -right-0 w-px h-32'>
+                  <div className='hidden lg:block absolute top-1/4 right-0 w-px h-32'>
                     <div
                       className={`
-                      w-full h-full bg-gradient-to-b from-transparent via-gray-300 to-transparent
+                      w-full h-full bg-linear-to-b from-transparent via-gray-300 to-transparent
                       transition-all duration-500
                       ${isHovered || hoveredIndex === index + 1 ? "opacity-100 scale-y-110" : "opacity-50"}
                     `}

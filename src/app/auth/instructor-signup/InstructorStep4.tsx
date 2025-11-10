@@ -137,7 +137,7 @@ const InstructorStep4 = ({
               })}
               rows={3}
               defaultValue={instructorData.bio}
-              placeholder='Tell us about yourself'
+              placeholder='Tell us about yourself, your teaching philosophy, and what makes you unique...'
               className={`w-full text-sm px-3 py-2 rounded border focus:ring-1 focus:ring-orange focus:border-transparent focus:outline-none transition placeholder:text-sm resize-none ${errors.bio ? "border-red-200 bg-red-50" : "border-gray-200"}`}
             />
             {errors.bio && <span className='text-xs text-red-500 mt-1'>{errors.bio.message}</span>}

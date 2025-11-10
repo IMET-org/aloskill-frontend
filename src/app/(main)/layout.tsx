@@ -12,36 +12,33 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
-    <div className='min-h-screen flex flex-col bg-white'>
-      {/* Top section (Announcement + Navbar) */}
-      <div className='fixed top-0 w-full z-50  backdrop-blur-md border-b border-gray-200/50 shadow-sm'>
+    <div className='min-h-screen flex flex-col bg-gray-50'>
+      {/* Fixed Header */}
+      <header className='fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm'>
         <AnnouncementBar />
         <NavBar onMenuToggle={() => setIsSidebarOpen(prev => !prev)} />
-      </div>
+      </header>
 
-      {/* Main content area */}
-      <div className='flex flex-1  min-h-screen'>
-        {/* Left Sidebar (mobile + desktop responsive) */}
-        <div className='hidden lg:pt-24 lg:block    '>
-          <LeftSidebar isOpen={true} />
-        </div>
-        <div className='lg:hidden'>
-          <LeftSidebar
-            isOpen={isSidebarOpen}
-            onClose={() => setIsSidebarOpen(false)}
-          />
-        </div>
-
-        {/* Main content */}
-        <main className='flex-1 min-h-screen pt-20 w-full'>{children}</main>
-
-        {/* Right Sidebar */}
-
+      {/* Main Content Container */}
+      <div className='flex flex-1 pt-12'>
+        {" "}
+        {/* Adjusted for header height */}
+        {/* Left Sidebar - Single instance with conditional rendering */}
+        <LeftSidebar
+          isOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
+        />
+        {/* Main Content Area */}
+        <main className='flex-1 min-w-0 lg:ml-0 xl:mr-0'>
+          {" "}
+          {/* min-w-0 prevents flex overflow */}
+          <div className='container mx-auto px-4 py-6 max-w-7xl'>{children}</div>
+        </main>
+        {/* Right Sidebar - Only visible on xl screens */}
         <RightSidebar />
       </div>
 
       {/* Footer */}
-
       <FooterSimple />
     </div>
   );

@@ -6,10 +6,10 @@
 import BorderGradientButton from "@/components/buttons/BorderGradientButton.tsx";
 import { ArrowRightIcon, CheckCircle, Send, Star } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import GradientButton from "../../../components/buttons/GradientButton.tsx";
 import "./HeroSection.module.css";
-import Link from "next/link";
 const avatars = [
   "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&q=80",
   "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80",
@@ -24,18 +24,12 @@ const features = ["1000+ Courses Available", "Expert Instructors", "Lifetime Acc
 export default function HeroSection() {
   const router = useRouter();
   const handleRegistration = () => {
-    console.log("Registration button clicked");
     router.push("/auth/signup");
   };
   return (
     <section className='relative min-h-screen  flex items-center justify-center px-4  py-30 overflow-hidden   '>
       {/* Decorative Blobs */}
       <div className='absolute inset-0 bg-gradient-bpyg overflow-hidden pointer-events-none  filter blur-2xl opacity-50 '></div>
-      {/* <div className='absolute inset-0 overflow-hidden pointer-events-none'>
-        <div className='absolute top-20 left-10 w-72 h-72 bg-linear-to-br from-purple-300 to-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob'></div>
-        <div className='absolute top-40 right-10 w-72 h-72 bg-linear-to-br from-(--color-orange) to-orange-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000'></div>
-        <div className='absolute -bottom-20 left-1/2 w-72 h-72 bg-linear-to-br from-pink-300 to-rose-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000'></div>
-      </div> */}
 
       <div className='relative z-10 max-w-5xl mx-auto text-center space-y-6'>
         {/* Social Proof - Top */}
@@ -85,7 +79,7 @@ export default function HeroSection() {
 
         {/* Main Heading */}
         <div className='space-y-4 animate-fade-in'>
-          <h1 className='text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black text-gray-900 leading-tight'>
+          <h1 className='text-3xl sm:text-3xl md:text-4xl lg:text-6xl  font-black text-gray-900 leading-tight'>
             Start Learning{" "}
             <span className='text-transparent bg-clip-text bg-linear-to-r from-(--color-orange) to-orange-600'>
               Today
@@ -109,26 +103,10 @@ export default function HeroSection() {
           >
             Free Registration
           </GradientButton>
-          <Link href="/auth/instructor-signup">
+          <Link href='/auth/instructor-signup'>
             <BorderGradientButton icon={Send}>Become Instructor</BorderGradientButton>
           </Link>
         </div>
-
-        {/* Stats Grid */}
-        {/* <div className='grid grid-cols-3 gap-6 max-w-2xl mx-auto py-8 animate-fade-in'>
-          <div className='text-center'>
-            <p className='text-3xl md:text-4xl font-black text-(--color-orange)'>50K+</p>
-            <p className='text-sm text-gray-600 font-medium mt-1'>Students</p>
-          </div>
-          <div className='text-center border-x border-gray-200'>
-            <p className='text-3xl md:text-4xl font-black text-(--color-orange)'>1200+</p>
-            <p className='text-sm text-gray-600 font-medium mt-1'>Courses</p>
-          </div>
-          <div className='text-center'>
-            <p className='text-3xl md:text-4xl font-black text-(--color-orange)'>25K+</p>
-            <p className='text-sm text-gray-600 font-medium mt-1'>Certificates</p>
-          </div>
-        </div> */}
 
         {/* Features List */}
         <div className='flex flex-wrap items-center justify-center gap-4 pt-4 animate-slide-up'>
