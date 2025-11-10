@@ -26,6 +26,8 @@
   --color-orange-light: #fc9759;
 }
 
+
+
 /* =======================================================
  🌞 Base Theme Styles
 ======================================================= */
@@ -67,30 +69,29 @@ h6 {
   line-height: 1.2;
 }
 
-/* === Scalable Heading Sizes === */
-
-h1 {
-  font-size: var(--font-size-2xl);
+/* Utility classes */
+.text-xs {
+  font-size: var(--font-size-xs);
 }
 
-h2 {
-  font-size: var(--font-size-xl);
-}
-
-h3 {
-  font-size: var(--font-size-lg);
-}
-
-h4 {
-  font-size: var(--font-size-base);
-}
-
-h5 {
+.text-sm {
   font-size: var(--font-size-sm);
 }
 
-h6 {
-  font-size: var(--font-size-xs);
+.text-base {
+  font-size: var(--font-size-base);
+}
+
+.text-lg {
+  font-size: var(--font-size-lg);
+}
+
+.text-xl {
+  font-size: var(--font-size-xl);
+}
+
+.text-2xl {
+  font-size: var(--font-size-2xl);
 }
 
 /* =======================================================
@@ -103,28 +104,22 @@ h6 {
 
   /* === Gradient Backgrounds === */
   --background-image-gradient-bpy: linear-gradient(135deg, #faffbd, #ffbbf8, #5b61ff);
-  --background-image-gradient-bpyg: radial-gradient(
-    circle at 40% 20%,
-    rgba(91, 97, 255, 0.2) 0%,
-    rgba(255, 187, 248, 0.5) 30%,
-    rgba(250, 255, 189, 0.3) 60%,
-    rgba(234, 255, 255, 1) 100%
-  );
-  --background-image-gradient-soft-hero: radial-gradient(
-    ellipse at 50% 10%,
-    rgba(91, 97, 255, 0.2) 0%,
-    rgba(255, 187, 248, 0.3) 30%,
-    rgba(250, 255, 189, 0.2) 60%,
-    rgba(234, 255, 255, 1) 100%
-  );
-  --background-image-gradient-blob: radial-gradient(
-    ellipse at 40% 20%,
-    rgba(255, 187, 248, 0.45) 0%,
-    rgba(250, 255, 189, 0.35) 25%,
-    rgba(187, 255, 255, 0.35) 50%,
-    rgba(255, 229, 189, 0.35) 75%,
-    rgba(255, 255, 255, 0.7) 100%
-  );
+  --background-image-gradient-bpyg: radial-gradient(circle at 40% 20%,
+      rgba(91, 97, 255, 0.2) 0%,
+      rgba(255, 187, 248, 0.5) 30%,
+      rgba(250, 255, 189, 0.3) 60%,
+      rgba(234, 255, 255, 1) 100%);
+  --background-image-gradient-soft-hero: radial-gradient(ellipse at 50% 10%,
+      rgba(91, 97, 255, 0.2) 0%,
+      rgba(255, 187, 248, 0.3) 30%,
+      rgba(250, 255, 189, 0.2) 60%,
+      rgba(234, 255, 255, 1) 100%);
+  --background-image-gradient-blob: radial-gradient(ellipse at 40% 20%,
+      rgba(255, 187, 248, 0.45) 0%,
+      rgba(250, 255, 189, 0.35) 25%,
+      rgba(187, 255, 255, 0.35) 50%,
+      rgba(255, 229, 189, 0.35) 75%,
+      rgba(255, 255, 255, 0.7) 100%);
 }
 
 /* =======================================================
@@ -159,6 +154,7 @@ h6 {
 
 /* Optional: Detect Bangla Unicode Range directly */
 @supports (font-family: var(--font-bangla)) {
+
   *:not(code, pre):lang(bn),
   [lang="bn"],
   [class*="bangla"],
@@ -202,13 +198,11 @@ h6 {
 
   /* Custom Radial Gradient Background */
   .bg-gradient-radial {
-    background: radial-gradient(
-      ellipse at center,
-      rgba(252, 231, 243, 0.5) 0%,
-      rgba(243, 232, 255, 0.5) 33%,
-      rgba(255, 237, 213, 0.5) 66%,
-      rgba(255, 250, 240, 0.5) 100%
-    );
+    background: radial-gradient(ellipse at center,
+        rgba(252, 231, 243, 0.5) 0%,
+        rgba(243, 232, 255, 0.5) 33%,
+        rgba(255, 237, 213, 0.5) 66%,
+        rgba(255, 250, 240, 0.5) 100%);
   }
 
   /* Smooth Scrollbar */
@@ -288,6 +282,7 @@ h6 {
 
 /* ========== 🎞️ Animations ========== */
 @keyframes blob {
+
   0%,
   100% {
     transform: translate(0, 0) scale(1);

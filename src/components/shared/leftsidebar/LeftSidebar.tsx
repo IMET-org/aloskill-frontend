@@ -63,7 +63,7 @@ export default function LeftSidebar({ isOpen = false, onClose }: LeftSidebarProp
           top-12 lg:top-24
           left-0
           h-[calc(100vh-3rem)] lg:h-[calc(100vh-6rem)]
-          w-52 lg:w-52 xl:w-56
+          w-50 lg:w-48
           bg-white
           border-r border-gray-200
           shadow-lg lg:shadow-none
@@ -85,7 +85,7 @@ export default function LeftSidebar({ isOpen = false, onClose }: LeftSidebarProp
         </div>
 
         {/* Scrollable Navigation */}
-        <nav className='flex-1 overflow-y-auto px-4 py-6 space-y-1'>
+        <nav className='flex-1 overflow-y-auto px-2 py-6 space-y-1'>
           {navItems.map(item => {
             const Icon = item.icon;
             const isActive = pathname === item.href;
@@ -96,7 +96,7 @@ export default function LeftSidebar({ isOpen = false, onClose }: LeftSidebarProp
                 href={item.href}
                 onClick={onClose}
                 className={`
-                  flex items-center gap-3 px-4 py-3 rounded-lg
+                  flex items-center gap-3 px-2 py-3 rounded-lg
                   transition-all duration-200
                   ${
                     isActive

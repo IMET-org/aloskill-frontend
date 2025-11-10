@@ -15,7 +15,7 @@ const InstructorRegistrationFooterAction = ({
 }) => {
   return (
     <div className='flex items-center justify-between'>
-      {currentStep > 1 ? (
+      {currentStep > 0 ? (
         <button
           onClick={handlePrevious}
           className='px-4 py-1.5 text-gray-700 rounded bg-gray-100 font-medium hover:text-gray-900 hover:bg-gray-200 transition-colors cursor-pointer'

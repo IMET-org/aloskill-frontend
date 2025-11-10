@@ -1,0 +1,22 @@
+import React from "react";
+
+interface SectionMiddleHeaderProps {
+  title: string;
+  description: string;
+  className?: string;
+}
+
+export const SectionMiddleHeader: React.FC<SectionMiddleHeaderProps> = ({
+  title,
+  description,
+  className,
+}) => {
+  return (
+    <div className={`text-center space-y-4 ${className || ""}`}>
+      <h2 className='text-xl font-bold'>{title}</h2>
+      <p className='text-base text-gray-500 max-w-4xl mx-auto'>{description}</p>
+    </div>
+  );
+};
+
+export default SectionMiddleHeader;

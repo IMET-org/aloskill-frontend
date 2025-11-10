@@ -9,6 +9,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import GradientButton from "../../../components/buttons/GradientButton.tsx";
 import "./HeroSection.module.css";
+import Link from "next/link";
 const avatars = [
   "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&q=80",
   "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80",
@@ -108,7 +109,9 @@ export default function HeroSection() {
           >
             Free Registration
           </GradientButton>
-          <BorderGradientButton icon={Send}>Become Instructor</BorderGradientButton>
+          <Link href="/auth/instructor-signup">
+            <BorderGradientButton icon={Send}>Become Instructor</BorderGradientButton>
+          </Link>
         </div>
 
         {/* Stats Grid */}

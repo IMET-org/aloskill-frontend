@@ -21,7 +21,6 @@ class ApiClient {
       "Content-Type": "application/json",
       ...(options.headers || {}),
     };
-    console.log("Step:3:Request Triggered.....", new Date().toLocaleTimeString());
     try {
       const response = await fetch(`${this.baseURL}${endpoint}`, {
         ...options,
@@ -54,7 +53,6 @@ class ApiClient {
     body?: unknown,
     customHeaders?: Record<string, string>
   ): Promise<ApiResponse<T>> {
-    console.log("Step 2: Post triggered....", new Date().toLocaleTimeString());
     return this.request<T>(endpoint, {
       method: "POST",
       body: JSON.stringify(body),
