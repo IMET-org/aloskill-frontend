@@ -59,7 +59,7 @@ const InstructorStep4 = ({
       ...instructorData,
       bio: data.bio,
       website: data.website,
-      demoVideo: data.demoVideo
+      demoVideo: data.demoVideo ? data.demoVideo : undefined,
     });
 
     if (!response.success) {
@@ -73,9 +73,8 @@ const InstructorStep4 = ({
         router.push("/auth/verification-sent");
       } else {
         setTimeout(() => {
-          router.push("/");
-        }, 2000
-        );
+          window.location.href = "/";
+        }, 2000);
       }
     }
   };
@@ -176,7 +175,7 @@ const InstructorStep4 = ({
           {/* Course Demo Video */}
           <div className="md:col-span-2">
             <label className='block text-sm font-medium text-gray-700 mb-1'>
-              <span className=''>Course Demo Video Link *</span>
+              <span className=''>Course Demo Video Link </span>
             </label>
             <input
               {...register("demoVideo", {
