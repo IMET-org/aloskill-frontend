@@ -81,29 +81,29 @@ const CourseCard = memo(function CourseCard({
               alt={title}
               fill
               sizes='(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw'
-              className='object-cover group-hover:scale-110 transition-transform duration-500'
+              className='object-cover hover:scale-110 transition-transform duration-500'
               onError={handleImageError}
               priority={false}
             />
           ) : (
-            <div className='flex items-center justify-center h-full bg-gradient-to-br from-gray-200 to-gray-300'>
+            <div className='flex items-center justify-center h-full bg-linear-to-br from-gray-200 to-gray-300'>
               <BookOpen className='w-16 h-16 text-gray-400' />
             </div>
           )}
 
           <div className='absolute top-4 left-4 z-10'>
             <span
-              className={`${categoryColor} text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg backdrop-blur-sm`}
+              className={`${categoryColor} text-white text-sm font-bold px-3 py-1.5 rounded-full shadow-lg backdrop-blur-sm`}
             >
               {category}
             </span>
           </div>
 
-          <div className='absolute top-4 right-4 z-10 bg-white rounded-lg px-3 py-1.5 shadow-lg'>
+          <div className='absolute top-4 right-4 z-10 bg-white rounded-lg px-3 shadow-lg'>
             <div className='flex items-center gap-1'>
-              <span className='text-orange-600 font-black text-lg'>${price.toFixed(2)}</span>
+              <span className='text-orange-600 font-black text-md'>${price.toFixed(2)}</span>
               {originalPrice && originalPrice > price && (
-                <span className='text-gray-400 text-xs line-through'>
+                <span className='text-gray-400 text-md line-through'>
                   ${originalPrice.toFixed(2)}
                 </span>
               )}
@@ -111,7 +111,7 @@ const CourseCard = memo(function CourseCard({
           </div>
 
           {discountPercentage > 0 && (
-            <div className='absolute bottom-4 right-4 z-10 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded shadow-lg'>
+            <div className='absolute bottom-4 right-4 z-10 bg-red-500 text-white text-md font-bold px-2 py-1 rounded shadow-lg'>
               {discountPercentage}% OFF
             </div>
           )}
@@ -131,7 +131,7 @@ const CourseCard = memo(function CourseCard({
         </div>
       </Link>
 
-      <div className='p-5 flex flex-col flex-grow'>
+      <div className='p-5 flex flex-col grow'>
         <div className='flex items-center gap-2 mb-3'>
           <div
             className='flex items-center'
@@ -151,7 +151,7 @@ const CourseCard = memo(function CourseCard({
         </div>
 
         <Link href={`/courses/${id}`}>
-          <h3 className='text-lg font-bold text-blue-900 mb-4 line-clamp-2 min-h-[3.5rem] group-hover:text-orange-600 transition-colors cursor-pointer'>
+          <h3 className='text-lg font-semibold  mb-4 line-clamp-2 min-h-14 group-hover:text-orange-600 transition-colors cursor-pointer'>
             {title}
           </h3>
         </Link>
@@ -161,21 +161,21 @@ const CourseCard = memo(function CourseCard({
             className='flex items-center gap-1'
             title={`${lessons} lessons`}
           >
-            <BookOpen className='w-4 h-4 text-orange-600 flex-shrink-0' />
+            <BookOpen className='w-4 h-4 text-orange-600 shrink-0' />
             <span className='whitespace-nowrap'>{lessons} Lessons</span>
           </div>
           <div
             className='flex items-center gap-1'
             title={`Duration: ${duration}`}
           >
-            <Clock className='w-4 h-4 text-orange-600 flex-shrink-0' />
+            <Clock className='w-4 h-4 text-orange-600 shrink-0' />
             <span className='whitespace-nowrap'>{duration}</span>
           </div>
           <div
             className='flex items-center gap-1'
             title={`${students} students enrolled`}
           >
-            <Users className='w-4 h-4 text-orange-600 flex-shrink-0' />
+            <Users className='w-4 h-4 text-orange-600 shrink-0' />
             <span className='whitespace-nowrap'>{students}</span>
           </div>
         </div>
@@ -183,7 +183,7 @@ const CourseCard = memo(function CourseCard({
         <div className='mt-auto pt-4 border-t border-gray-100'>
           <div className='flex items-center justify-between gap-2'>
             <div className='flex items-center gap-2 min-w-0'>
-              <div className='relative w-8 h-8 flex-shrink-0'>
+              <div className='relative w-8 h-8 shrink-0'>
                 <Image
                   src={instructor.avatar}
                   alt={instructor.name}
@@ -195,7 +195,7 @@ const CourseCard = memo(function CourseCard({
               <span className='text-sm font-medium text-gray-700 truncate'>{instructor.name}</span>
             </div>
 
-            <div className='flex items-center gap-2 flex-shrink-0'>
+            <div className='flex items-center gap-2 shrink-0'>
               {onAddToCart && (
                 <button
                   onClick={handleAddToCart}
@@ -215,7 +215,7 @@ const CourseCard = memo(function CourseCard({
               {onEnroll && (
                 <button
                   onClick={handleEnroll}
-                  className='px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg text-sm font-semibold hover:from-orange-600 hover:to-orange-700 transition-all shadow-md hover:shadow-lg whitespace-nowrap'
+                  className='px-4 py-1 bg-linear-to-r from-orange-500 to-orange-600 text-white rounded-lg text-md font-semibold hover:from-orange-600 hover:to-orange-700 transition-all shadow-md hover:shadow-lg whitespace-nowrap'
                 >
                   Enroll
                 </button>

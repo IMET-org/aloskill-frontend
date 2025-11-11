@@ -2,12 +2,12 @@
 // FILE: components/HeroSection.tsx
 // ============================================
 "use client";
-
 import BorderGradientButton from "@/components/buttons/BorderGradientButton.tsx";
 import { ArrowRightIcon, CheckCircle, Send, Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import GradientButton from "../../../components/buttons/GradientButton.tsx";
 import "./HeroSection.module.css";
 const avatars = [
@@ -22,8 +22,10 @@ const avatars = [
 const features = ["1000+ Courses Available", "Expert Instructors", "Lifetime Access"];
 
 export default function HeroSection() {
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
   const handleRegistration = () => {
+    setLoading(true);
     router.push("/auth/signup");
   };
   return (
@@ -100,6 +102,7 @@ export default function HeroSection() {
             iconPosition='right'
             iconAnimation='slide'
             onClick={handleRegistration}
+            loading={loading}
           >
             Free Registration
           </GradientButton>

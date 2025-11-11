@@ -32,7 +32,7 @@ const CourseGrid = memo(function CourseGrid({
         {[...Array(6)].map((_, index) => (
           <div
             key={index}
-            className='bg-white rounded-2xl shadow-md overflow-hidden border border-gray-100 animate-pulse'
+            className='bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 animate-pulse'
           >
             <div className='h-48 bg-gray-200' />
             <div className='p-5 space-y-4'>

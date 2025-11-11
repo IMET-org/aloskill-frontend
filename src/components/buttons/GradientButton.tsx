@@ -1,6 +1,6 @@
 "use client";
 
-import { type LucideIcon } from "lucide-react";
+import { type LucideIcon, Loader2 } from "lucide-react";
 import styles from "./GradientButton.module.css";
 
 type GradientButtonProps = {
@@ -9,10 +9,11 @@ type GradientButtonProps = {
   type?: "button" | "submit" | "reset";
   disabled?: boolean;
   className?: string;
-  //  size?: keyof typeof sizes;
   icon?: LucideIcon;
   iconPosition?: "left" | "right";
   iconAnimation?: "none" | "spin" | "pulse" | "bounce" | "slide";
+  loading?: boolean;
+  loadingText?: string;
 };
 
 export default function GradientButton({
@@ -21,9 +22,11 @@ export default function GradientButton({
   type = "button",
   disabled = false,
   icon: Icon,
-  iconPosition,
+  iconPosition = "left",
   iconAnimation = "none",
   className = "",
+  loading = false,
+  loadingText,
 }: GradientButtonProps) {
   const iconAnimationClass = {
     none: "",
@@ -32,21 +35,40 @@ export default function GradientButton({
     bounce: styles["iconBounce"],
     slide: styles["iconSlide"],
   };
+
   const renderIcon = () => {
     if (!Icon) return null;
 
     return <Icon className={`${iconAnimationClass[iconAnimation]}`} />;
   };
+
+  // When loading, show spinner and disable button
+  const isDisabled = disabled || loading;
+
   return (
     <button
       type={type}
       onClick={onClick}
-      disabled={disabled}
+      disabled={isDisabled}
       className={`${styles["button"]} ${className}`}
+      aria-busy={loading}
+      aria-disabled={isDisabled}
     >
-      {iconPosition === "left" && renderIcon()}
-      {children}
-      {iconPosition === "right" && renderIcon()}
+      {loading ? (
+        <>
+          <Loader2
+            className={styles["iconSpin"]}
+            aria-hidden='true'
+          />
+          {loadingText || children}
+        </>
+      ) : (
+        <>
+          {iconPosition === "left" && renderIcon()}
+          {children}
+          {iconPosition === "right" && renderIcon()}
+        </>
+      )}
     </button>
   );
 }

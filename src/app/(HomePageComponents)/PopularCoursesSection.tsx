@@ -1,12 +1,12 @@
 // File: components/home/PopularCoursesSection.tsx
 "use client";
 
-import CourseGrid from "@/components/grids/CourseGrid";
 import SectionHeader from "@/components/sections/SectionHeader";
 import type { Course } from "@/types/course.types";
 import { Pencil } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
+import CourseSlider from "./CourseSlider.tsx";
 
 // Mock data - In production, fetch from API
 const INITIAL_COURSES: Course[] = [
@@ -193,7 +193,7 @@ export default function PopularCoursesSection() {
 
   return (
     <section
-      className='py-16 md:py-24 bg-gradient-to-b from-white to-gray-50 relative overflow-hidden'
+      className='py-16 md:py-24 bg-linear-to-b from-white to-gray-50 relative overflow-hidden'
       aria-labelledby='popular-courses-heading'
     >
       {/* Decorative Background Element */}
@@ -218,12 +218,13 @@ export default function PopularCoursesSection() {
           }
           showButton={true}
           buttonText='Load More Courses'
+          loadingText='Loading Courses...'
           onButtonClick={handleLoadMore}
           isLoading={isLoading}
         />
 
         {/* Courses Grid */}
-        <CourseGrid
+        {/* <CourseGrid
           courses={courses}
           isLoading={false}
           onEnroll={handleEnroll}
@@ -232,6 +233,18 @@ export default function PopularCoursesSection() {
           cartItems={cartItems}
           wishlistItems={wishlistItems}
           emptyStateMessage='No popular courses available right now. Check back soon!'
+        /> */}
+
+        <CourseSlider
+          courses={courses}
+          isLoading={false}
+          autoScrollSpeed={3000} // 3 seconds per scroll
+          pauseOnHover={true} // Pause when user hovers
+          onEnroll={handleEnroll}
+          onAddToCart={handleAddToCart}
+          onAddToWishlist={handleAddToWishlist}
+          cartItems={cartItems}
+          wishlistItems={wishlistItems}
         />
       </div>
     </section>
