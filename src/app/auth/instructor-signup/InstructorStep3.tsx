@@ -78,7 +78,7 @@ const InstructorStep3 = ({
           {/* Course Level */}
           <div>
             <label className='block text-sm font-medium text-gray-700 mb-1'>
-              <span className=''>Course Level</span>
+              <span className=''>Course Level *</span>
             </label>
             <select
               {...register("courseLevel", {
@@ -100,7 +100,7 @@ const InstructorStep3 = ({
           {/* Course Type */}
           <div>
             <label className='block text-sm font-medium text-gray-700 mb-1'>
-              <span className=''>Course Type</span>
+              <span className=''>Course Type *</span>
             </label>
             <select
               {...register("courseType", {
@@ -122,7 +122,7 @@ const InstructorStep3 = ({
           {/* Teaching Approach */}
           <div>
             <label className='block text-sm font-medium text-gray-700 mb-1'>
-              <span className=''>Teaching Approach</span>
+              <span className=''>Teaching Approach *</span>
             </label>
             <select
               {...register("prevTeachingApproach", {

@@ -51,13 +51,11 @@ const InstructorStep0 = ({
         if (!data.email) return true;
         try {
           const response = await apiClient.get(`/user/${data.email}`);
-          console.log("mr. response:", response);
           if (!response?.success) return false;
           const userData = response?.data as { result: { canProceed: boolean } };
           return userData?.result?.canProceed;
         } catch (_error) {
-          console.log("error m: ", _error);
-          return false;
+          return true;
         }
       },
       {
@@ -79,7 +77,8 @@ const InstructorStep0 = ({
   const onSubmit: SubmitHandler<registerForm> = async data => {
     setInstructorData({
       ...instructorData,
-      ...data,
+      email: data.email,
+      password: data.confirmPassword
     });
 
     if (currentStep < 4) {

@@ -1,13 +1,13 @@
 "use client";
 
-import { Award, BookOpen, Briefcase, CheckCircle2, LogIn, User } from "lucide-react";
+import { AlertCircle, Award, BookOpen, Briefcase, CheckCircle2, LogIn, User } from "lucide-react";
 import { useSession } from "next-auth/react";
 import React, { useState } from "react";
+import InstructorStep0 from "./InstructorStep0.tsx";
 import InstructorStep1 from "./InstructorStep1.tsx";
 import InstructorStep2 from "./InstructorStep2.tsx";
 import InstructorStep3 from "./InstructorStep3.tsx";
 import InstructorStep4 from "./InstructorStep4.tsx";
-import InstructorStep0 from "./InstructorStep0.tsx";
 
 export interface FormData {
   displayName: string;
@@ -16,6 +16,7 @@ export interface FormData {
   nationality: string;
   phoneNumber: string;
   email: string;
+  password: string | undefined;
   address: string;
   city: string;
   qualifications: string;
@@ -25,19 +26,20 @@ export interface FormData {
   proposedCourseCategory: string;
   courseLevel: string;
   courseType: string;
-  demovideo: string;
+  demoVideo: string;
   teachingExperience: number;
   prevTeachingApproach: string;
   language: string;
   bio: string;
   skills: string[];
   website: string;
-  socialAccounts: { platform: string; url: string }[];
+  socialAccount: { platform: string; url: string }[];
 }
 
 const InstructorRegistrationForm = () => {
   const { data } = useSession();
   const [currentStep, setCurrentStep] = useState<number>(0);
+  const [apiResponse, setApiResponse] = useState<{ status: "" | "Success" | "Error", message: string }>({ status: "", message: "" });
   const [instructorData, setInstructorData] = useState<FormData>({
     displayName: "",
     DOB: "",
@@ -45,6 +47,7 @@ const InstructorRegistrationForm = () => {
     nationality: "",
     phoneNumber: "",
     email: data?.user.email || "",
+    password: undefined,
     address: "",
     city: "",
     qualifications: "",
@@ -54,14 +57,14 @@ const InstructorRegistrationForm = () => {
     proposedCourseCategory: "",
     courseLevel: "",
     courseType: "",
-    demovideo: "",
+    demoVideo: "",
     teachingExperience: 0,
     prevTeachingApproach: "",
     language: "",
     bio: "",
     skills: [],
     website: "",
-    socialAccounts: [],
+    socialAccount: [],
   });
 
   const STEPS = [
@@ -71,6 +74,23 @@ const InstructorRegistrationForm = () => {
     { number: 3, title: "Course Details", icon: BookOpen },
     { number: 4, title: "Additional", icon: Award },
   ];
+
+  const StatusMessage = () => {
+    return !apiResponse.status ? (
+      <></>
+    ) :
+      apiResponse.status === "Success" ? (
+        <div className='mb-2 bg-green-50 border border-green-200 rounded px-4 py-2 flex items-center gap-2'>
+          <CheckCircle2 className='text-green-600 w-4 h-4 shrink-0' />
+          <p className='text-green-800 font-medium text-xs'>Application submitted successfully!</p>
+        </div>
+      ) : (
+        <div className='mb-2 bg-red-50 border border-red-200 rounded px-4 py-2 flex items-center gap-2'>
+          <AlertCircle className='text-red-600 w-4 h-4 shrink-0' />
+          <p className='text-red-800 font-medium text-xs'>{apiResponse.message}</p>
+        </div>
+      );
+  };
 
   return (
     <section className='w-screen h-screen overflow-y-auto overflow-x-hidden'>
@@ -126,6 +146,7 @@ const InstructorRegistrationForm = () => {
           </div>
           {/* Form Content Step -1*/}
           <div className='w-full flex flex-col gap-3 p-5'>
+            <StatusMessage />
             {currentStep === 0 && (
               <InstructorStep0
                 currentStep={currentStep}
@@ -166,6 +187,7 @@ const InstructorRegistrationForm = () => {
                 setCurrentStep={setCurrentStep}
                 instructorData={instructorData}
                 setInstructorData={setInstructorData}
+                setApiResponse={setApiResponse}
               />
             )}
           </div>
