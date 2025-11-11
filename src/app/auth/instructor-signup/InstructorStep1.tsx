@@ -119,8 +119,8 @@ const InstructorStep1 = ({
               className={`w-full text-sm px-3 py-2 rounded border focus:ring-1 focus:ring-orange focus:border-transparent focus:outline-none transition placeholder:text-sm resize-none ${errors.gender ? "border-red-200 bg-red-50" : "border-gray-200"}`}
             >
               <option value=''>Select Gender</option>
-              <option value='male'>Male</option>
-              <option value='female'>Female</option>
+              <option value='MALE'>Male</option>
+              <option value='FEMALE'>Female</option>
             </select>
             {errors.gender && (
               <span className='text-xs text-red-500 mt-1'>{errors.gender.message}</span>
@@ -235,7 +235,7 @@ const InstructorStep1 = ({
                   message:
                     "Address can only contain letters, numbers, commas, dots, hyphens, underscores, forwardSlash and spaces.",
                 },
-                maxLength: 200,
+                maxLength: 255,
               })}
               type="text"
               defaultValue={instructorData.address}

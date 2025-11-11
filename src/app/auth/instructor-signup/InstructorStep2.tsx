@@ -32,6 +32,10 @@ const InstructorStep2 = ({
     if (currentStep < 4) {
       setCurrentStep(currentStep + 1);
     }
+    
+    data.experience = Number(data.experience);
+    data.teachingExperience = Number(data.teachingExperience);
+
     setInstructorData({
       ...instructorData,
       ...data,
@@ -77,7 +81,7 @@ const InstructorStep2 = ({
           {/* Years of Experience */}
           <div>
             <label className='block text-sm font-medium text-gray-700 mb-1'>
-              <span className=''>Years of Teaching Experience</span>
+              <span className=''>Years of Experience </span>
             </label>
             <input
               {...register("experience")}
@@ -95,7 +99,7 @@ const InstructorStep2 = ({
           {/* Years of Teaching Experience */}
           <div>
             <label className='block text-sm font-medium text-gray-700 mb-1'>
-              <span className=''>Years of Teaching Experience</span>
+              <span className=''>Years of teaching Experience</span>
             </label>
             <input
               {...register("teachingExperience")}
@@ -117,7 +121,6 @@ const InstructorStep2 = ({
             </label>
             <input
               {...register("expertise", {
-                required: "Enter your Expertise Fields name",
                 pattern: {
                   value: /^[A-z,._ -]+$/,
                   message:

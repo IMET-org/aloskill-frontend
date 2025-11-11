@@ -42,6 +42,16 @@ export interface AuthResponse {
   refreshToken: string;
 }
 
+export interface InstructorResponse {
+  id: string;
+  email: string;
+  status: UserStatus;
+  role: string[];
+  displayName: string | undefined;
+  profilePicture: string | null;
+  redirectToVerificationPage: boolean;
+}
+
 export interface VerifyEmailPayload {
   id: string;
   token: string;

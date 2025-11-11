@@ -78,7 +78,7 @@ const InstructorStep3 = ({
           {/* Course Level */}
           <div>
             <label className='block text-sm font-medium text-gray-700 mb-1'>
-              <span className=''>Course Level</span>
+              <span className=''>Course Level *</span>
             </label>
             <select
               {...register("courseLevel", {
@@ -100,7 +100,7 @@ const InstructorStep3 = ({
           {/* Course Type */}
           <div>
             <label className='block text-sm font-medium text-gray-700 mb-1'>
-              <span className=''>Course Type</span>
+              <span className=''>Course Type *</span>
             </label>
             <select
               {...register("courseType", {
@@ -122,7 +122,7 @@ const InstructorStep3 = ({
           {/* Teaching Approach */}
           <div>
             <label className='block text-sm font-medium text-gray-700 mb-1'>
-              <span className=''>Teaching Approach</span>
+              <span className=''>Teaching Approach *</span>
             </label>
             <select
               {...register("prevTeachingApproach", {
@@ -132,9 +132,9 @@ const InstructorStep3 = ({
               className={`w-full text-sm px-3 py-2 rounded border focus:ring-1 focus:ring-orange focus:border-transparent focus:outline-none transition placeholder:text-sm resize-none ${errors.prevTeachingApproach ? "border-red-200 bg-red-50" : "border-gray-200"}`}
             >
               <option value=''>Select Approach</option>
-              <option value='ACTIVITY_BASED'>Activity Based</option>
-              <option value='LECTURE_BASED'>Lecture Based</option>
-              <option value='FLIPPED_CLASSROOM'>Flipped Classroom</option>
+              <option value='INTERACTIVE'>Activity Based</option>
+              <option value='VIDEO'>Lecture Based</option>
+              <option value='LIVE'>Flipped Classroom</option>
               <option value='PROJECT_BASED'>Project Based</option>
             </select>
             {errors.prevTeachingApproach && (

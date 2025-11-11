@@ -3,11 +3,16 @@ import { useState, type Dispatch, type SetStateAction } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import InstructorRegistrationFooterAction from "./InstructorRegistrationFooterAction.tsx";
 import type { FormData } from "./page.tsx";
+import { apiClient } from "@/lib/api/client.ts";
+import type { InstructorResponse } from "@/lib/api/auth.service.ts";
+import { useRouter } from "next/navigation";
+import Toast from "@/components/toast/successToast.tsx";
 
 type Inputs = {
   bio: string;
   website: string;
   terms: boolean;
+  demoVideo: string;
 };
 
 const InstructorStep4 = ({
@@ -15,11 +20,13 @@ const InstructorStep4 = ({
   setCurrentStep,
   instructorData,
   setInstructorData,
+  setApiResponse
 }: {
   currentStep: number;
   setCurrentStep: Dispatch<SetStateAction<number>>;
   instructorData: FormData;
   setInstructorData: Dispatch<SetStateAction<FormData>>;
+  setApiResponse: Dispatch<SetStateAction<{status: "" |"Success" | "Error", message: string}>>;
 }) => {
   const {
     register,
@@ -29,21 +36,48 @@ const InstructorStep4 = ({
   const [currentSkill, setCurrentSkill] = useState<string>("");
   const [error, setError] = useState<{ skillError: string, socialError: string }>({ skillError: '', socialError: '' });
   const [currentSocial, setCurrentSocial] = useState<{ platform: string, url: string }>({ platform: '', url: '' });
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+
+  // Router for redirecting after successful submission
+  const router = useRouter();
 
   const onSubmit: SubmitHandler<Inputs> = async data => {
     if (instructorData.skills.length === 0) {
       setError({ ...error, skillError: 'Atleast one skill is required' });
     }
-    if (instructorData.socialAccounts.length === 0) {
+    if (instructorData.socialAccount.length === 0) {
       setError({ ...error, socialError: 'Atleast one social media account is required' });
     }
     setInstructorData({
       ...instructorData,
       bio: data.bio,
       website: data.website,
+      demoVideo: data.demoVideo,
     });
 
-    console.log("Instructor Data : ", instructorData);
+    const response = await apiClient.post<InstructorResponse>('/auth/register-instructor', {
+      ...instructorData,
+      bio: data.bio,
+      website: data.website,
+      demoVideo: data.demoVideo
+    });
+
+    if (!response.success) {
+      setApiResponse({ status: "Error", message: response.message ?? "Something went wrong" });
+      setToast({ message: "Error During Submission", type: "error" });
+    } else {
+      setApiResponse({ status: "Success", message: response.message ?? "Application Submitted Successfully" });
+      setToast({ message: "sent a verification !", type: "success" });
+
+      if (response?.data?.redirectToVerificationPage) {
+        router.push("/auth/verification-sent");
+      } else {
+        setTimeout(() => {
+          router.push("/");
+        }, 2000
+        );
+      }
+    }
   };
 
   const handlePrevious = () => {
@@ -79,10 +113,10 @@ const InstructorStep4 = ({
       setError({ ...error, socialError: 'Please fill both fields' });
       return;
     }
-    if (!instructorData.socialAccounts.some(account => account.platform === currentSocial.platform)) {
+    if (!instructorData.socialAccount.some(account => account.platform === currentSocial.platform)) {
       setInstructorData(prevData => ({
         ...prevData,
-        socialAccounts: [...prevData.socialAccounts, currentSocial]
+        socialAccount: [...prevData.socialAccount, currentSocial]
       }))
       setCurrentSocial({ platform: "", url: "" });
       setError({ skillError: '', socialError: '' });
@@ -94,8 +128,18 @@ const InstructorStep4 = ({
   const removeSocialAccount = (index: number) => {
     setInstructorData(prevData => ({
       ...prevData,
-      socialAccounts: prevData.socialAccounts.filter((_, i) => i !== index)
+      socialAccount: prevData.socialAccount.filter((_, i) => i !== index)
     }))
+  };
+
+  const validateUrlFormat = (value:string) => {
+    if (!value) return true;
+    try {
+      new URL(value);
+      return true;
+    } catch (_e) {
+      return "Please enter a valid URL, including http:// or https://.";
+    }
   };
 
   return (
@@ -127,6 +171,23 @@ const InstructorStep4 = ({
               className={`w-full text-sm px-3 py-2 rounded border focus:ring-1 focus:ring-orange focus:border-transparent focus:outline-none transition placeholder:text-sm resize-none ${errors.bio ? "border-red-200 bg-red-50" : "border-gray-200"}`}
             />
             {errors.bio && <span className='text-xs text-red-500 mt-1'>{errors.bio.message}</span>}
+          </div>
+
+          {/* Course Demo Video */}
+          <div className="md:col-span-2">
+            <label className='block text-sm font-medium text-gray-700 mb-1'>
+              <span className=''>Course Demo Video Link *</span>
+            </label>
+            <input
+              {...register("demoVideo", {
+                validate: validateUrlFormat,
+              })}
+              type="url"
+              defaultValue={instructorData.demoVideo}
+              placeholder='Course demo video link'
+              className={`w-full text-sm px-3 py-2 rounded border focus:ring-1 focus:ring-orange focus:border-transparent focus:outline-none transition placeholder:text-sm resize-none ${errors.demoVideo ? "border-red-200 bg-red-50" : "border-gray-200"}`}
+            />
+            {errors.demoVideo && <span className='text-xs text-red-500 mt-1'>{errors.demoVideo.message}</span>}
           </div>
 
           {/* Skills */}
@@ -185,11 +246,11 @@ const InstructorStep4 = ({
                 className='flex-1 px-3 py-2 text-sm rounded border border-gray-200 focus:ring-1 focus:ring-orange focus:border-transparent focus:outline-none transition'
               >
                 <option value="">Select Platform</option>
-                <option value="Facebook">Facebook</option>
-                <option value="Twitter">Twitter</option>
-                <option value="LinkedIn">LinkedIn</option>
-                <option value="Instagram">Instagram</option>
-                <option value="YouTube">YouTube</option>
+                <option value="FACEBOOK">Facebook</option>
+                <option value="TWITTER">Twitter</option>
+                <option value="LINKEDIN">LinkedIn</option>
+                <option value="INSTAGRAM">Instagram</option>
+                <option value="YOUTUBE">YouTube</option>
               </select>
               <input
                 type='url'
@@ -208,7 +269,7 @@ const InstructorStep4 = ({
               </button>
             </div>
             <div className='space-y-1'>
-              {instructorData.socialAccounts.map((account, index) => (
+              {instructorData.socialAccount.map((account, index) => (
                 <div
                   key={index}
                   className='flex items-center justify-between px-2 py-1.5 bg-orange text-white rounded text-sm'
@@ -238,7 +299,9 @@ const InstructorStep4 = ({
               <span className=''>Website</span>
             </label>
             <input
-              {...register("website")}
+              {...register("website", {
+                validate: validateUrlFormat
+              })}
               type="url"
               defaultValue={instructorData.website}
               placeholder="https://yourwebsite.com"
@@ -273,6 +336,14 @@ const InstructorStep4 = ({
           isSubmitting={isSubmitting}
           currentStep={currentStep}
         />
+
+        {toast && (
+          <Toast
+            message={toast.message}
+            type={toast.type}
+            onClose={() => setToast(null)}
+          />
+        )}
       </form>
     </div>
   );
