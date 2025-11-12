@@ -66,6 +66,7 @@ const InstructorStep2 = ({
                   value: /^[A-z ]+$/,
                   message: "Qualification can only contain letters and spaces.",
                 },
+                minLength: 6,
                 maxLength: 100,
               })}
               type='text'
@@ -126,6 +127,7 @@ const InstructorStep2 = ({
                   message:
                     "Expertise can only contains Text, dot, comma, hyphens, underscores and spaces.",
                 },
+                minLength: 3,
                 maxLength: 100,
               })}
               type='text'
@@ -149,6 +151,7 @@ const InstructorStep2 = ({
                   value: /^[A-z ]+$/,
                   message: "Current Organization name can contain letters and space only.",
                 },
+                minLength: 3,
                 maxLength: 30,
               })}
               type='text'

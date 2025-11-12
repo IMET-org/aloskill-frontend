@@ -112,6 +112,25 @@ const InstructorStep4 = ({
       setError({ ...error, socialError: 'Please fill both fields' });
       return;
     }
+
+    if (!currentSocial.url) {
+      setError({ ...error, socialError: 'Please fill URL fields properly' });
+      return;
+    }
+
+    const parsedUrl = new URL(currentSocial.url);
+
+    if (!/^https?:$/.test(parsedUrl.protocol)) {
+      setError({ ...error, socialError: 'URL must use http or https protocol.' });
+      return;
+    }
+    const domainRegex = /^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
+
+    if (!domainRegex.test(parsedUrl.hostname)) {
+      setError({ ...error, socialError: 'Hostname is invalid.' });
+      return;
+    }
+
     if (!instructorData.socialAccount.some(account => account.platform === currentSocial.platform)) {
       setInstructorData(prevData => ({
         ...prevData,
@@ -131,13 +150,26 @@ const InstructorStep4 = ({
     }))
   };
 
-  const validateUrlFormat = (value:string) => {
-    if (!value) return true;
+  const validateUrlFormat = (url: string | undefined): true | string => {
+    if (!url) return true;
+    if (url === "") return true;
+
     try {
-      new URL(value);
+      const parsedUrl = new URL(url);
+
+      if (!/^https?:$/.test(parsedUrl.protocol)) {
+        return 'URL must use http or https protocol.';
+      }
+      const domainRegex = /^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
+
+      if (!domainRegex.test(parsedUrl.hostname)) {
+        return 'Hostname is invalid.';
+      }
+
       return true;
+
     } catch (_e) {
-      return "Please enter a valid URL, including http:// or https://.";
+      return 'Demo video must be a valid URL.';
     }
   };
 
