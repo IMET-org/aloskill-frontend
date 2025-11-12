@@ -78,7 +78,7 @@ const InstructorStep0 = ({
     setInstructorData({
       ...instructorData,
       email: data.email,
-      password: data.confirmPassword
+      password: isLoggedIn ? instructorData.password : data.password,
     });
 
     if (currentStep < 4) {

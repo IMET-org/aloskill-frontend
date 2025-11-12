@@ -64,12 +64,11 @@ export default withAuth(
       // Continue without token, let withAuth handle authentication
     }
 
-    // Public routes - early return
     if (
       pathname === "/" ||
       pathname.startsWith("/auth") ||
       pathname.startsWith("/courses") ||
-      pathname.startsWith("/test-error") ||
+      pathname.startsWith("/instructors") ||
       pathname.startsWith("/about") ||
       pathname.startsWith("/cart") ||
       pathname.startsWith("/checkout") ||
@@ -78,9 +77,6 @@ export default withAuth(
       return NextResponse.next();
     }
 
-    if (!token) {
-      return NextResponse.redirect(new URL(`/auth/signin`, request.url));
-    }
     if (token && token?.["error"] == "RefreshAccessTokenError") {
       return NextResponse.redirect(new URL(`/auth/signin`, request.url));
     }
@@ -371,7 +367,10 @@ export default withAuth(
           path === "/" ||
           path.startsWith("/auth") ||
           path.startsWith("/courses") ||
-          path.startsWith("/about");
+          path.startsWith("/about") ||
+          path.startsWith("/cart") ||
+          path.startsWith("/instructors") ||
+          path.startsWith("/checkout");
 
         if (isPublicRoute) {
           return true;
