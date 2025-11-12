@@ -403,9 +403,9 @@
 //   const hasMoreToLoad = currentPage * itemsPerPage < filteredCoursesCount;
 
 //   return (
-//     <div className='min-h-screen bg-gradient-to-b from-gray-50 to-white'>
+//     <div className='min-h-screen bg-linear-to-b from-gray-50 to-white'>
 //       {/* Header */}
-//       {/* <div className='bg-gradient-to-r from-orange-500 to-orange-600 text-white py-16'>
+//       {/* <div className='bg-linear-to-r from-orange-500 to-orange-600 text-white py-16'>
 //         <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
 //           <h1 className='text-4xl md:text-5xl font-black mb-4'>Explore All Courses</h1>
 //           <p className='text-lg text-orange-100 max-w-2xl'>
@@ -588,7 +588,7 @@
 //           <div className='mt-12 flex justify-center'>
 //             <button
 //               onClick={handleLoadMore}
-//               className='px-8 py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-bold text-lg hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg hover:shadow-xl'
+//               className='px-8 py-4 bg-linear-to-r from-orange-500 to-orange-600 text-white rounded-xl font-bold text-lg hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg hover:shadow-xl'
 //             >
 //               Load More Courses
 //             </button>
@@ -1032,13 +1032,13 @@ export default function AllCoursesPage() {
     priceRange[1] !== 100;
 
   return (
-    <div className='bg-gradient-to-tr from-pink-50 via-purple-50 to-white'>
-      <div className='min-h-screen  max-w-[80%] mx-auto'>
+    <div className='bg-linear-to-tr from-pink-50 via-purple-50 to-white'>
+      <div className='min-h-screen  max-w-screen mx-auto'>
         <PageHeading />
         {/* Mobile Filter Button */}
         <button
           onClick={() => setShowMobileFilters(true)}
-          className='lg:hidden fixed bottom-6 right-6 z-50 w-14 h-14 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-transform'
+          className='lg:hidden fixed bottom-6 right-6 z-50 w-14 h-14 bg-linear-to-r from-orange-500 to-orange-600 text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-transform'
         >
           <SlidersHorizontal className='w-6 h-6' />
         </button>
