@@ -1,4 +1,4 @@
-import type { Course } from "@/types/course.types";
+import type { Course } from "@/app/(main)/courses/course.types";
 
 /**
  * API Response type

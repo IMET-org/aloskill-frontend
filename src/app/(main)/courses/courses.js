@@ -1,4 +1,4 @@
- export default  courses = [
+ const courses = [
     {
       id: '1',
       image: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=400&h=300&fit=crop',
@@ -113,4 +113,62 @@
         avatar: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=100&h=100&fit=crop',
       },
     },
+    {
+      id: '7',
+      image: 'https://images.unsplash.com/photo-1587620962725-abab7fe55159?w=400&h=300&fit=crop',
+      category: 'Web Design',
+      categoryColor: 'bg-pink-600',
+      rating: 4.6,
+      reviewCount: 987,
+      price: 29.99,
+      originalPrice: 59.99,
+      discount: 50,
+      title: 'Tailwind CSS Pro - Build Modern Responsive Websites',
+      lessons: 20,
+      duration: '15h 20m',
+      students: '9.8K',
+      instructor: {
+        name: 'Sarah Williams',
+        avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop',
+      },
+    },
+    {
+      id: '8',
+      image: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=400&h=300&fit=crop',
+      category: 'Backend',
+      categoryColor: 'bg-yellow-600',
+      rating: 4.8,
+      reviewCount: 1567,
+      price: 69.99,
+      originalPrice: 139.99,
+      discount: 50,
+      title: 'Node.js Backend Development - REST APIs & Microservices',
+      lessons: 50,
+      duration: '50h 10m',
+      students: '11.4K',
+      instructor: {
+        name: 'Alex Brown',
+        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop',
+      },
+    },
+    {
+      id: '9',
+      image: 'https://images.unsplash.com/photo-1544383835-bda2bc66a55d?w=400&h=300&fit=crop',
+      category: 'Database',
+      categoryColor: 'bg-red-600',
+      rating: 4.9,
+      reviewCount: 2100,
+      price: 54.99,
+      originalPrice: 89.99,
+      discount: 39,
+      title: 'Database Design & SQL - From Beginner to Advanced',
+      lessons: 38,
+      duration: '30h 25m',
+      students: '13.7K',
+      instructor: {
+        name: 'Emma Davis',
+        avatar: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=100&h=100&fit=crop',
+      }
+    }
   ];
+  export default courses;

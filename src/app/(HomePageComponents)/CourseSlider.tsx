@@ -1,7 +1,7 @@
 "use client";
 
-import CourseCard from "@/components/cards/CourseCard";
-import type { Course } from "@/types/course.types";
+import CourseCard from "@/app/(main)/courses/CourseCard";
+import type { Course } from "@/app/(main)/courses/course.types";
 import { BookOpen, ChevronLeft, ChevronRight } from "lucide-react";
 import { memo, useEffect, useRef, useState } from "react";
 

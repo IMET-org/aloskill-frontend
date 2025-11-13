@@ -1,9 +1,10 @@
 "use client";
 
-import CourseCard from "@/components/cards/CourseCard.tsx";
+import CourseCard from "@/app/(main)/courses/CourseCard";
+
 import Slider from "@/components/slider/Slider.tsx";
-import type { CourseCardProps } from "@/types/course.types";
 import { useState } from "react";
+import type { CourseCardProps } from "../(main)/courses/allCourses.types.ts";
 
 interface FeaturedCoursesCarouselProps {
   courses: Omit<
@@ -68,16 +69,16 @@ export default function FeaturedCoursesCarousel({ courses }: FeaturedCoursesCaro
     <section className='w-full'>
       <Slider
         slides={courseSlides}
-        visibleCount={3}
+        visibleCount={4}
         loop={true}
         autoplay={true}
-        autoplayInterval={5000}
+        autoplayInterval={3000}
         showArrows={true}
         showDots={true}
         gap={24}
         breakpoints={{
-          1280: { visibleCount: 3, gap: 24 },
-          768: { visibleCount: 2, gap: 16 },
+          1280: { visibleCount: 4, gap: 24 },
+          768: { visibleCount: 3, gap: 16 },
           640: { visibleCount: 1, gap: 12 },
         }}
       />

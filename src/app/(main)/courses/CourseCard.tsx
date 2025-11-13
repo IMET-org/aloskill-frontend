@@ -1,10 +1,10 @@
 "use client";
 
-import type { CourseCardProps } from "@/types/course.types";
 import { BookOpen, Clock, Heart, ShoppingCart, Star, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { memo, useState } from "react";
+import { type CourseCardProps } from "./allCourses.types.ts";
 
 const CourseCard = memo(function CourseCard({
   id,

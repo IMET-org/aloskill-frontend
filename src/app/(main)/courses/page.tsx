@@ -615,9 +615,9 @@
 
 "use client";
 
+import type { Course } from "@/app/(main)/courses/course.types.ts";
 import CourseGrid from "@/components/grids/CourseGrid";
 import { PageHeading } from "@/components/shared/PageHeading.tsx";
-import type { Course } from "@/types/course.types";
 import { ChevronRight, Filter, Grid, LayoutList, Search, SlidersHorizontal, X } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import type { FilterSectionProps, FilterSidebarProps } from "./allCourses.types.ts";

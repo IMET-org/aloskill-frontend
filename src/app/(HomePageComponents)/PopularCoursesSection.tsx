@@ -1,8 +1,8 @@
 // File: components/home/PopularCoursesSection.tsx
 "use client";
 
+import type { Course } from "@/app/(main)/courses/course.types.ts";
 import SectionHeader from "@/components/sections/SectionHeader";
-import type { Course } from "@/types/course.types";
 import { Pencil } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
