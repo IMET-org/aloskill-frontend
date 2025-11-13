@@ -160,7 +160,7 @@ const InstructorStep0 = ({
                 onClick={() => setShowConfirm(value => !value)}
                 className='absolute top-1/2 -translate-1/2 right-0 text-gray-400'
               >
-                {showPassword ? <EyeOff className='w-4 h-4' /> : <Eye className='w-4 h-4' />}
+                {showConfirm ? <EyeOff className='w-4 h-4' /> : <Eye className='w-4 h-4' />}
               </button>
             </div>
             {errors.confirmPassword && (

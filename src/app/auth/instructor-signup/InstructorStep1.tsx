@@ -9,7 +9,6 @@ type Inputs = {
   gender: string;
   nationality: string;
   phoneNumber: string;
-  email: string;
   city: string;
   address: string;
 };
@@ -76,6 +75,7 @@ const InstructorStep1 = ({
                   value: /^[A-z ]+$/,
                   message: "Your name can only contain letters and spaces.",
                 },
+                minLength: 6,
                 maxLength: 40,
               })}
               type='text'
@@ -140,6 +140,7 @@ const InstructorStep1 = ({
                   value: /^[A-z]+$/,
                   message: "Nationality can only contain letters.",
                 },
+                minLength: 3,
                 maxLength: 20,
               })}
               type='text'
@@ -164,6 +165,7 @@ const InstructorStep1 = ({
                   value: /^[0-9+]+$/,
                   message: "Phone number can only contain Numbers and + sign.",
                 },
+                minLength: 11,
                 maxLength: 14,
               })}
               type='text'
@@ -173,28 +175,6 @@ const InstructorStep1 = ({
             />
             {errors.phoneNumber && (
               <span className='text-xs text-red-500 mt-1'>{errors.phoneNumber.message}</span>
-            )}
-          </div>
-          {/* Email */}
-          <div>
-            <label className='block text-sm font-medium text-gray-700 mb-1'>
-              <span className=''>Email *</span>
-            </label>
-            <input
-              {...register("email", {
-                required: "Enter your Email.",
-                pattern: {
-                  value: /^[a-zA-Z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/,
-                  message: "Enter a valid email address.",
-                },
-              })}
-              type='text'
-              defaultValue={instructorData.email}
-              placeholder='Enter Your Email'
-              className={`w-full text-sm px-3 py-2 rounded border focus:ring-1 focus:ring-orange focus:border-transparent focus:outline-none transition placeholder:text-sm resize-none ${errors.email ? "border-red-200 bg-red-50" : "border-gray-200"}`}
-            />
-            {errors.email && (
-              <span className='text-xs text-red-500 mt-1'>{errors.email.message}</span>
             )}
           </div>
 
@@ -210,6 +190,7 @@ const InstructorStep1 = ({
                   value: /^[A-z]+$/,
                   message: "City name can contain letters only.",
                 },
+                minLength: 3,
                 maxLength: 20,
               })}
               type='text'
@@ -235,6 +216,7 @@ const InstructorStep1 = ({
                   message:
                     "Address can only contain letters, numbers, commas, dots, hyphens, underscores, forwardSlash and spaces.",
                 },
+                minLength: 10,
                 maxLength: 255,
               })}
               type="text"
