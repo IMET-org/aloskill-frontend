@@ -9,8 +9,8 @@ import { DiscoverBooksSectionCarousel } from "@/app/(HomePageComponents)/Discove
 import GCommunitySection from "@/app/(HomePageComponents)/GCommunitySection";
 import { InstructorsSectionAdvanced } from "@/app/(HomePageComponents)/InstructorsSectionAdvanced";
 import PopularCoursesSection from "@/app/(HomePageComponents)/PopularCoursesSection";
-import { WhyLearnSectionAnimated } from "@/app/(HomePageComponents)/WhyLearnSectionAnimated";
 import StatsSection from "@/app/(HomePageComponents)/StatsSection";
+import { WhyLearnSectionAnimated } from "@/app/(HomePageComponents)/WhyLearnSectionAnimated";
 import BackToTop from "@/components/shared/BackToTop";
 import Newsletter from "@/components/shared/footer/Newsletter";
 import MobileMenu from "@/components/shared/menu/MobileMenu";
@@ -28,9 +28,9 @@ export default function HomePage() {
       </div> */}
 
       <HeroSection />
-      
+      {/* <FeaturedCoursesCarousel courses={courses} /> */}
       <StatsSection />
-<CategoriesSectionAnimated />
+      <CategoriesSectionAnimated />
       <WhyLearnSectionAnimated />
       <PopularCoursesSection />
       <DiscoverBooksSectionCarousel />

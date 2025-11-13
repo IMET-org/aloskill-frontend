@@ -1,6 +1,6 @@
 "use client";
 
-import AuthButton from "@/components/shared/buttons/AuthButton";
+import BorderGradientButton from "@/components/buttons/BorderGradientButton.tsx";
 import { apiClient } from "@/lib/api/client";
 import { AlertCircle, CheckCircle2, Loader2, Mail, XCircle } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -100,12 +100,12 @@ export default function VerifyEmailPage() {
                 </p>
               </div>
 
-              <AuthButton
+              <BorderGradientButton
                 onClick={() => router.push("/auth/signin")}
                 className='mt-4 w-full  disabled:opacity-50 disabled:cursor-not-allowed shadow-lg'
               >
                 Sign In Now
-              </AuthButton>
+              </BorderGradientButton>
               {/* <button
                 onClick={() => router.push("/auth/signin")}
                 className='w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg'
@@ -139,12 +139,12 @@ export default function VerifyEmailPage() {
               </div>
 
               <div className='space-y-3'>
-                <AuthButton
+                <BorderGradientButton
                   onClick={() => router.push("/auth/resend-verification")}
                   className='mt-4 w-full  disabled:opacity-50 disabled:cursor-not-allowed shadow-lg'
                 >
                   Resend Verification Email
-                </AuthButton>
+                </BorderGradientButton>
                 {/* <button
                   onClick={() => router.push("/auth/resend-verification")}
                   className='w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg'

@@ -1,12 +1,12 @@
+import Toast from "@/components/toast/successToast.tsx";
+import type { InstructorResponse } from "@/lib/api/auth.service.ts";
+import { apiClient } from "@/lib/api/client.ts";
 import { Plus, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState, type Dispatch, type SetStateAction } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import InstructorRegistrationFooterAction from "./InstructorRegistrationFooterAction.tsx";
 import type { FormData } from "./page.tsx";
-import { apiClient } from "@/lib/api/client.ts";
-import type { InstructorResponse } from "@/lib/api/auth.service.ts";
-import { useRouter } from "next/navigation";
-import Toast from "@/components/toast/successToast.tsx";
 
 type Inputs = {
   bio: string;
@@ -20,13 +20,13 @@ const InstructorStep4 = ({
   setCurrentStep,
   instructorData,
   setInstructorData,
-  setApiResponse
+  setApiResponse,
 }: {
   currentStep: number;
   setCurrentStep: Dispatch<SetStateAction<number>>;
   instructorData: FormData;
   setInstructorData: Dispatch<SetStateAction<FormData>>;
-  setApiResponse: Dispatch<SetStateAction<{status: "" |"Success" | "Error", message: string}>>;
+  setApiResponse: Dispatch<SetStateAction<{ status: "" | "Success" | "Error"; message: string }>>;
 }) => {
   const {
     register,
@@ -34,8 +34,14 @@ const InstructorStep4 = ({
     formState: { errors, isSubmitting },
   } = useForm<Inputs>();
   const [currentSkill, setCurrentSkill] = useState<string>("");
-  const [error, setError] = useState<{ skillError: string, socialError: string }>({ skillError: '', socialError: '' });
-  const [currentSocial, setCurrentSocial] = useState<{ platform: string, url: string }>({ platform: '', url: '' });
+  const [error, setError] = useState<{ skillError: string; socialError: string }>({
+    skillError: "",
+    socialError: "",
+  });
+  const [currentSocial, setCurrentSocial] = useState<{ platform: string; url: string }>({
+    platform: "",
+    url: "",
+  });
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   // Router for redirecting after successful submission
@@ -43,10 +49,10 @@ const InstructorStep4 = ({
 
   const onSubmit: SubmitHandler<Inputs> = async data => {
     if (instructorData.skills.length === 0) {
-      setError({ ...error, skillError: 'Atleast one skill is required' });
+      setError({ ...error, skillError: "Atleast one skill is required" });
     }
     if (instructorData.socialAccount.length === 0) {
-      setError({ ...error, socialError: 'Atleast one social media account is required' });
+      setError({ ...error, socialError: "Atleast one social media account is required" });
     }
     setInstructorData({
       ...instructorData,
@@ -55,7 +61,7 @@ const InstructorStep4 = ({
       demoVideo: data.demoVideo,
     });
 
-    const response = await apiClient.post<InstructorResponse>('/auth/register-instructor', {
+    const response = await apiClient.post<InstructorResponse>("/auth/register-instructor", {
       ...instructorData,
       bio: data.bio,
       website: data.website,
@@ -66,7 +72,10 @@ const InstructorStep4 = ({
       setApiResponse({ status: "Error", message: response.message ?? "Something went wrong" });
       setToast({ message: "Error During Submission", type: "error" });
     } else {
-      setApiResponse({ status: "Success", message: response.message ?? "Application Submitted Successfully" });
+      setApiResponse({
+        status: "Success",
+        message: response.message ?? "Application Submitted Successfully",
+      });
       setToast({ message: "sent a verification !", type: "success" });
 
       if (response?.data?.redirectToVerificationPage) {
@@ -85,7 +94,7 @@ const InstructorStep4 = ({
 
   const handleAddSkill = () => {
     if (currentSkill.trim().length <= 3) {
-      setError({ ...error, skillError: 'Skill must be at least 4 characters long.' });
+      setError({ ...error, skillError: "Skill must be at least 4 characters long." });
       return;
     }
     if (!instructorData.skills.includes(currentSkill.trim().toUpperCase())) {
@@ -94,9 +103,9 @@ const InstructorStep4 = ({
         skills: [...prevData.skills, currentSkill.trim().toUpperCase()],
       }));
       setCurrentSkill("");
-      setError({ skillError: '', socialError: '' });
+      setError({ skillError: "", socialError: "" });
     } else {
-      setError({ ...error, skillError: 'This skill already exists.' });
+      setError({ ...error, skillError: "This skill already exists." });
     }
   };
 
@@ -109,45 +118,46 @@ const InstructorStep4 = ({
 
   const handleAddSocial = () => {
     if (currentSocial.platform === "" || currentSocial.url === "") {
-      setError({ ...error, socialError: 'Please fill both fields' });
+      setError({ ...error, socialError: "Please fill both fields" });
       return;
     }
 
     if (!currentSocial.url) {
-      setError({ ...error, socialError: 'Please fill URL fields properly' });
+      setError({ ...error, socialError: "Please fill URL fields properly" });
       return;
     }
 
     const parsedUrl = new URL(currentSocial.url);
 
     if (!/^https?:$/.test(parsedUrl.protocol)) {
-      setError({ ...error, socialError: 'URL must use http or https protocol.' });
+      setError({ ...error, socialError: "URL must use http or https protocol." });
       return;
     }
-    const domainRegex = /^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
-
+    const domainRegex = /^([a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
     if (!domainRegex.test(parsedUrl.hostname)) {
-      setError({ ...error, socialError: 'Hostname is invalid.' });
+      setError({ ...error, socialError: "Hostname is invalid." });
       return;
     }
 
-    if (!instructorData.socialAccount.some(account => account.platform === currentSocial.platform)) {
+    if (
+      !instructorData.socialAccount.some(account => account.platform === currentSocial.platform)
+    ) {
       setInstructorData(prevData => ({
         ...prevData,
-        socialAccount: [...prevData.socialAccount, currentSocial]
-      }))
+        socialAccount: [...prevData.socialAccount, currentSocial],
+      }));
       setCurrentSocial({ platform: "", url: "" });
-      setError({ skillError: '', socialError: '' });
+      setError({ skillError: "", socialError: "" });
     } else {
-      setError({ ...error, socialError: 'This social media account already exists.' })
+      setError({ ...error, socialError: "This social media account already exists." });
     }
-  }
+  };
 
   const removeSocialAccount = (index: number) => {
     setInstructorData(prevData => ({
       ...prevData,
-      socialAccount: prevData.socialAccount.filter((_, i) => i !== index)
-    }))
+      socialAccount: prevData.socialAccount.filter((_, i) => i !== index),
+    }));
   };
 
   const validateUrlFormat = (url: string | undefined): true | string => {
@@ -158,18 +168,16 @@ const InstructorStep4 = ({
       const parsedUrl = new URL(url);
 
       if (!/^https?:$/.test(parsedUrl.protocol)) {
-        return 'URL must use http or https protocol.';
+        return "URL must use http or https protocol.";
       }
-      const domainRegex = /^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
-
+      const domainRegex = /^([a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
       if (!domainRegex.test(parsedUrl.hostname)) {
-        return 'Hostname is invalid.';
+        return "Hostname is invalid.";
       }
 
       return true;
-
     } catch (_e) {
-      return 'Demo video must be a valid URL.';
+      return "Demo video must be a valid URL.";
     }
   };
 
@@ -182,7 +190,7 @@ const InstructorStep4 = ({
         <h2 className='mb-4'>Additional Information</h2>
         <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
           {/* Tell us about yourself */}
-          <div className="md:col-span-2">
+          <div className='md:col-span-2'>
             <label className='block text-sm font-medium text-gray-700 mb-1'>
               <span className=''>Tell us about yourself *</span>
             </label>
@@ -190,7 +198,7 @@ const InstructorStep4 = ({
               {...register("bio", {
                 required: "Tell us about yourself",
                 pattern: {
-                  value: /^[a-zA-Z0-9!@#%&*()_=;':",. -]*$/g,
+                  value: /^[\p{L}0-9\s\.,'"\-\/\(\)]{10,400}$/u,
                   message: "Invalid characters found in the input.",
                 },
                 minLength: 10,
@@ -205,7 +213,7 @@ const InstructorStep4 = ({
           </div>
 
           {/* Course Demo Video */}
-          <div className="md:col-span-2">
+          <div className='md:col-span-2'>
             <label className='block text-sm font-medium text-gray-700 mb-1'>
               <span className=''>Course Demo Video Link </span>
             </label>
@@ -213,16 +221,18 @@ const InstructorStep4 = ({
               {...register("demoVideo", {
                 validate: validateUrlFormat,
               })}
-              type="url"
+              type='url'
               defaultValue={instructorData.demoVideo}
               placeholder='Course demo video link'
               className={`w-full text-sm px-3 py-2 rounded border focus:ring-1 focus:ring-orange focus:border-transparent focus:outline-none transition placeholder:text-sm resize-none ${errors.demoVideo ? "border-red-200 bg-red-50" : "border-gray-200"}`}
             />
-            {errors.demoVideo && <span className='text-xs text-red-500 mt-1'>{errors.demoVideo.message}</span>}
+            {errors.demoVideo && (
+              <span className='text-xs text-red-500 mt-1'>{errors.demoVideo.message}</span>
+            )}
           </div>
 
           {/* Skills */}
-          <div className="md:col-span-2">
+          <div className='md:col-span-2'>
             <label className='block text-sm font-medium text-gray-700 mb-1'>
               <span className=''>Skills *</span>
             </label>
@@ -260,13 +270,11 @@ const InstructorStep4 = ({
                 </span>
               ))}
             </div>
-            {error.skillError && (
-              <span className='text-xs text-red-500'>{error.skillError}</span>
-            )}
+            {error.skillError && <span className='text-xs text-red-500'>{error.skillError}</span>}
           </div>
 
           {/* Social Accounts */}
-          <div className="md:col-span-2">
+          <div className='md:col-span-2'>
             <label className='block text-sm font-medium text-gray-700 mb-1'>
               <span className=''>Social Accounts *</span>
             </label>
@@ -276,12 +284,12 @@ const InstructorStep4 = ({
                 onChange={e => setCurrentSocial(prev => ({ ...prev, platform: e.target.value }))}
                 className='flex-1 px-3 py-2 text-sm rounded border border-gray-200 focus:ring-1 focus:ring-orange focus:border-transparent focus:outline-none transition'
               >
-                <option value="">Select Platform</option>
-                <option value="FACEBOOK">Facebook</option>
-                <option value="TWITTER">Twitter</option>
-                <option value="LINKEDIN">LinkedIn</option>
-                <option value="INSTAGRAM">Instagram</option>
-                <option value="YOUTUBE">YouTube</option>
+                <option value=''>Select Platform</option>
+                <option value='FACEBOOK'>Facebook</option>
+                <option value='TWITTER'>Twitter</option>
+                <option value='LINKEDIN'>LinkedIn</option>
+                <option value='INSTAGRAM'>Instagram</option>
+                <option value='YOUTUBE'>YouTube</option>
               </select>
               <input
                 type='url'
@@ -319,23 +327,21 @@ const InstructorStep4 = ({
                 </div>
               ))}
             </div>
-            {error.socialError && (
-              <span className='text-xs text-red-500'>{error.socialError}</span>
-            )}
+            {error.socialError && <span className='text-xs text-red-500'>{error.socialError}</span>}
           </div>
 
           {/* Website */}
-          <div className="md:col-span-2">
+          <div className='md:col-span-2'>
             <label className='block text-sm font-medium text-gray-700 mb-1'>
               <span className=''>Website</span>
             </label>
             <input
               {...register("website", {
-                validate: validateUrlFormat
+                validate: validateUrlFormat,
               })}
-              type="url"
+              type='url'
               defaultValue={instructorData.website}
-              placeholder="https://yourwebsite.com"
+              placeholder='https://yourwebsite.com'
               className={`w-full text-sm px-3 py-2 rounded border focus:ring-1 focus:ring-orange focus:border-transparent focus:outline-none transition placeholder:text-sm resize-none ${errors.website ? "border-red-200 bg-red-50" : "border-gray-200"}`}
             />
             {errors.website && (
@@ -348,11 +354,11 @@ const InstructorStep4 = ({
             <label className='block text-sm font-medium text-gray-700 mb-1'>
               <span className=''>Terms and Conditions</span>
             </label>
-            <div className="flex items-center justify-start gap-2 text-sm mt-2">
+            <div className='flex items-center justify-start gap-2 text-sm mt-2'>
               <input
-                {...register('terms', { required: "You must agree to our terms and conditions." })}
-                type="checkbox"
-                className="w-4 h-4 accent-orange"
+                {...register("terms", { required: "You must agree to our terms and conditions." })}
+                type='checkbox'
+                className='w-4 h-4 accent-orange'
               />
               <span>Terms and Conditions</span>
             </div>

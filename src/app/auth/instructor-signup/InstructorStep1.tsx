@@ -72,10 +72,10 @@ const InstructorStep1 = ({
               {...register("displayName", {
                 required: "Enter your full name. Do not use pattern or numbers",
                 pattern: {
-                  value: /^[A-z ]+$/,
+                  value: /^[a-zA-Z\s]+$/,
                   message: "Your name can only contain letters and spaces.",
                 },
-                minLength: 6,
+                minLength: 3,
                 maxLength: 40,
               })}
               type='text'
@@ -137,10 +137,10 @@ const InstructorStep1 = ({
                 required:
                   "Enter your nationality as placeholder example: Bangladeshi, British etc...",
                 pattern: {
-                  value: /^[A-z]+$/,
-                  message: "Nationality can only contain letters.",
+                  value: /^[a-zA-Z\s]+$/,
+                  message: "Nationality can only contain letters and spaces.",
                 },
-                minLength: 3,
+                minLength: 2,
                 maxLength: 20,
               })}
               type='text'
@@ -162,7 +162,7 @@ const InstructorStep1 = ({
               {...register("phoneNumber", {
                 required: "Enter your Phone Number. Do not use pattern or text",
                 pattern: {
-                  value: /^[0-9+]+$/,
+                  value: /^\+?[1-9][0-9]{10,14}$/,
                   message: "Phone number can only contain Numbers and + sign.",
                 },
                 minLength: 11,
@@ -187,10 +187,10 @@ const InstructorStep1 = ({
               {...register("city", {
                 required: "Enter your City",
                 pattern: {
-                  value: /^[A-z]+$/,
-                  message: "City name can contain letters only.",
+                  value: /^[a-zA-Z\s]+$/,
+                  message: "City name can contain letters and spaces only.",
                 },
-                minLength: 3,
+                minLength: 2,
                 maxLength: 20,
               })}
               type='text'
@@ -212,14 +212,14 @@ const InstructorStep1 = ({
               {...register("address", {
                 required: "Enter your Address",
                 pattern: {
-                  value: /^[A-z0-9,._/ -]+$/,
+                  value: /^[A-Za-z0-9#\-,\s\.\/]+$/,
                   message:
                     "Address can only contain letters, numbers, commas, dots, hyphens, underscores, forwardSlash and spaces.",
                 },
                 minLength: 10,
                 maxLength: 255,
               })}
-              type="text"
+              type='text'
               defaultValue={instructorData.address}
               placeholder='Your Full Address'
               className={`w-full text-sm px-3 py-2 rounded border focus:ring-1 focus:ring-orange focus:border-transparent focus:outline-none transition placeholder:text-sm resize-none ${errors.address ? "border-red-200 bg-red-50" : "border-gray-200"}`}

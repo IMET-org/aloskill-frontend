@@ -63,10 +63,11 @@ const InstructorStep2 = ({
               {...register("qualifications", {
                 required: "Enter Your Qualifications",
                 pattern: {
-                  value: /^[A-z ]+$/,
-                  message: "Qualification can only contain letters and spaces.",
+                  value: /^[A-Za-z\-,\s\.\/]+$/
+,
+                  message: "Qualification can only contain letters,comma,dot,slash,hyphen and spaces.",
                 },
-                minLength: 6,
+                minLength: 5,
                 maxLength: 100,
               })}
               type='text'
@@ -123,7 +124,7 @@ const InstructorStep2 = ({
             <input
               {...register("expertise", {
                 pattern: {
-                  value: /^[A-z,._ -]+$/,
+                  value: /^[A-Za-z\-,\s\.\/]+$/,
                   message:
                     "Expertise can only contains Text, dot, comma, hyphens, underscores and spaces.",
                 },
@@ -148,8 +149,8 @@ const InstructorStep2 = ({
             <input
               {...register("currentOrg", {
                 pattern: {
-                  value: /^[A-z ]+$/,
-                  message: "Current Organization name can contain letters and space only.",
+                  value: /^[A-Za-z\-,\s\.\/]+$/,
+                  message: "Current Organization can only contain letters,space, dot , slash,hyphen characters.",
                 },
                 minLength: 3,
                 maxLength: 30,
