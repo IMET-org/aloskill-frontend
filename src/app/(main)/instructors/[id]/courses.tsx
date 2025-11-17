@@ -1,3 +1,4 @@
+//courses.tsx - COURSES TAB COMPONENT
 import { Clock, PlayCircle, Star, Users } from "lucide-react";
 import Image from "next/image";
 

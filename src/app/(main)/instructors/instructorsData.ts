@@ -1,4 +1,4 @@
-import type { Instructor } from "./instructorCard.types.ts";
+import type { Instructor } from "../../../types/instructor.types.ts";
 
 export const instructorsData: { instructors: Instructor[] } = {
   instructors: [

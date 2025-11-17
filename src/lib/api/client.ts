@@ -1,5 +1,3 @@
-// lib/api/client.ts - FOR COOKIE-BASED AUTH
-
 const API_BASE_URL = process.env["BACKEND_API_URL"] || "http://localhost:5000/api/v1";
 
 interface ApiResponse<T = unknown> {
@@ -21,7 +19,9 @@ class ApiClient {
       "Content-Type": "application/json",
       ...(options.headers || {}),
     };
+
     try {
+      // FIX: Use proper template literal
       const response = await fetch(`${this.baseURL}${endpoint}`, {
         ...options,
         headers,
@@ -29,6 +29,15 @@ class ApiClient {
       });
 
       const data = await response.json();
+
+      // Handle non-2xx responses
+      if (!response.ok) {
+        return {
+          success: false,
+          message: data.message || `HTTP error! status: ${response.status}`,
+          errors: data.errors,
+        };
+      }
 
       return data;
     } catch (error) {

@@ -306,7 +306,7 @@ const Slider: React.FC<SliderProps> = ({
           {normalizedSlides.map((slide, index) => (
             <div
               key={slide.id}
-              className='flex-shrink-0 select-none'
+              className='flex shrink-0 select-none'
               style={{
                 flexBasis: `calc(${100 / currentVisibleCount}% - ${(currentGap * (currentVisibleCount - 1)) / currentVisibleCount}px)`,
               }}
