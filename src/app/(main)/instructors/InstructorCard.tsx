@@ -13,24 +13,30 @@ function InstructorCard({
   animationDelay = 0,
 }: InstructorCardProps) {
   console.log("instructorrrr::", instructor);
+
   // Generate a border color based on expertise or category
   const getBorderColor = () => {
-    const categoryColors: { [key: string]: string } = {
-      BUSINESS: "border-blue-500",
-      MARKETING: "border-green-500",
-      ENTREPRENEURSHIP: "border-purple-500",
-      ICT: "border-orange-500",
-      TECHNOLOGY: "border-cyan-500",
-      DESIGN: "border-pink-500",
-    };
+    const colors = [
+      "#3b82f6", // blue
+      "#22c55e", // green
+      "#a855f7", // purple
+      "#f97316", // orange
+      "#06b6d4", // cyan
+      "#ec4899", // pink
+      "#eab308", // yellow
+      "#ef4444", // red
+      "#8b5cf6", // violet
+      "#14b8a6", // teal
+    ];
 
-    // Check if instructor has category field, otherwise use a default
-    const category =
-      instructor.category?.toUpperCase() ||
-      instructor.title?.split(" ")[0]?.toUpperCase() ||
-      "DEFAULT";
+    // Use instructor ID to generate consistent random color
+    // This ensures same instructor always gets same color
+    const hash = instructor.id.split("").reduce((acc, char) => {
+      return char.charCodeAt(0) + ((acc << 5) - acc);
+    }, 0);
 
-    return categoryColors[category] || "border-blue-500";
+    const index = Math.abs(hash) % colors.length;
+    return colors[index];
   };
 
   return (
@@ -38,13 +44,16 @@ function InstructorCard({
       <div
         className={`
          relative bg-white rounded-xl overflow-hidden
-        border-4 ${getBorderColor()}
+        border-4
         shadow-lg hover:shadow-2xl
         transition-all duration-300 hover:-translate-y-2
         ${isHovered ? "scale-105" : "scale-100"}
         animate-fade-in-card
       `}
-        style={{ animationDelay: `${animationDelay}ms` }}
+        style={{
+          animationDelay: `${animationDelay}ms`,
+          borderColor: getBorderColor(),
+        }}
         onMouseEnter={onHover}
         onMouseLeave={onLeave}
       >
@@ -56,8 +65,8 @@ function InstructorCard({
             // Share functionality
             if (navigator.share) {
               navigator.share({
-                title: instructor.displayName,
-                text: `Check out ${instructor.displayName} `,
+                title: instructor.name,
+                text: `Check out ${instructor.name} `,
                 url: window.location.href,
               });
             }
@@ -71,8 +80,8 @@ function InstructorCard({
           <Image
             width={400}
             height={400}
-            src={instructor.avaterUrl || ""}
-            alt={instructor.displayName || "Instructor Image"}
+            src={instructor.image || ""}
+            alt={instructor.name || "Instructor Image"}
             className='w-full h-full object-cover object-center hover:scale-110 transition-transform duration-500'
             onError={e => {
               // Fallback to placeholder if image fails to load
@@ -84,7 +93,7 @@ function InstructorCard({
           {/* Hover Overlay with Stats */}
           <div
             className={`
-            absolute inset-0 bg-gradient-to-t from-[#074079]/95 via-[#074079]/80 to-transparent
+            absolute inset-0 bg-linear-to-t from-[#074079]/95 via-[#074079]/80 to-transparent
             transition-opacity duration-300
             ${isHovered ? "opacity-100" : "opacity-0"}
           `}
@@ -96,13 +105,13 @@ function InstructorCard({
                   <span className='text-sm font-semibold'>
                     {instructor.totalCourses && instructor.totalCourses > 0
                       ? `${instructor.totalCourses} Courses`
-                      : instructor.displayName || "Instructor"}
+                      : instructor.name || "Instructor"}
                   </span>
                 </div>
-                {instructor.ratingAverage && instructor.ratingAverage > 0 && (
+                {instructor.rating && instructor.rating > 0 && (
                   <div className='flex items-center gap-1'>
                     <Star className='w-4 h-4 text-yellow-400 fill-yellow-400' />
-                    <span className='text-sm font-semibold'>{instructor.ratingAverage}</span>
+                    <span className='text-sm font-semibold'>{instructor.rating}</span>
                   </div>
                 )}
               </div>
@@ -140,15 +149,13 @@ function InstructorCard({
         <div className='absolute bottom-4 left-4 right-4 bg-white rounded-xl p-4 shadow-lg'>
           <div className='flex items-center justify-between'>
             <div className='flex-1 min-w-0'>
-              <h3 className='text-lg font-bold text-gray-900 mb-1 truncate'>
-                {instructor.displayName}
-              </h3>
+              <h3 className='text-lg font-bold text-gray-900 mb-1 truncate'>{instructor.name}</h3>
               <p className='text-sm text-gray-600 font-medium truncate mb-1'>
                 {instructor?.skills && instructor?.skills.join(", ")}
               </p>
 
               {/* Status Badges */}
-              <div className='flex flex-wrap gap-1 mt-1'>
+              {/* <div className='flex flex-wrap gap-1 mt-1'>
                 {instructor.status === "approved" && (
                   <span className='inline-block px-2 py-0.5 bg-green-50 text-green-700 text-xs font-semibold rounded'>
                     ✓ Verified
@@ -166,10 +173,10 @@ function InstructorCard({
                     cat {instructor.category}
                   </span>
                 )}
-              </div>
+              </div> */}
             </div>
 
-            <div className='flex items-center justify-center w-10 h-10 bg-purple-50 rounded-lg hover:bg-[#DA7C36] transition-colors duration-300 flex-shrink-0 ml-2'>
+            <div className='flex items-center justify-center w-10 h-10 bg-purple-50 rounded-lg hover:bg-[#DA7C36] transition-colors duration-300 shrink-0 ml-2'>
               <svg
                 className='w-6 h-6 text-purple-400 hover:text-white transition-colors duration-300'
                 fill='none'

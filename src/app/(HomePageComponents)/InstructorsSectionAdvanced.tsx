@@ -1,62 +1,62 @@
 "use client";
 
-import { ArrowRight } from "lucide-react";
-
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import InstructorCard from "@/app/(main)/instructors/InstructorCard";
-import { instructorsData } from "@/app/(main)/instructors/instructorsData";
-
-// import type { InstructorAdvanced } from "../instructor/instructorCard.types.ts";
-
-// const instructorsAdvanced: Instructor[] = [
-//   {
-//     id: 1,
-//     name: "Esther Howard",
-//     title: "Senior Instructor",
-//     image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&q=80",
-//     borderColor: "border-orange-500",
-//     students: 1250,
-//     courses: 12,
-//     rating: 4.9,
-//   },
-//   {
-//     id: 2,
-//     name: "Beverly Hathcock",
-//     title: "Senior Instructor",
-//     image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80",
-//     borderColor: "border-orange-500",
-//     students: 980,
-//     courses: 8,
-//     rating: 4.8,
-//   },
-//   {
-//     id: 3,
-//     name: "Donald Gonzales",
-//     title: "Junior Instructor",
-//     image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&q=80",
-//     borderColor: "border-orange-500",
-//     students: 650,
-//     courses: 5,
-//     rating: 4.7,
-//   },
-//   {
-//     id: 4,
-//     name: "Eddie Lenz",
-//     title: "Senior Instructor",
-//     image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80",
-//     borderColor: "border-orange-500",
-//     students: 1100,
-//     courses: 10,
-//     rating: 4.9,
-//   },
-// ];
+import BorderGradientButton from "@/components/buttons/BorderGradientButton.tsx";
+import GradientButton from "@/components/buttons/GradientButton.tsx";
+import { apiClient } from "@/lib/api/client.ts";
+import { type Instructor, type InstructorListApiResponse } from "@/types/instructor.types.ts";
+import { ArrowRightIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export function InstructorsSectionAdvanced() {
-  const [hoveredId, setHoveredId] = useState<number | null>(null);
-  const featuredInstructors = instructorsData.instructors
-    .filter(instructor => instructor.featured)
-    .slice(0, 4);
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [featuredInstructors, setFeaturedInstructors] = useState<Instructor[]>([]);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+  const handleAllInstructor = () => {
+    setLoading(true);
+    router.push("/instructors");
+  };
+  const handleAllCourses = () => {
+    setLoading(true);
+    router.push("/courses");
+  };
+  useEffect(() => {
+    const fetchFeatured = async () => {
+      try {
+        setLoading(true);
+
+        // ✅ Fetch from homepage
+        const response = await apiClient.get<InstructorListApiResponse[]>("/user/instructors/all");
+        const transformInstructor = (apiData: InstructorListApiResponse): Instructor => ({
+          id: apiData.id,
+          name: apiData.displayName,
+          image:
+            apiData.avaterUrl ||
+            "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80",
+          roles: apiData.role || [],
+          skills: apiData.skills || [],
+          rating: Number(apiData.ratingAverage) || 0,
+          totalCourses: apiData.totalCourses || 0,
+        });
+        if (response.success && response.data) {
+          // take first 4
+          const transformed = response.data.slice(0, 4).map(transformInstructor);
+
+          setFeaturedInstructors(transformed);
+        }
+      } catch (error) {
+        console.error("Error:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFeatured();
+  }, []);
+  if (loading) return <div>Loading...</div>;
   return (
     <section className='py-16 md:py-24 bg-gradient-to-br from-gray-50 via-white to-purple-50'>
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
@@ -82,26 +82,29 @@ export function InstructorsSectionAdvanced() {
             </p>
 
             <div className='flex flex-col sm:flex-row gap-4 pt-4 animate-slide-up'>
-              <button className='group flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-full hover:from-orange-600 hover:to-orange-700 transition-all duration-300 shadow-lg hover:shadow-xl font-semibold'>
-                <span>Contact Us</span>
-                <ArrowRight className='w-5 h-5 group-hover:translate-x-1 transition-transform' />
-              </button>
-              <button className='flex items-center justify-center gap-2 px-8 py-4 bg-blue-900 text-white rounded-full hover:bg-blue-800 transition-all duration-300 shadow-lg hover:shadow-xl font-semibold'>
-                <span>Find Courses</span>
-                <ArrowRight className='w-5 h-5' />
-              </button>
+              <GradientButton
+                onClick={handleAllInstructor}
+                loading={loading}
+                icon={ArrowRightIcon}
+                iconPosition='right'
+                iconAnimation='slide'
+              >
+                All Experts
+              </GradientButton>
+              <BorderGradientButton onClick={handleAllCourses}>Find Courses</BorderGradientButton>
             </div>
           </div>
 
           {/* Right - Instructors Grid */}
           <div className='grid grid-cols-1 sm:grid-cols-2 gap-6 order-1 lg:order-2'>
-            {featuredInstructors.map(instructor => (
+            {featuredInstructors.map((instructor, index) => (
               <InstructorCard
                 key={instructor.id}
-                instructor={instructor}
+                instructor={instructor} // ✅ Pass data as prop
                 isHovered={hoveredId === instructor.id}
                 onHover={() => setHoveredId(instructor.id)}
                 onLeave={() => setHoveredId(null)}
+                animationDelay={index * 100}
               />
             ))}
           </div>

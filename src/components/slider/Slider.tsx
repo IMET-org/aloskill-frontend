@@ -1,65 +1,27 @@
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp } from "lucide-react";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-/**
- * Slider Component - A fully reusable, accessible carousel/slider
- *
- * @component
- * @example
- * ```tsx
- * <Slider
- *   slides={[<div>Slide 1</div>, <div>Slide 2</div>]}
- *   visibleCount={1}
- *   autoplay
- *   loop
- * />
- * ```
- */
-
 interface SliderProps {
-  /** Array of slide content (React nodes or objects with 'content' property) */
   slides: React.ReactNode[] | { content: React.ReactNode; id?: string | number }[];
-
-  /** Number of slides visible at once */
   visibleCount?: number;
-
-  /** Enable infinite loop */
   loop?: boolean;
-
-  /** Enable autoplay */
   autoplay?: boolean;
-
-  /** Autoplay interval in milliseconds */
   autoplayInterval?: number;
-
-  /** Show navigation arrows */
   showArrows?: boolean;
-
-  /** Show pagination dots */
   showDots?: boolean;
-
-  /** Additional CSS classes for container */
   className?: string;
-
-  /** Gap between slides in pixels */
   gap?: number;
-
-  /** Responsive breakpoints for visibleCount and gap */
   breakpoints?: {
     [key: number]: { visibleCount: number; gap: number };
   };
-
-  /** Transition duration in milliseconds */
   transitionDuration?: number;
-
-  /** Custom arrow components */
   customArrows?: {
     prev?: React.ReactNode;
     next?: React.ReactNode;
   };
-
-  /** Callback when slide changes */
   onSlideChange?: (currentIndex: number) => void;
+  direction?: "horizontal" | "vertical";
+  reverseOnEnd?: boolean; // New prop to enable reverse behavior
 }
 
 const Slider: React.FC<SliderProps> = ({
@@ -76,163 +38,227 @@ const Slider: React.FC<SliderProps> = ({
   transitionDuration = 300,
   customArrows,
   onSlideChange,
+  direction = "horizontal",
+  reverseOnEnd = false, // Default to false for backward compatibility
 }) => {
-  // Normalize slides to always have consistent structure
   const normalizedSlides = useMemo(() => {
     return slides.map((slide, index) => {
       if (slide == null) {
         return { content: null, id: index };
       }
-
       if (React.isValidElement(slide) || typeof slide === "string" || typeof slide === "number") {
         return { content: slide, id: index };
       }
-
       if (typeof slide === "object" && "content" in slide) {
         const typedSlide = slide as { content: React.ReactNode; id?: string | number };
         return { content: typedSlide.content, id: typedSlide.id ?? index };
       }
-
       return { content: null, id: index };
     });
   }, [slides]);
 
-  const [currentIndex, setCurrentIndex] = useState(0);
+  // For infinite loop, we clone slides at the beginning and end
+  const extendedSlides = useMemo(() => {
+    if (!loop || normalizedSlides.length <= visibleCount) {
+      return normalizedSlides;
+    }
+
+    const cloneBefore = normalizedSlides.slice(-visibleCount).map((slide, idx) => ({
+      ...slide,
+      id: `clone-before-${idx}`,
+    }));
+
+    const cloneAfter = normalizedSlides.slice(0, visibleCount).map((slide, idx) => ({
+      ...slide,
+      id: `clone-after-${idx}`,
+    }));
+
+    return [...cloneBefore, ...normalizedSlides, ...cloneAfter];
+  }, [normalizedSlides, loop, visibleCount]);
+
+  const [currentIndex, setCurrentIndex] = useState(loop ? visibleCount : 0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const autoplayRef = useRef<NodeJS.Timeout | null>(null);
   const sliderRef = useRef<HTMLDivElement>(null);
-
-  // Responsive state
   const [currentVisibleCount, setCurrentVisibleCount] = useState(visibleCount);
   const [currentGap, setCurrentGap] = useState(gap || 16);
+  const [isReversed, setIsReversed] = useState(false); // Track direction state
 
-  // Calculate total pages based on visible count
   const totalPages = useMemo(() => {
     return Math.ceil(normalizedSlides.length / currentVisibleCount);
   }, [normalizedSlides.length, currentVisibleCount]);
 
-  // Check if we're at boundaries
-  const isAtStart = currentIndex === 0;
-  const isAtEnd = currentIndex >= normalizedSlides.length - currentVisibleCount;
+  const isAtStart = !loop && currentIndex === 0;
+  const isAtEnd = !loop && currentIndex >= normalizedSlides.length - currentVisibleCount;
 
-  /**
-   * Navigate to a specific slide index
-   */
   const goToSlide = useCallback(
-    (index: number) => {
-      if (isTransitioning) return;
+    (index: number, immediate = false) => {
+      if (isTransitioning && !immediate) return;
 
-      let newIndex = index;
-
-      // Handle looping logic
-      if (loop) {
-        if (index < 0) {
-          newIndex = normalizedSlides.length - currentVisibleCount;
-        } else if (index > normalizedSlides.length - currentVisibleCount) {
-          newIndex = 0;
-        }
-      } else {
-        // Clamp to valid range
-        newIndex = Math.max(0, Math.min(index, normalizedSlides.length - currentVisibleCount));
-      }
-
-      setCurrentIndex(newIndex);
+      setCurrentIndex(index);
       setIsTransitioning(true);
-      onSlideChange?.(newIndex);
 
-      // Reset transition state
-      setTimeout(() => setIsTransitioning(false), transitionDuration);
+      const timeout = immediate ? 0 : transitionDuration;
+
+      setTimeout(() => {
+        setIsTransitioning(false);
+      }, timeout);
     },
-    [
-      isTransitioning,
-      loop,
-      normalizedSlides.length,
-      currentVisibleCount,
-      transitionDuration,
-      onSlideChange,
-    ]
+    [isTransitioning, transitionDuration]
   );
 
-  /**
-   * Navigate to next slide
-   */
+  const handleTransitionEnd = useCallback(() => {
+    if (!loop) return;
+
+    // If we're at a cloned slide, jump to the real slide without transition
+    if (currentIndex <= 0) {
+      // We're in the "before" clones, jump to end
+      const realIndex = normalizedSlides.length;
+      setTimeout(() => {
+        setIsTransitioning(false);
+        setCurrentIndex(realIndex);
+      }, 0);
+    } else if (currentIndex >= normalizedSlides.length + visibleCount) {
+      // We're in the "after" clones, jump to beginning
+      setTimeout(() => {
+        setIsTransitioning(false);
+        setCurrentIndex(visibleCount);
+      }, 0);
+    }
+  }, [loop, currentIndex, visibleCount, normalizedSlides.length]);
+
   const nextSlide = useCallback(() => {
-    if (!loop && isAtEnd) return;
-    goToSlide(currentIndex + visibleCount);
-  }, [currentIndex, visibleCount, isAtEnd, loop, goToSlide]);
+    if (!loop && isAtEnd) {
+      if (reverseOnEnd) {
+        setIsReversed(true);
+        return;
+      }
+      return;
+    }
 
-  /**
-   * Navigate to previous slide
-   */
+    const newIndex = currentIndex + 1;
+    goToSlide(newIndex);
+
+    // Calculate the actual slide index (excluding clones)
+    const actualIndex = loop
+      ? (((newIndex - visibleCount) % normalizedSlides.length) + normalizedSlides.length) %
+        normalizedSlides.length
+      : newIndex;
+    onSlideChange?.(actualIndex);
+  }, [
+    currentIndex,
+    isAtEnd,
+    loop,
+    goToSlide,
+    onSlideChange,
+    visibleCount,
+    normalizedSlides.length,
+    reverseOnEnd,
+  ]);
+
   const prevSlide = useCallback(() => {
-    if (!loop && isAtStart) return;
-    goToSlide(currentIndex - visibleCount);
-  }, [currentIndex, visibleCount, isAtStart, loop, goToSlide]);
+    if (!loop && isAtStart) {
+      if (reverseOnEnd) {
+        setIsReversed(false);
+        return;
+      }
+      return;
+    }
 
-  /**
-   * Navigate to specific page (for dots)
-   */
+    const newIndex = currentIndex - 1;
+    goToSlide(newIndex);
+
+    const actualIndex = loop
+      ? (((newIndex - visibleCount) % normalizedSlides.length) + normalizedSlides.length) %
+        normalizedSlides.length
+      : newIndex;
+    onSlideChange?.(actualIndex);
+  }, [
+    currentIndex,
+    isAtStart,
+    loop,
+    goToSlide,
+    onSlideChange,
+    visibleCount,
+    normalizedSlides.length,
+    reverseOnEnd,
+  ]);
+
   const goToPage = useCallback(
     (pageIndex: number) => {
-      goToSlide(pageIndex * visibleCount);
+      const targetIndex = loop ? pageIndex + visibleCount : pageIndex;
+      goToSlide(targetIndex);
+      onSlideChange?.(pageIndex);
     },
-    [visibleCount, goToSlide]
+    [goToSlide, loop, visibleCount, onSlideChange]
   );
 
-  /**
-   * Setup and cleanup autoplay
-   */
+  // Autoplay with reverse support
+  const autoplayAction = useCallback(() => {
+    if (reverseOnEnd) {
+      if (isReversed) {
+        prevSlide();
+      } else {
+        nextSlide();
+      }
+    } else {
+      nextSlide();
+    }
+  }, [reverseOnEnd, isReversed, nextSlide, prevSlide]);
+
+  // Reset autoplay
+  const resetAutoplay = useCallback(() => {
+    if (!autoplay) return;
+
+    if (autoplayRef.current) {
+      clearInterval(autoplayRef.current);
+    }
+
+    autoplayRef.current = setInterval(autoplayAction, autoplayInterval);
+  }, [autoplay, autoplayAction, autoplayInterval]);
+
   useEffect(() => {
     if (!autoplay) return;
 
-    const startAutoplay = () => {
-      autoplayRef.current = setInterval(nextSlide, autoplayInterval);
-    };
-
-    startAutoplay();
+    resetAutoplay();
 
     return () => {
       if (autoplayRef.current) {
         clearInterval(autoplayRef.current);
       }
     };
-  }, [autoplay, autoplayInterval, nextSlide]);
+  }, [autoplay, resetAutoplay]);
 
-  /**
-   * Pause autoplay on hover/focus
-   */
   const handleMouseEnter = useCallback(() => {
     if (autoplay && autoplayRef.current) {
       clearInterval(autoplayRef.current);
+      autoplayRef.current = null;
     }
   }, [autoplay]);
 
   const handleMouseLeave = useCallback(() => {
     if (autoplay) {
-      autoplayRef.current = setInterval(nextSlide, autoplayInterval);
+      resetAutoplay();
     }
-  }, [autoplay, nextSlide, autoplayInterval]);
+  }, [autoplay, resetAutoplay]);
 
-  /**
-   * Touch/Swipe handlers for mobile
-   */
   const minSwipeDistance = 50;
 
   const handleTouchStart = (e: React.TouchEvent) => {
     const firstTouch = e.targetTouches.item(0);
     if (!firstTouch) return;
     setTouchEnd(null);
-    setTouchStart(firstTouch.clientX);
+    setTouchStart(direction === "horizontal" ? firstTouch.clientX : firstTouch.clientY);
     setIsDragging(true);
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
     const firstTouch = e.targetTouches.item(0);
     if (!firstTouch) return;
-    setTouchEnd(firstTouch.clientX);
+    setTouchEnd(direction === "horizontal" ? firstTouch.clientX : firstTouch.clientY);
   };
 
   const handleTouchEnd = () => {
@@ -242,41 +268,63 @@ const Slider: React.FC<SliderProps> = ({
     }
 
     const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > minSwipeDistance;
-    const isRightSwipe = distance < -minSwipeDistance;
+    const isForwardSwipe = distance > minSwipeDistance;
+    const isBackwardSwipe = distance < -minSwipeDistance;
 
-    if (isLeftSwipe) {
+    if (isForwardSwipe) {
       nextSlide();
-    } else if (isRightSwipe) {
+    } else if (isBackwardSwipe) {
       prevSlide();
     }
 
     setIsDragging(false);
+    resetAutoplay();
   };
 
-  /**
-   * Keyboard navigation
-   */
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
-      if (e.key === "ArrowLeft") {
-        e.preventDefault();
-        prevSlide();
-      } else if (e.key === "ArrowRight") {
-        e.preventDefault();
-        nextSlide();
+      if (direction === "horizontal") {
+        if (e.key === "ArrowLeft") {
+          e.preventDefault();
+          prevSlide();
+          resetAutoplay();
+        } else if (e.key === "ArrowRight") {
+          e.preventDefault();
+          nextSlide();
+          resetAutoplay();
+        }
+      } else {
+        if (e.key === "ArrowUp") {
+          e.preventDefault();
+          prevSlide();
+          resetAutoplay();
+        } else if (e.key === "ArrowDown") {
+          e.preventDefault();
+          nextSlide();
+          resetAutoplay();
+        }
       }
     },
-    [prevSlide, nextSlide]
+    [prevSlide, nextSlide, resetAutoplay, direction]
   );
 
-  /**
-   * Calculate transform for slide track
-   */
-  const translateX = useMemo(() => {
-    const slideWidth = 100 / visibleCount;
-    return -(currentIndex * slideWidth);
-  }, [currentIndex, visibleCount]);
+  const translateValue = useMemo(() => {
+    const slideSize = 100 / currentVisibleCount;
+    const gapAdjustment = (currentGap * currentIndex) / currentVisibleCount;
+    return -(currentIndex * slideSize);
+  }, [currentIndex, currentVisibleCount, currentGap]);
+
+  const currentPageIndex = useMemo(() => {
+    if (loop) {
+      const actualIndex =
+        (((currentIndex - visibleCount) % normalizedSlides.length) + normalizedSlides.length) %
+        normalizedSlides.length;
+      return actualIndex;
+    }
+    return currentIndex;
+  }, [currentIndex, loop, visibleCount, normalizedSlides.length]);
+
+  const isHorizontal = direction === "horizontal";
 
   return (
     <div
@@ -290,27 +338,34 @@ const Slider: React.FC<SliderProps> = ({
       aria-label='Content slider'
       aria-live={autoplay ? "polite" : "off"}
     >
-      {/* Slider viewport */}
-      <div className='overflow-hidden relative'>
+      <div
+        className='overflow-hidden relative'
+        style={!isHorizontal ? { height: "100%" } : {}}
+      >
         <div
-          className={`flex transition-transform ease-out ${isDragging ? "duration-0" : ""}`}
+          className={`flex ${isHorizontal ? "flex-row" : "flex-col"} ${isDragging ? "" : "transition-transform ease-out"}`}
           style={{
-            transform: `translateX(${translateX}%)`,
+            transform: isHorizontal
+              ? `translateX(${translateValue}%)`
+              : `translateY(${translateValue}%)`,
             transitionDuration: isDragging ? "0ms" : `${transitionDuration}ms`,
             gap: `${currentGap}px`,
+            height: !isHorizontal ? "100%" : "auto",
           }}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
+          onTransitionEnd={handleTransitionEnd}
         >
-          {normalizedSlides.map((slide, index) => (
+          {extendedSlides.map((slide, index) => (
             <div
               key={slide.id}
               className='flex shrink-0 select-none'
               style={{
-                flexBasis: `calc(${100 / currentVisibleCount}% - ${(currentGap * (currentVisibleCount - 1)) / currentVisibleCount}px)`,
+                [isHorizontal ? "flexBasis" : "minHeight"]:
+                  `calc(${100 / currentVisibleCount}% - ${(currentGap * (currentVisibleCount - 1)) / currentVisibleCount}px)`,
+                width: !isHorizontal ? "100%" : "auto",
               }}
-              aria-hidden={index < currentIndex || index >= currentIndex + currentVisibleCount}
             >
               {slide.content}
             </div>
@@ -318,50 +373,75 @@ const Slider: React.FC<SliderProps> = ({
         </div>
       </div>
 
-      {/* Navigation Arrows */}
-      {showArrows && normalizedSlides.length > visibleCount && (
+      {showArrows && normalizedSlides.length > currentVisibleCount && (
         <>
           <button
-            onClick={prevSlide}
-            disabled={!loop && isAtStart}
-            className={`absolute left-2 top-1/2 -translate-y-1/2 z-10 
-              bg-white/90 hover:bg-white shadow-lg rounded-full p-2 
+            onClick={() => {
+              prevSlide();
+              resetAutoplay();
+            }}
+            disabled={isAtStart && !reverseOnEnd}
+            className={`absolute ${
+              isHorizontal ? "left-2 top-1/2 -translate-y-1/2" : "top-2 left-1/2 -translate-x-1/2"
+            } z-10 bg-white/90 hover:bg-white shadow-lg rounded-full p-2 
               transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed
               focus:outline-none focus:ring-2 focus:ring-blue-500`}
             aria-label='Previous slide'
           >
-            {customArrows?.prev || <ChevronLeft className='w-6 h-6 text-gray-800' />}
+            {customArrows?.prev ||
+              (isHorizontal ? (
+                <ChevronLeft className='w-6 h-6 text-gray-800' />
+              ) : (
+                <ChevronUp className='w-6 h-6 text-gray-800' />
+              ))}
           </button>
 
           <button
-            onClick={nextSlide}
-            disabled={!loop && isAtEnd}
-            className={`absolute right-2 top-1/2 -translate-y-1/2 z-10 
-              bg-white/90 hover:bg-white shadow-lg rounded-full p-2 
+            onClick={() => {
+              nextSlide();
+              resetAutoplay();
+            }}
+            disabled={isAtEnd && !reverseOnEnd}
+            className={`absolute ${
+              isHorizontal
+                ? "right-2 top-1/2 -translate-y-1/2"
+                : "bottom-2 left-1/2 -translate-x-1/2"
+            } z-10 bg-white/90 hover:bg-white shadow-lg rounded-full p-2 
               transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed
               focus:outline-none focus:ring-2 focus:ring-blue-500`}
             aria-label='Next slide'
           >
-            {customArrows?.next || <ChevronRight className='w-6 h-6 text-gray-800' />}
+            {customArrows?.next ||
+              (isHorizontal ? (
+                <ChevronRight className='w-6 h-6 text-gray-800' />
+              ) : (
+                <ChevronDown className='w-6 h-6 text-gray-800' />
+              ))}
           </button>
         </>
       )}
 
-      {/* Pagination Dots */}
-      {showDots && totalPages > 1 && (
+      {showDots && normalizedSlides.length > 1 && (
         <div
-          className='flex justify-center gap-2 mt-4'
+          className={`flex ${isHorizontal ? "flex-row" : "flex-col"} justify-center gap-2 ${isHorizontal ? "mt-4" : "absolute right-4 top-1/2 -translate-y-1/2"}`}
           role='tablist'
         >
-          {Array.from({ length: totalPages }).map((_, pageIndex) => {
-            const isActive = Math.floor(currentIndex / visibleCount) === pageIndex;
+          {normalizedSlides.map((_, pageIndex) => {
+            const isActive = currentPageIndex === pageIndex;
             return (
               <button
                 key={pageIndex}
-                onClick={() => goToPage(pageIndex)}
-                className={`w-2.5 h-2.5 rounded-full transition-all duration-300
+                onClick={() => {
+                  goToPage(pageIndex);
+                  resetAutoplay();
+                }}
+                className={`rounded-full transition-all duration-300
                   focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
-                  ${isActive ? "bg-blue-600 w-8" : "bg-gray-300 hover:bg-gray-400"}`}
+                  ${
+                    isActive
+                      ? `bg-blue-600 ${isHorizontal ? "w-8 h-2.5" : "w-2.5 h-8"}`
+                      : `bg-gray-300 hover:bg-gray-400 w-2.5 h-2.5`
+                  }`}
                 aria-label={`Go to slide ${pageIndex + 1}`}
                 aria-current={isActive}
                 role='tab'
@@ -373,183 +453,4 @@ const Slider: React.FC<SliderProps> = ({
     </div>
   );
 };
-
-export default React.memo(Slider);
-
-// ============================================================================
-// USAGE EXAMPLES
-// ============================================================================
-
-/**
- * Example 1: Featured Courses Carousel
- */
-// export function FeaturedCoursesCarousel() {
-//   const courses = [
-//     { id: 1, title: 'React Masterclass', image: '🎨', price: '$99' },
-//     { id: 2, title: 'Node.js Backend', image: '⚙️', price: '$89' },
-//     { id: 3, title: 'TypeScript Pro', image: '📘', price: '$79' },
-//     { id: 4, title: 'Next.js Complete', image: '▲', price: '$109' },
-//     { id: 5, title: 'Tailwind CSS', image: '💨', price: '$59' },
-//     { id: 6, title: 'MongoDB Guide', image: '🍃', price: '$69' },
-//   ];
-
-//   const courseSlides = courses.map((course) => ({
-//     id: course.id,
-//     content: (
-//       <div className="bg-white rounded-lg shadow-md p-6 h-64 flex flex-col justify-between">
-//         <div>
-//           <div className="text-5xl mb-4">{course.image}</div>
-//           <h3 className="text-xl font-bold mb-2">{course.title}</h3>
-//         </div>
-//         <div className="flex justify-between items-center">
-//           <span className="text-2xl font-bold text-blue-600">{course.price}</span>
-//           <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-//             Enroll
-//           </button>
-//         </div>
-//       </div>
-//     ),
-//   }));
-
-//   return (
-//     <div className="max-w-6xl mx-auto p-8">
-//       <h2 className="text-3xl font-bold mb-6">Featured Courses</h2>
-//       <Slider
-//         slides={courseSlides}
-//         visibleCount={3}
-//         autoplay
-//         autoplayInterval={4000}
-//         loop
-//         showArrows
-//         showDots
-//         slideGap="gap-6"
-//       />
-//     </div>
-//   );
-// }
-
-/**
- * Example 2: Testimonials Slider
- */
-// export function TestimonialsSlider() {
-//   const testimonials = [
-//     {
-//       id: 1,
-//       name: 'Sarah Johnson',
-//       role: 'Frontend Developer',
-//       content: 'This platform transformed my career. The courses are practical and engaging!',
-//       avatar: '👩‍💻',
-//     },
-//     {
-//       id: 2,
-//       name: 'Mike Chen',
-//       role: 'Full Stack Engineer',
-//       content: 'Best investment I made in my professional development this year.',
-//       avatar: '👨‍💼',
-//     },
-//     {
-//       id: 3,
-//       name: 'Emma Davis',
-//       role: 'UI/UX Designer',
-//       content: 'The instructors are world-class. I learned more here than in my bootcamp.',
-//       avatar: '👩‍🎨',
-//     },
-//   ];
-
-//   return (
-//     <div className="max-w-4xl mx-auto p-8 bg-gray-50">
-//       <h2 className="text-3xl font-bold text-center mb-8">What Students Say</h2>
-//       <Slider
-//         slides={testimonials.map((t) => (
-//           <div key={t.id} className="bg-white rounded-xl shadow-lg p-8 text-center">
-//             <div className="text-6xl mb-4">{t.avatar}</div>
-//             <p className="text-lg italic mb-4 text-gray-700">"{t.content}"</p>
-//             <h4 className="font-bold text-lg">{t.name}</h4>
-//             <p className="text-gray-500">{t.role}</p>
-//           </div>
-//         ))}
-//         visibleCount={1}
-//         autoplay
-//         loop
-//         showArrows
-//         showDots
-//       />
-//     </div>
-//   );
-// }
-
-/**
- * Example 3: Product Showcase (Homepage)
- */
-// export function ProductShowcase() {
-//   const products = [
-//     { name: 'Laptop Pro', price: '$1,299', emoji: '💻' },
-//     { name: 'Wireless Mouse', price: '$49', emoji: '🖱️' },
-//     { name: 'Mechanical Keyboard', price: '$129', emoji: '⌨️' },
-//     { name: 'Monitor 4K', price: '$499', emoji: '🖥️' },
-//     { name: 'Headphones', price: '$199', emoji: '🎧' },
-//   ];
-
-//   return (
-//     <div className="max-w-5xl mx-auto p-8">
-//       <h2 className="text-3xl font-bold mb-6">Top Products</h2>
-//       <Slider
-//         slides={products.map((p, i) => (
-//           <div key={i} className="bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl p-8 text-white text-center h-48 flex flex-col justify-center">
-//             <div className="text-6xl mb-2">{p.emoji}</div>
-//             <h3 className="text-xl font-bold">{p.name}</h3>
-//             <p className="text-2xl font-bold mt-2">{p.price}</p>
-//           </div>
-//         ))}
-//         visibleCount={2}
-//         autoplay={false}
-//         loop
-//         slideGap="gap-4"
-//       />
-//     </div>
-//   );
-// }
-
-/**
- * Example 4: Sidebar Ad Banner (Single slide with autoplay)
- */
-// export function SidebarAdBanner() {
-//   const ads = [
-//     { title: '50% OFF', subtitle: 'Summer Sale!', bg: 'bg-red-500' },
-//     { title: 'NEW', subtitle: 'Course Launch', bg: 'bg-green-500' },
-//     { title: 'FREE', subtitle: 'Trial Week', bg: 'bg-blue-500' },
-//   ];
-
-//   return (
-//     <div className="w-64">
-//       <Slider
-//         slides={ads.map((ad, i) => (
-//           <div key={i} className={`${ad.bg} text-white rounded-lg p-6 h-32 flex flex-col justify-center`}>
-//             <h3 className="text-3xl font-bold">{ad.title}</h3>
-//             <p className="text-lg">{ad.subtitle}</p>
-//           </div>
-//         ))}
-//         visibleCount={1}
-//         autoplay
-//         autoplayInterval={3000}
-//         loop
-//         showArrows={false}
-//         showDots={true}
-//       />
-//     </div>
-//   );
-// }
-
-// Demo Component showing all examples
-// export default function SliderDemo() {
-//   return (
-//     <div className="min-h-screen bg-gray-100 py-12 space-y-16">
-//       <FeaturedCoursesCarousel />
-//       <TestimonialsSlider />
-//       <ProductShowcase />
-//       <div className="flex justify-center">
-//         <SidebarAdBanner />
-//       </div>
-//     </div>
-//   );
-// }
+export default Slider;

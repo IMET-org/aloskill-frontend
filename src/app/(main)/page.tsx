@@ -31,6 +31,7 @@ export default function HomePage() {
 
       <HeroSection />
       <FeaturedCoursesCarousel courses={courses} />
+      {/* <SidebarAdBanner /> */}
       <StatsSection />
       <CategoriesSectionAnimated />
       <WhyLearnSectionAnimated />

@@ -1,0 +1,55 @@
+/* styles/globals.css */
+.page-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: #222;
+  color: white;
+  padding: 2rem;
+}
+
+.slider-container {
+  width: 100%;
+  max-width: 800px;
+  overflow: hidden;
+  position: relative;
+}
+
+.slider-track {
+  display: flex;
+  width: 100%;
+}
+
+.slide {
+  flex-shrink: 0;
+  padding: 40px;
+  background: #795548;
+  border: 1px solid #eee;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+.controls {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.controls button {
+  padding: 10px 20px;
+  background: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.controls button:hover {
+  background: #ddd;
+}

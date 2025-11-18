@@ -37,12 +37,9 @@ export default function AllInstructorsPage() {
       try {
         setLoading(true);
         setError(null);
-
         const response = await apiClient.get<InstructorListApiResponse[]>("/user/instructors/all");
-        console.log("response from page", response);
         if (response.success && response.data) {
           const transformData = response.data.map(transformInstructor);
-
           setInstructors(transformData);
           setFilteredInstructors(transformData);
         } else {
@@ -83,7 +80,7 @@ export default function AllInstructorsPage() {
   // Loading State
   if (loading) {
     return (
-      <div className='min-h-screen bg-gradient-to-br from-orange-50 via-purple-50 to-blue-50 flex items-center justify-center'>
+      <div className='min-h-screen bg-linear-to-br from-orange-50 via-purple-50 to-blue-50 flex items-center justify-center'>
         <div className='text-center'>
           <Loader2 className='w-16 h-16 text-[#074079] animate-spin mx-auto mb-4' />
           <p className='text-lg text-gray-600 font-semibold'>Loading instructors...</p>
@@ -95,7 +92,7 @@ export default function AllInstructorsPage() {
   // Error State
   if (error) {
     return (
-      <div className='min-h-screen bg-gradient-to-br from-orange-50 via-purple-50 to-blue-50 flex items-center justify-center'>
+      <div className='min-h-screen bg-linear-to-br from-orange-50 via-purple-50 to-blue-50 flex items-center justify-center'>
         <div className='max-w-md mx-auto text-center p-8 bg-white rounded-2xl shadow-xl'>
           <div className='text-6xl mb-4'>⚠️</div>
           <h2 className='text-2xl font-bold text-red-600 mb-2'>Error Loading Instructors</h2>
@@ -112,10 +109,10 @@ export default function AllInstructorsPage() {
   }
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-orange-50 via-purple-50 to-blue-50'>
+    <div className='min-h-screen bg-linear-to-br from-orange-50 via-purple-50 to-blue-50'>
       {/* Hero Section */}
       <section className='relative py-16 md:py-20 overflow-hidden'>
-        <div className='absolute inset-0 bg-gradient-to-r from-purple-100/50 to-pink-100/50'></div>
+        <div className='absolute inset-0 bg-linear-to-r from-purple-100/50 to-pink-100/50'></div>
 
         <div className='relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center'>
           <PageHeading

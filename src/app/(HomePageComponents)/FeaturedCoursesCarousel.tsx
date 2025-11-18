@@ -68,14 +68,17 @@ export default function FeaturedCoursesCarousel({ courses }: FeaturedCoursesCaro
   return (
     <section className='w-full'>
       <Slider
+        reverseOnEnd={true}
         slides={courseSlides}
         visibleCount={4}
-        loop={true}
-        autoplay={true}
-        autoplayInterval={3000}
-        showArrows={true}
-        showDots={true}
-        gap={24}
+        loop={false}
+        autoplay
+        autoplayInterval={1000}
+        showArrows
+        showDots
+        direction='horizontal'
+        gap={16}
+        transitionDuration={500}
         breakpoints={{
           1280: { visibleCount: 4, gap: 24 },
           768: { visibleCount: 3, gap: 16 },
