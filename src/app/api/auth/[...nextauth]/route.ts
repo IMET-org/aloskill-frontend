@@ -11,7 +11,6 @@ import GoogleProvider from "next-auth/providers/google";
 type RefreshResponseType = ReturnType<typeof authService.refreshToken>;
 type RefreshResolvedType = Awaited<RefreshResponseType>;
 
-// semantic: serialize refresh requests per token
 const refreshCache = new Map<
   string,
   {

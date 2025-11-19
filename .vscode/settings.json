@@ -1,6 +1,6 @@
 {
     "remote.portsAttributes": {
-        
+
         "443": {
             "protocol": "https"
         },
@@ -8,5 +8,20 @@
             "protocol": "https"
         }
     },
-    "postman.settings.dotenv-detection-notification-visibility": false
+    "postman.settings.dotenv-detection-notification-visibility": false,
+    "emmet.triggerExpansionOnTab": true,
+    "emmet.includeLanguages": {
+        "javascript": "javascriptreact",
+        "typescript": "typescriptreact"
+    },
+    "editor.quickSuggestions": {
+        "other": true,
+        "comments": false,
+        "strings": true
+    },
+    "html.autoClosingTags": true,
+    "html.suggest.html5": true,
+    "html.validate": true,
+    "css.validate": true,
+    "css.suggest": true
 }

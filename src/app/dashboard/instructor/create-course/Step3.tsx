@@ -1,14 +1,28 @@
-import { ChevronDown, ChevronUp, Menu, Pencil, Plus, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { ChevronDown, ChevronUp, Menu, Pencil, Plus, Trash, Trash2, Upload } from "lucide-react";
+import { type ChangeEvent, useState } from "react";
+import { useForm } from "react-hook-form";
+import CourseFooter from "./CourseFooter.tsx";
 import CourseModal from "./CourseModal.tsx";
 import StepHeader from "./StepHeader.tsx";
+import { type CourseLesson, type CourseModule, type CreateCourseData } from "./page.tsx";
 
+type ExtendedCourseLesson = CourseLesson & {
+  expanded?: boolean;
+};
+
+type ExtendedCourseModule = CourseModule & {
+  lessons: ExtendedCourseLesson[];
+};
 export default function Step3({
   currentStep,
   setCurrentStep,
+  courseData: _courseData,
+  setCourseData: _setCourseData,
 }: {
   currentStep: number;
   setCurrentStep: (step: number) => void;
+  courseData: CreateCourseData;
+  setCourseData: React.Dispatch<React.SetStateAction<CreateCourseData>>;
 }) {
   const [openModal, setOpeModal] = useState<{
     type: string;
@@ -19,39 +33,73 @@ export default function Step3({
     sectionId: undefined,
     lectureId: undefined,
   });
-  const [sections, setSections] = useState([
+
+  const [sections, setSections] = useState<ExtendedCourseModule[]>([
     {
-      id: 1,
-      name: "Section name",
-      lectures: [
-        { id: 1, name: "Lecture name", expanded: false },
-        { id: 2, name: "Lecture name", expanded: false },
+      position: 1,
+      title: "Module name",
+      lessons: [
+        {
+          position: 1,
+          title: "Lecture name",
+          description: "",
+          notes: "",
+          type: "VIDEO",
+          contentUrl: "",
+          files: [] as string[],
+          duration: null,
+          expanded: false,
+        },
       ],
     },
   ]);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm();
 
   const addSection = () => {
     setSections([
       ...sections,
       {
-        id: sections.length + 1,
-        name: "Section name",
-        lectures: [],
+        position: sections.length + 1,
+        title: "Section name",
+        lessons: [
+          {
+            position: 1,
+            title: "Lecture name",
+            description: "",
+            notes: "",
+            type: "VIDEO",
+            contentUrl: "",
+            files: [] as string[],
+            duration: null,
+            expanded: false,
+          },
+        ],
       },
     ]);
   };
 
-  const addLecture = (sectionId: number) => {
+  const addLesson = (sectionId: number) => {
     setSections(
       sections.map(section => {
-        if (section.id === sectionId) {
+        if (section.position === sectionId) {
           return {
             ...section,
-            lectures: [
-              ...section.lectures,
+            lessons: [
+              ...section.lessons,
               {
-                id: section.lectures.length + 1,
-                name: "Lecture name",
+                position: section.lessons.length + 1,
+                title: "Lecture name",
+                description: "",
+                notes: "",
+                type: "VIDEO",
+                contentUrl: "",
+                files: [] as string[],
+                duration: null,
                 expanded: false,
               },
             ],
@@ -65,11 +113,11 @@ export default function Step3({
   const toggleLecture = (sectionId: number, lectureId: number) => {
     setSections(
       sections.map(section => {
-        if (section.id === sectionId) {
+        if (section.position === sectionId) {
           return {
             ...section,
-            lectures: section.lectures.map(lecture => {
-              if (lecture.id === lectureId) {
+            lessons: section.lessons.map((lecture: ExtendedCourseLesson) => {
+              if (lecture.position === lectureId) {
                 return { ...lecture, expanded: !lecture.expanded };
               }
               return lecture;
@@ -81,17 +129,37 @@ export default function Step3({
     );
   };
 
-  const deleteSection = (sectionId: number) => {
-    setSections(sections.filter(section => section.id !== sectionId));
+  const deleteSection = (moduleId: number) => {
+    const confirmPrompt = window.confirm(
+      "Are you sure you want to delete this section? All lectures within this section will also be deleted."
+    );
+    if (confirmPrompt) {
+      setSections(sections.filter(section => section.position !== moduleId));
+    }
   };
 
-  const deleteLecture = (sectionId: number, lectureId: number) => {
+  const handleTextValueChange = (
+    sectionId: number,
+    lectureId: number,
+    type: string,
+    value: string
+  ) => {
     setSections(
       sections.map(section => {
-        if (section.id === sectionId) {
+        if (section.position === sectionId) {
           return {
             ...section,
-            lectures: section.lectures.filter(lecture => lecture.id !== lectureId),
+            lessons: section.lessons.map(lesson => {
+              if (lesson.position === lectureId) {
+                if (type === "notes") {
+                  return { ...lesson, notes: value };
+                }
+                if (type === "description") {
+                  return { ...lesson, description: value };
+                }
+              }
+              return lesson;
+            }),
           };
         }
         return section;
@@ -99,24 +167,125 @@ export default function Step3({
     );
   };
 
-  const handleSave = () => {
-    alert("Curriculum saved!");
-  };
-
-  const handleSaveAndPreview = () => {
-    alert("Saved! Opening preview...");
-  };
-
-  const handleSaveAndNext = () => {
-    if (currentStep < 4) {
-      setCurrentStep(currentStep + 1);
+  const deleteLecture = (moduleId: number, lessonId: number) => {
+    const confirmPrompt = window.confirm("Are you sure you want to delete this Lesson?");
+    if (!confirmPrompt) {
+      return;
     }
+    setSections(
+      sections.map(section => {
+        if (section.position === moduleId) {
+          return {
+            ...section,
+            lessons: section.lessons.filter(lesson => lesson.position !== lessonId),
+          };
+        }
+        return section;
+      })
+    );
+  };
+
+  const handleFileSelect = (
+    e: ChangeEvent<HTMLInputElement>,
+    sectionId: number,
+    lectureId: number
+  ) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+
+      if (file) {
+        const isVideo = file.type.startsWith("video/");
+        const isPDF = file.type.startsWith("application/pdf");
+
+        if (isVideo) {
+          setSections(sections =>
+            sections.map(section => {
+              if (section.position === sectionId) {
+                return {
+                  ...section,
+                  lessons: section.lessons.map(lesson => {
+                    if (lesson.position === lectureId) {
+                      return { ...lesson, video: file.name };
+                    }
+                    return lesson;
+                  }),
+                };
+              }
+              return section;
+            })
+          );
+          return;
+        }
+
+        if (isPDF) {
+          const fileNames = Array.from(e.target.files ?? []).map(f => f.name);
+          setSections(sections =>
+            sections.map(section => {
+              if (section.position === sectionId) {
+                return {
+                  ...section,
+                  lessons: section.lessons.map(lesson => {
+                    if (lesson.position === lectureId) {
+                      return { ...lesson, files: fileNames };
+                    }
+                    return lesson;
+                  }),
+                };
+              }
+              return section;
+            })
+          );
+          return;
+        }
+      }
+    }
+  };
+
+  const deleteLectureFile = (
+    sectionId: number,
+    lectureId: number,
+    fileName?: string,
+    type?: string
+  ) => {
+    setSections(
+      sections.map(section => {
+        if (section.position === sectionId) {
+          return {
+            ...section,
+            lessons: section.lessons.map(lesson => {
+              if (lesson.position === lectureId) {
+                if (type === "video") {
+                  return { ...lesson, video: "" };
+                }
+                if (type === "description") {
+                  return { ...lesson, description: "" };
+                }
+                if (type === "notes") {
+                  return { ...lesson, notes: "" };
+                }
+                return {
+                  ...lesson,
+                  files: lesson.files && lesson.files.filter(file => file !== fileName),
+                };
+              }
+              return lesson;
+            }),
+          };
+        }
+        return section;
+      })
+    );
   };
 
   const handlePrevious = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
     }
+  };
+
+  const onSubmit = (_data: any) => {
+    // Proceed to the next step or handle form submission
+    console.log("Lecture and module data : ", sections);
   };
 
   const loadModalComponent = (type: string) => {
@@ -135,18 +304,17 @@ export default function Step3({
   return (
     <div className='w-full bg-white'>
       {/* Header */}
-      <StepHeader
-        headingText='Course Curriculum'
-        handleSave={handleSave}
-        handleSaveAndPreview={handleSaveAndPreview}
-      />
+      <StepHeader headingText='Course Curriculum' />
       {/* Form Content */}
-      <div className='p-6'>
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className='p-6'
+      >
         {/* Sections */}
         <div className='space-y-4'>
           {sections.map((section, sectionIndex) => (
             <div
-              key={section.id}
+              key={section.position}
               className='bg-gray-50 rounded p-4'
             >
               {/* Section Header */}
@@ -157,13 +325,14 @@ export default function Step3({
                     className='text-gray-500'
                   />
                   <span className='text-sm font-medium text-gray-800'>
-                    Sections 0{sectionIndex + 1} :
+                    Module 0{sectionIndex + 1} :
                   </span>
-                  <span className='text-gray-800 text-sm'>{section.name}</span>
+                  <span className='text-gray-800 text-sm'>{section.title}</span>
                 </div>
                 <div className='flex items-center gap-2'>
                   <button
-                    onClick={() => addLecture(section.id)}
+                    type='button'
+                    onClick={() => addLesson(section.position)}
                     className='p-1.5 hover:bg-gray-200 rounded transition-colors'
                   >
                     <Plus
@@ -172,7 +341,10 @@ export default function Step3({
                     />
                   </button>
                   <button
-                    onClick={() => setOpeModal({ type: "sectionName", sectionId: section.id })}
+                    type='button'
+                    onClick={() =>
+                      setOpeModal({ type: "sectionName", sectionId: section.position })
+                    }
                     className='p-1.5 hover:bg-gray-200 rounded transition-colors'
                   >
                     <Pencil
@@ -181,7 +353,8 @@ export default function Step3({
                     />
                   </button>
                   <button
-                    onClick={() => deleteSection(section.id)}
+                    type='button'
+                    onClick={() => deleteSection(section.position)}
                     className='p-1.5 hover:bg-gray-200 rounded transition-colors'
                   >
                     <Trash2
@@ -194,35 +367,44 @@ export default function Step3({
 
               {/* Lectures */}
               <div className='flex flex-col gap-4'>
-                {section.lectures.map(lecture => (
-                  <div
-                    key={lecture.id}
-                    className='relative'
-                  >
-                    <div className='flex items-center justify-between px-4 py-2 bg-white'>
+                {section.lessons.map((lesson: ExtendedCourseLesson) => (
+                  <div key={lesson.position}>
+                    <div className='flex items-center justify-between px-4 py-2 bg-white relative'>
                       <div className='flex items-center gap-3'>
                         <Menu
                           size={16}
                           className='text-gray-500'
                         />
-                        <span className='text-gray-800 text-sm'>{lecture.name}</span>
+                        <span className='text-gray-800 text-sm'>{lesson.title}</span>
                       </div>
                       <div className='flex items-center gap-3'>
                         <button
-                          onClick={() => toggleLecture(section.id, lecture.id)}
+                          type='button'
+                          onClick={() => toggleLecture(section.position, lesson.position)}
                           className='flex items-center gap-2 px-2 py-1.5 bg-orange-50 text-orange-500 rounded text-sm hover:bg-orange-100 transition-colors'
                         >
                           Contents
-                          {lecture.expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                          {lesson.expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                         </button>
-                        <button className='p-1.5 hover:bg-gray-100 rounded transition-colors'>
+                        <button
+                          type='button'
+                          onClick={() =>
+                            setOpeModal({
+                              type: "lectureName",
+                              sectionId: section.position,
+                              lectureId: lesson.position,
+                            })
+                          }
+                          className='p-1.5 hover:bg-gray-100 rounded transition-colors'
+                        >
                           <Pencil
                             size={16}
                             className='text-gray-500'
                           />
                         </button>
                         <button
-                          onClick={() => deleteLecture(section.id, lecture.id)}
+                          type='button'
+                          onClick={() => deleteLecture(section.position, lesson.position)}
                           className='p-1.5 hover:bg-gray-100 rounded transition-colors'
                         >
                           <Trash2
@@ -230,72 +412,267 @@ export default function Step3({
                             className='text-gray-500'
                           />
                         </button>
+                        {/* Expanded Content Menu */}
+                        {/* {lecture.expanded && (
+                          <div className='bg-white rounded w-[20%] z-100 absolute right-[9.7%] top-full p-2'>
+                            <button
+                              onClick={() =>
+                                setOpeModal({
+                                  type: "videoUpload",
+                                  sectionId: section.id,
+                                  lectureId: lecture.id,
+                                })
+                              }
+                              className='w-full px-2 py-1.5 text-left text-sm text-gray-800 hover:bg-gray-50 transition-colors'
+                            >
+                              Video
+                            </button>
+                            <button
+                              onClick={() =>
+                                setOpeModal({
+                                  type: "fileUpload",
+                                  sectionId: section.id,
+                                  lectureId: lecture.id,
+                                })
+                              }
+                              className='w-full px-2 py-1.5 text-left text-sm text-gray-800 hover:bg-gray-50 transition-colors'
+                            >
+                              Attach File
+                            </button>
+                            <button
+                              onClick={() =>
+                                setOpeModal({
+                                  type: "caption",
+                                  sectionId: section.id,
+                                  lectureId: lecture.id,
+                                })
+                              }
+                              className='w-full px-2 py-1.5 text-left text-sm text-gray-800 hover:bg-gray-50 transition-colors'
+                            >
+                              Captions
+                            </button>
+                            <button
+                              onClick={() =>
+                                setOpeModal({
+                                  type: "description",
+                                  sectionId: section.id,
+                                  lectureId: lecture.id,
+                                })
+                              }
+                              className='w-full px-2 py-1.5 text-left text-sm text-gray-800 hover:bg-gray-50 transition-colors'
+                            >
+                              Description
+                            </button>
+                            <button
+                              onClick={() =>
+                                setOpeModal({
+                                  type: "notes",
+                                  sectionId: section.id,
+                                  lectureId: lecture.id,
+                                })
+                              }
+                              className='w-full px-2 py-1.5 text-left text-sm text-gray-800 hover:bg-gray-50 transition-colors'
+                            >
+                              Lecture Notes
+                            </button>
+                          </div>
+                        )} */}
                       </div>
                     </div>
+                    {/* Expanded Content */}
+                    {lesson.expanded && (
+                      <div className='h-auto bg-white p-4 pt-0'>
+                        <div className='bg-gray-100/20 w-full h-full p-2 pb-0 flex flex-col gap-1 rounded'>
+                          {/* Video and Files */}
+                          <div className='flex items-center justify-center gap-3'>
+                            {/* Add Video For Lessons */}
+                            {lesson.contentUrl ? (
+                              <>
+                                <div className='w-full rounded border border-dashed border-gray-200 p-3 flex items-center justify-start hover:bg-gray-100/40 transition-colors relative'>
+                                  <span className='text-sm w-[95%]'>{lesson.contentUrl}</span>
+                                  <span
+                                    onClick={() =>
+                                      deleteLectureFile(
+                                        section.position,
+                                        lesson.position,
+                                        undefined,
+                                        "video"
+                                      )
+                                    }
+                                    className='absolute right-2 h-full w-fit flex items-center cursor-pointer'
+                                  >
+                                    <Trash className='w-4 h-4' />
+                                  </span>
+                                </div>
+                              </>
+                            ) : (
+                              <>
+                                <div className='w-full rounded border border-dashed border-gray-200 p-3 flex items-center justify-center hover:bg-gray-100/40 transition-colors'>
+                                  <label
+                                    htmlFor='lessonVideo'
+                                    className='flex items-center justify-center gap-2 text-sm w-full cursor-pointer'
+                                  >
+                                    <Upload className='w-3 h-3' /> Add Video
+                                  </label>
+                                  <input
+                                    onChange={e =>
+                                      handleFileSelect(e, section.position, lesson.position)
+                                    }
+                                    id='lessonVideo'
+                                    type='file'
+                                    accept='.mp4,.mov'
+                                    className='hidden'
+                                  />
+                                </div>
+                              </>
+                            )}
 
-                    {/* Expanded Content Menu */}
-                    {lecture.expanded && (
-                      <div className='bg-white rounded w-[20%] z-100 absolute right-[10%] p-2'>
-                        <button
-                          onClick={() =>
-                            setOpeModal({
-                              type: "videoUpload",
-                              sectionId: section.id,
-                              lectureId: lecture.id,
-                            })
-                          }
-                          className='w-full px-2 py-1.5 text-left text-sm text-gray-800 hover:bg-gray-50 transition-colors'
-                        >
-                          Video
-                        </button>
-                        <button
-                          onClick={() =>
-                            setOpeModal({
-                              type: "fileUpload",
-                              sectionId: section.id,
-                              lectureId: lecture.id,
-                            })
-                          }
-                          className='w-full px-2 py-1.5 text-left text-sm text-gray-800 hover:bg-gray-50 transition-colors'
-                        >
-                          Attach File
-                        </button>
-                        <button
-                          onClick={() =>
-                            setOpeModal({
-                              type: "caption",
-                              sectionId: section.id,
-                              lectureId: lecture.id,
-                            })
-                          }
-                          className='w-full px-2 py-1.5 text-left text-sm text-gray-800 hover:bg-gray-50 transition-colors'
-                        >
-                          Captions
-                        </button>
-                        <button
-                          onClick={() =>
-                            setOpeModal({
-                              type: "description",
-                              sectionId: section.id,
-                              lectureId: lecture.id,
-                            })
-                          }
-                          className='w-full px-2 py-1.5 text-left text-sm text-gray-800 hover:bg-gray-50 transition-colors'
-                        >
-                          Description
-                        </button>
-                        <button
-                          onClick={() =>
-                            setOpeModal({
-                              type: "notes",
-                              sectionId: section.id,
-                              lectureId: lecture.id,
-                            })
-                          }
-                          className='w-full px-2 py-1.5 text-left text-sm text-gray-800 hover:bg-gray-50 transition-colors'
-                        >
-                          Lecture Notes
-                        </button>
+                            {/* Add File For Lessons */}
+                            {lesson.files && lesson.files.length > 0 ? (
+                              <>
+                                <div className='w-full rounded border border-dashed border-gray-200 p-2 flex flex-col items-center justify-start hover:bg-gray-100/40 transition-colors'>
+                                  {lesson.files.map((fileName, index) => (
+                                    <div
+                                      key={index}
+                                      className='w-full p-1 flex items-center'
+                                    >
+                                      <span className='text-sm w-[95%]'>{fileName}</span>
+                                      <span
+                                        onClick={() =>
+                                          deleteLectureFile(
+                                            section.position,
+                                            lesson.position,
+                                            fileName
+                                          )
+                                        }
+                                        className='h-full w-fit flex items-center cursor-pointer'
+                                      >
+                                        <Trash className='w-4 h-4' />
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </>
+                            ) : (
+                              <>
+                                <div className='w-full rounded border border-dashed border-gray-200 p-3 flex items-center justify-center cursor-pointer hover:bg-gray-100/40 transition-colors'>
+                                  <label
+                                    htmlFor='lessonfile'
+                                    className='flex items-center justify-center gap-2 text-sm w-full cursor-pointer'
+                                  >
+                                    <Upload className='w-3 h-3' /> Attach File
+                                  </label>
+                                  <input
+                                    onChange={e =>
+                                      handleFileSelect(e, section.position, lesson.position)
+                                    }
+                                    id='lessonfile'
+                                    multiple={true}
+                                    type='file'
+                                    accept='.pdf,.doc,.docx,.ppt,.pptx'
+                                    className='hidden'
+                                  />
+                                </div>
+                              </>
+                            )}
+                          </div>
+                          {/* Notes for Lesson */}
+                          <div>
+                            <span className='text-sm text-gray-600 mb-1'>Lecture Note:</span>
+                            <textarea
+                              {...register(
+                                `section_${section.position}_lecture_${lesson.position}_notes`,
+                                {
+                                  required: "Lecture notes are required",
+                                  maxLength: {
+                                    value: 1000,
+                                    message: "Lecture notes cannot exceed 1000 characters",
+                                  },
+                                  pattern: {
+                                    value: /^[a-zA-Z0-9\s.,!?'"()-]*$/,
+                                    message: "Lecture notes contain invalid characters",
+                                  },
+                                }
+                              )}
+                              onChange={e =>
+                                handleTextValueChange(
+                                  section.position,
+                                  lesson.position,
+                                  "notes",
+                                  e.target.value
+                                )
+                              }
+                              defaultValue={lesson.notes}
+                              className={`w-full p-2 border border-dashed border-gray-200 rounded resize-none focus:outline-none focus:border-orange ${
+                                errors[
+                                  `section_${section.position}_lecture_${lesson.position}_notes`
+                                ] && "border-red-400 bg-red-50"
+                              }`}
+                              placeholder='Add lecture notes here...'
+                              rows={5}
+                              maxLength={1000}
+                            ></textarea>
+                            {errors[
+                              `section_${section.position}_lecture_${lesson.position}_notes`
+                            ] && (
+                              <p className='text-red-500 text-sm mt-1'>
+                                {
+                                  errors[
+                                    `section_${section.position}_lecture_${lesson.position}_notes`
+                                  ]?.message as string
+                                }
+                              </p>
+                            )}
+                          </div>
+                          {/* Description for Lesson */}
+                          <div>
+                            <span className='text-sm text-gray-600 mb-1'>Lecture Description:</span>
+                            <textarea
+                              {...register(
+                                `section_${section.position}_lecture_${lesson.position}_description`,
+                                {
+                                  required: "Lecture description is required",
+                                  maxLength: {
+                                    value: 1000,
+                                    message: "Lecture description cannot exceed 1000 characters",
+                                  },
+                                  pattern: {
+                                    value: /^[a-zA-Z0-9\s.,!?'"()-]*$/,
+                                    message: "Lecture description contain invalid characters",
+                                  },
+                                }
+                              )}
+                              onChange={e =>
+                                handleTextValueChange(
+                                  section.position,
+                                  lesson.position,
+                                  "description",
+                                  e.target.value
+                                )
+                              }
+                              defaultValue={lesson.description}
+                              className={`w-full p-2 border border-dashed border-gray-200 rounded resize-none focus:outline-none focus:border-orange ${
+                                errors[
+                                  `section_${section.position}_lecture_${lesson.position}_description`
+                                ] && "border-red-400 bg-red-50"
+                              }`}
+                              placeholder='Add lecture Description here...'
+                              rows={5}
+                              maxLength={1000}
+                            ></textarea>
+                            {errors[
+                              `section_${section.position}_lecture_${lesson.position}_description`
+                            ] && (
+                              <p className='text-red-500 text-sm mt-1'>
+                                {
+                                  errors[
+                                    `section_${section.position}_lecture_${lesson.position}_description`
+                                  ]?.message as string
+                                }
+                              </p>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -307,6 +684,7 @@ export default function Step3({
 
         {/* Add Sections Button */}
         <button
+          type='button'
           onClick={addSection}
           className='w-full py-2 bg-orange-50 text-orange-500 rounded font-medium hover:bg-orange-100 transition-colors mt-4 cursor-pointer'
         >
@@ -314,26 +692,21 @@ export default function Step3({
         </button>
 
         {/* Footer Actions */}
-        <div className='flex items-center justify-between pt-6 mt-4 border-t border-gray-200'>
-          <button
-            onClick={handlePrevious}
-            className='px-4 py-1.5 text-gray-800 font-medium hover:bg-gray-100 transition-colors bg-gray-50 rounded cursor-pointer'
-          >
-            Previous
-          </button>
-          <button
-            onClick={handleSaveAndNext}
-            className='px-4 py-1.5 bg-orange-500 text-white rounded font-medium hover:bg-orange-600 transition-colors cursor-pointer'
-          >
-            Save & Next
-          </button>
+        <div className='p-6'>
+          <CourseFooter
+            handlePrevious={handlePrevious}
+            isSubmitting={isSubmitting}
+            currentStep={currentStep}
+          />
         </div>
-      </div>
+      </form>
 
       {(() => {
         switch (openModal.type) {
           case "sectionName":
             return loadModalComponent("sectionName");
+          case "lectureName":
+            return loadModalComponent("lectureName");
           case "videoUpload":
             return loadModalComponent("videoUpload");
           case "fileUpload":
