@@ -3,9 +3,9 @@
 import FooterSimple from "@/components/shared/footer/FooterSimple.tsx";
 import AnnouncementBar from "@/components/shared/header/AnnouncementBar";
 import NavBar from "@/components/shared/header/NavBar";
-import LeftSidebar from "@/components/shared/leftsidebar/LeftSidebar";
+import LeftSidebar from "@/components/shared/sidebars/LeftSidebar";
 
-import RightSidebar from "@/components/shared/RightSidebar";
+import RightSidebar from "@/components/shared/sidebars/RightSidebar";
 import { useState } from "react";
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {

@@ -1,6 +1,6 @@
 "use client";
 
-import type { Course } from "@/app/(main)/courses/course.types";
+import type { Course } from "@/app/(mainLayout)/courses/course.types";
 import { courseService, type CourseFilters } from "@/services/course.service";
 import { useCallback, useEffect, useState } from "react";
 

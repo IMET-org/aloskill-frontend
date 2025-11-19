@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import InstructorCard from "@/app/(main)/instructors/InstructorCard";
+import InstructorCard from "@/app/(mainLayout)/instructors/InstructorCard";
 import BorderGradientButton from "@/components/buttons/BorderGradientButton.tsx";
 import GradientButton from "@/components/buttons/GradientButton.tsx";
 import { apiClient } from "@/lib/api/client.ts";

@@ -1,10 +1,9 @@
 "use client";
 
-import CourseCard from "@/app/(main)/courses/CourseCard";
-
 import Slider from "@/components/slider/Slider.tsx";
 import { useState } from "react";
-import type { CourseCardProps } from "../(main)/courses/allCourses.types.ts";
+import CourseCard from "../courses/CourseCard.tsx";
+import type { CourseCardProps } from "../courses/allCourses.types.ts";
 
 interface FeaturedCoursesCarouselProps {
   courses: Omit<

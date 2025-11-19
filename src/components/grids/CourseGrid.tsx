@@ -1,7 +1,7 @@
 "use client";
 
-import CourseCard from "@/app/(main)/courses/CourseCard";
-import type { Course } from "@/app/(main)/courses/course.types";
+import { type Course } from "@/app/courses/allCourses.types";
+import CourseCard from "@/app/courses/CourseCard";
 import { BookOpen } from "lucide-react";
 import { memo } from "react";
 

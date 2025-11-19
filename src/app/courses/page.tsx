@@ -615,7 +615,7 @@
 
 "use client";
 
-import type { Course } from "@/app/(main)/courses/course.types.ts";
+import type { Course } from "@/app/(mainLayout)/courses/course.types.ts";
 import CourseGrid from "@/components/grids/CourseGrid";
 import { PageHeading } from "@/components/shared/PageHeading.tsx";
 import { ChevronRight, Filter, Grid, LayoutList, Search, SlidersHorizontal, X } from "lucide-react";
@@ -1033,7 +1033,7 @@ export default function AllCoursesPage() {
 
   return (
     <div className='bg-linear-to-tr from-pink-50 via-purple-50 to-white'>
-      <div className='min-h-screen  max-w-screen mx-auto'>
+      <div className='min-h-screen  max-w-[80%] mx-auto'>
         <PageHeading />
         {/* Mobile Filter Button */}
         <button
@@ -1081,7 +1081,7 @@ export default function AllCoursesPage() {
         <div className='max-w-[1920px] mx-auto'>
           <div className='flex'>
             {/* Left Sidebar - Desktop */}
-            <aside className='hidden lg:block w-80 flex-shrink-0 bg-white border-r border-gray-200 h-screen sticky top-0 overflow-y-auto'>
+            <aside className='hidden lg:block w-80 shrink-0 bg-white border-r border-gray-200 h-screen sticky top-0 overflow-y-auto'>
               <div className='p-6'>
                 <div className='flex items-center justify-between mb-6'>
                   <h2 className='text-xl font-black text-gray-900 flex items-center gap-2'>
@@ -1122,7 +1122,7 @@ export default function AllCoursesPage() {
             {/* Main Content */}
             <main className='flex-1 min-w-0'>
               {/* Top Bar */}
-              <div className='sticky top-0 z-40 bg-white border-b border-gray-200 shadow-sm'>
+              <div className=' bg-white border-b border-gray-200 shadow-sm'>
                 <div className='px-4 sm:px-6 lg:px-8 py-4'>
                   {/* Search Bar */}
                   <div className='mb-4'>

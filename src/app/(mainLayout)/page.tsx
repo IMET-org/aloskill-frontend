@@ -11,13 +11,14 @@ import { InstructorsSectionAdvanced } from "@/app/(HomePageComponents)/Instructo
 import PopularCoursesSection from "@/app/(HomePageComponents)/PopularCoursesSection";
 import StatsSection from "@/app/(HomePageComponents)/StatsSection";
 import { WhyLearnSectionAnimated } from "@/app/(HomePageComponents)/WhyLearnSectionAnimated";
-import courses from "@/app/(main)/courses/courses.js";
+
 import BackToTop from "@/components/shared/BackToTop";
 import Newsletter from "@/components/shared/footer/Newsletter";
 import MobileMenu from "@/components/shared/menu/MobileMenu";
 import TabletDrawer from "@/components/shared/menu/TabletDrawer";
 import { useState } from "react";
 import FeaturedCoursesCarousel from "../(HomePageComponents)/FeaturedCoursesCarousel.tsx";
+import courses from "../courses/courses.js";
 
 export default function HomePage() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);

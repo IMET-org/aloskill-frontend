@@ -23,7 +23,7 @@ import type {
   InstructorDetail,
   InstructorDetailApiResponse,
 } from "../../../../types/instructor.types.ts";
-import { AboutTab } from "./about";
+import { AboutTab } from "./about.tsx";
 
 export default function InstructorDetailsPage() {
   const params = useParams();

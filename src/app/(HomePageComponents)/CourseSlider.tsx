@@ -1,9 +1,9 @@
 "use client";
 
-import CourseCard from "@/app/(main)/courses/CourseCard";
-import type { Course } from "@/app/(main)/courses/course.types";
 import { BookOpen, ChevronLeft, ChevronRight } from "lucide-react";
 import { memo, useEffect, useRef, useState } from "react";
+import { type Course } from "../courses/allCourses.types.ts";
+import CourseCard from "../courses/CourseCard.tsx";
 
 interface CourseSliderProps {
   courses: Course[];

@@ -1,3 +1,5 @@
+import FooterSimple from "@/components/shared/footer/FooterSimple.tsx";
+import NavBar from "@/components/shared/header/NavBar.tsx";
 import { hindSiliguri, inter, playfair } from "@/styles/fonts.ts";
 import type { Metadata } from "next";
 import "./globals.css";
@@ -73,7 +75,18 @@ export default function RootLayout({
           } as React.CSSProperties
         }
       >
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          {/* Fixed Navbar */}
+          <header className='fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200/50 shadow-sm'>
+            <NavBar />
+          </header>
+
+          {/* Main Content - pt-20 creates space for fixed navbar + extra spacing */}
+          <main className='pt-20 min-h-screen'>{children}</main>
+
+          {/* Footer */}
+          <FooterSimple />
+        </AuthProvider>
       </body>
     </html>
   );
