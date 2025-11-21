@@ -8,6 +8,7 @@ import { type CourseLesson, type CourseModule, type CreateCourseData } from "./p
 
 type ExtendedCourseLesson = CourseLesson & {
   expanded?: boolean;
+  lessonTypeSelection?: boolean;
 };
 
 type ExtendedCourseModule = CourseModule & {
@@ -44,11 +45,12 @@ export default function Step3({
           title: "Lecture name",
           description: "",
           notes: "",
-          type: "VIDEO",
+          type: null,
           contentUrl: "",
           files: [] as string[],
           duration: null,
           expanded: false,
+          lessonTypeSelection: true,
         },
       ],
     },
@@ -72,11 +74,12 @@ export default function Step3({
             title: "Lecture name",
             description: "",
             notes: "",
-            type: "VIDEO",
+            type: null,
             contentUrl: "",
             files: [] as string[],
             duration: null,
             expanded: false,
+            lessonTypeSelection: true,
           },
         ],
       },
@@ -96,11 +99,12 @@ export default function Step3({
                 title: "Lecture name",
                 description: "",
                 notes: "",
-                type: "VIDEO",
+                type: null,
                 contentUrl: "",
                 files: [] as string[],
                 duration: null,
                 expanded: false,
+                lessonTypeSelection: true,
               },
             ],
           };
@@ -110,7 +114,12 @@ export default function Step3({
     );
   };
 
-  const toggleLecture = (sectionId: number, lectureId: number) => {
+  const toggleLectureAndType = (
+    sectionId: number,
+    lectureId: number,
+    field: "expanded" | "lessonTypeSelection",
+    lectureType?: "VIDEO" | "ARTICLE" | "QUIZ" | "ASSIGNMENT"
+  ) => {
     setSections(
       sections.map(section => {
         if (section.position === sectionId) {
@@ -118,7 +127,16 @@ export default function Step3({
             ...section,
             lessons: section.lessons.map((lecture: ExtendedCourseLesson) => {
               if (lecture.position === lectureId) {
-                return { ...lecture, expanded: !lecture.expanded };
+                if (lectureType) {
+                  return {
+                    ...lecture,
+                    type: lectureType,
+                    [field]: !lecture[field as keyof ExtendedCourseLesson],
+                  };
+                }
+                if (field) {
+                  return { ...lecture, [field]: !lecture[field as keyof ExtendedCourseLesson] };
+                }
               }
               return lecture;
             }),
@@ -380,7 +398,9 @@ export default function Step3({
                       <div className='flex items-center gap-3'>
                         <button
                           type='button'
-                          onClick={() => toggleLecture(section.position, lesson.position)}
+                          onClick={() =>
+                            toggleLectureAndType(section.position, lesson.position, "expanded")
+                          }
                           className='flex items-center gap-2 px-2 py-1.5 bg-orange-50 text-orange-500 rounded text-sm hover:bg-orange-100 transition-colors'
                         >
                           Contents
@@ -482,51 +502,270 @@ export default function Step3({
                     {/* Expanded Content */}
                     {lesson.expanded && (
                       <div className='h-auto bg-white p-4 pt-0'>
-                        <div className='bg-gray-100/20 w-full h-full p-2 pb-0 flex flex-col gap-1 rounded'>
-                          {/* Video and Files */}
-                          <div className='flex items-center justify-center gap-3'>
-                            {/* Add Video For Lessons */}
-                            {lesson.contentUrl ? (
-                              <>
-                                <div className='w-full rounded border border-dashed border-gray-200 p-3 flex items-center justify-start hover:bg-gray-100/40 transition-colors relative'>
-                                  <span className='text-sm w-[95%]'>{lesson.contentUrl}</span>
-                                  <span
-                                    onClick={() =>
-                                      deleteLectureFile(
-                                        section.position,
-                                        lesson.position,
-                                        undefined,
-                                        "video"
-                                      )
-                                    }
-                                    className='absolute right-2 h-full w-fit flex items-center cursor-pointer'
-                                  >
-                                    <Trash className='w-4 h-4' />
-                                  </span>
-                                </div>
-                              </>
-                            ) : (
-                              <>
-                                <div className='w-full rounded border border-dashed border-gray-200 p-3 flex items-center justify-center hover:bg-gray-100/40 transition-colors'>
-                                  <label
-                                    htmlFor='lessonVideo'
-                                    className='flex items-center justify-center gap-2 text-sm w-full cursor-pointer'
-                                  >
-                                    <Upload className='w-3 h-3' /> Add Video
-                                  </label>
-                                  <input
-                                    onChange={e =>
-                                      handleFileSelect(e, section.position, lesson.position)
-                                    }
-                                    id='lessonVideo'
-                                    type='file'
-                                    accept='.mp4,.mov'
-                                    className='hidden'
-                                  />
-                                </div>
-                              </>
-                            )}
+                        {/* Contents Type Selection */}
+                        {lesson.lessonTypeSelection && (
+                          <div>
+                            <span className='text-sm text-gray-600 mb-1'>
+                              Select a content type :
+                            </span>
+                            <div className='flex items-center justify-center gap-10 border border-dashed border-gray-200 p-2'>
+                              <button
+                                type='button'
+                                onClick={() =>
+                                  toggleLectureAndType(
+                                    section.position,
+                                    lesson.position,
+                                    "lessonTypeSelection",
+                                    "VIDEO"
+                                  )
+                                }
+                                className='px-3 py-1.5 border border-gray-100 text-gray-800 rounded text-sm hover:bg-gray-100 transition-colors duration-500 cursor-pointer'
+                              >
+                                Video
+                              </button>
+                              <button
+                                type='button'
+                                onClick={() =>
+                                  toggleLectureAndType(
+                                    section.position,
+                                    lesson.position,
+                                    "lessonTypeSelection",
+                                    "ARTICLE"
+                                  )
+                                }
+                                className='px-3 py-1.5 border border-gray-100 text-gray-800 rounded text-sm hover:bg-gray-100 transition-colors duration-500 cursor-pointer'
+                              >
+                                Article
+                              </button>
+                              <button
+                                type='button'
+                                onClick={() =>
+                                  toggleLectureAndType(
+                                    section.position,
+                                    lesson.position,
+                                    "lessonTypeSelection",
+                                    "QUIZ"
+                                  )
+                                }
+                                className='px-3 py-1.5 border border-gray-100 text-gray-800 rounded text-sm hover:bg-gray-100 transition-colors duration-500 cursor-pointer'
+                              >
+                                Quiz
+                              </button>
+                              <button
+                                type='button'
+                                onClick={() =>
+                                  toggleLectureAndType(
+                                    section.position,
+                                    lesson.position,
+                                    "lessonTypeSelection",
+                                    "ASSIGNMENT"
+                                  )
+                                }
+                                className='px-3 py-1.5 border border-gray-100 text-gray-800 rounded text-sm hover:bg-gray-100 transition-colors duration-500 cursor-pointer'
+                              >
+                                Assignment
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                        {/* Contents Details */}
+                        {lesson.type === "VIDEO" && (
+                          <div className='bg-gray-100/20 w-full h-full p-2 pb-0 flex flex-col gap-1 rounded'>
+                            {/* Video and Files */}
+                            <div className='flex items-center justify-center gap-3'>
+                              {/* Add Video For Lessons */}
+                              {lesson.contentUrl ? (
+                                <>
+                                  <div className='w-full rounded border border-dashed border-gray-200 p-3 flex items-center justify-start hover:bg-gray-100/40 transition-colors relative'>
+                                    <span className='text-sm w-[95%]'>{lesson.contentUrl}</span>
+                                    <span
+                                      onClick={() =>
+                                        deleteLectureFile(
+                                          section.position,
+                                          lesson.position,
+                                          undefined,
+                                          "video"
+                                        )
+                                      }
+                                      className='absolute right-2 h-full w-fit flex items-center cursor-pointer'
+                                    >
+                                      <Trash className='w-4 h-4' />
+                                    </span>
+                                  </div>
+                                </>
+                              ) : (
+                                <>
+                                  <div className='w-full rounded border border-dashed border-gray-200 p-3 flex items-center justify-center hover:bg-gray-100/40 transition-colors'>
+                                    <label
+                                      htmlFor='lessonVideo'
+                                      className='flex items-center justify-center gap-2 text-sm w-full cursor-pointer'
+                                    >
+                                      <Upload className='w-3 h-3' /> Add Video
+                                    </label>
+                                    <input
+                                      onChange={e =>
+                                        handleFileSelect(e, section.position, lesson.position)
+                                      }
+                                      id='lessonVideo'
+                                      type='file'
+                                      accept='.mp4,.mov'
+                                      className='hidden'
+                                    />
+                                  </div>
+                                </>
+                              )}
 
+                              {/* Add File For Lessons */}
+                              {lesson.files && lesson.files.length > 0 ? (
+                                <>
+                                  <div className='w-full rounded border border-dashed border-gray-200 p-2 flex flex-col items-center justify-start hover:bg-gray-100/40 transition-colors'>
+                                    {lesson.files.map((fileName, index) => (
+                                      <div
+                                        key={index}
+                                        className='w-full p-1 flex items-center'
+                                      >
+                                        <span className='text-sm w-[95%]'>{fileName}</span>
+                                        <span
+                                          onClick={() =>
+                                            deleteLectureFile(
+                                              section.position,
+                                              lesson.position,
+                                              fileName
+                                            )
+                                          }
+                                          className='h-full w-fit flex items-center cursor-pointer'
+                                        >
+                                          <Trash className='w-4 h-4' />
+                                        </span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </>
+                              ) : (
+                                <>
+                                  <div className='w-full rounded border border-dashed border-gray-200 p-3 flex items-center justify-center cursor-pointer hover:bg-gray-100/40 transition-colors'>
+                                    <label
+                                      htmlFor='lessonfile'
+                                      className='flex items-center justify-center gap-2 text-sm w-full cursor-pointer'
+                                    >
+                                      <Upload className='w-3 h-3' /> Attach File
+                                    </label>
+                                    <input
+                                      onChange={e =>
+                                        handleFileSelect(e, section.position, lesson.position)
+                                      }
+                                      id='lessonfile'
+                                      multiple={true}
+                                      type='file'
+                                      accept='.pdf,.doc,.docx,.ppt,.pptx'
+                                      className='hidden'
+                                    />
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                            {/* Notes for Lesson */}
+                            <div>
+                              <span className='text-sm text-gray-600 mb-1'>Lecture Note:</span>
+                              <textarea
+                                {...register(
+                                  `section_${section.position}_lecture_${lesson.position}_notes`,
+                                  {
+                                    required: "Lecture notes are required",
+                                    maxLength: {
+                                      value: 1000,
+                                      message: "Lecture notes cannot exceed 1000 characters",
+                                    },
+                                    pattern: {
+                                      value: /^[a-zA-Z0-9\s.,!?'"()-]*$/,
+                                      message: "Lecture notes contain invalid characters",
+                                    },
+                                  }
+                                )}
+                                onChange={e =>
+                                  handleTextValueChange(
+                                    section.position,
+                                    lesson.position,
+                                    "notes",
+                                    e.target.value
+                                  )
+                                }
+                                defaultValue={lesson.notes}
+                                className={`w-full p-2 border border-dashed border-gray-200 rounded resize-none focus:outline-none focus:border-orange ${
+                                  errors[
+                                    `section_${section.position}_lecture_${lesson.position}_notes`
+                                  ] && "border-red-400 bg-red-50"
+                                }`}
+                                placeholder='Add lecture notes here...'
+                                rows={5}
+                                maxLength={1000}
+                              ></textarea>
+                              {errors[
+                                `section_${section.position}_lecture_${lesson.position}_notes`
+                              ] && (
+                                <p className='text-red-500 text-sm mt-1'>
+                                  {
+                                    errors[
+                                      `section_${section.position}_lecture_${lesson.position}_notes`
+                                    ]?.message as string
+                                  }
+                                </p>
+                              )}
+                            </div>
+                            {/* Description for Lesson */}
+                            <div>
+                              <span className='text-sm text-gray-600 mb-1'>
+                                Lecture Description:
+                              </span>
+                              <textarea
+                                {...register(
+                                  `section_${section.position}_lecture_${lesson.position}_description`,
+                                  {
+                                    required: "Lecture description is required",
+                                    maxLength: {
+                                      value: 1000,
+                                      message: "Lecture description cannot exceed 1000 characters",
+                                    },
+                                    pattern: {
+                                      value: /^[a-zA-Z0-9\s.,!?'"()-]*$/,
+                                      message: "Lecture description contain invalid characters",
+                                    },
+                                  }
+                                )}
+                                onChange={e =>
+                                  handleTextValueChange(
+                                    section.position,
+                                    lesson.position,
+                                    "description",
+                                    e.target.value
+                                  )
+                                }
+                                defaultValue={lesson.description}
+                                className={`w-full p-2 border border-dashed border-gray-200 rounded resize-none focus:outline-none focus:border-orange ${
+                                  errors[
+                                    `section_${section.position}_lecture_${lesson.position}_description`
+                                  ] && "border-red-400 bg-red-50"
+                                }`}
+                                placeholder='Add lecture Description here...'
+                                rows={5}
+                                maxLength={1000}
+                              ></textarea>
+                              {errors[
+                                `section_${section.position}_lecture_${lesson.position}_description`
+                              ] && (
+                                <p className='text-red-500 text-sm mt-1'>
+                                  {
+                                    errors[
+                                      `section_${section.position}_lecture_${lesson.position}_description`
+                                    ]?.message as string
+                                  }
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                        {lesson.type === "ARTICLE" && (
+                          <div className='bg-gray-100/20 w-full h-full p-2 pb-0 flex flex-col gap-1 rounded'>
                             {/* Add File For Lessons */}
                             {lesson.files && lesson.files.length > 0 ? (
                               <>
@@ -534,9 +773,9 @@ export default function Step3({
                                   {lesson.files.map((fileName, index) => (
                                     <div
                                       key={index}
-                                      className='w-full p-1 flex items-center'
+                                      className='p-1 flex items-center w-full border-b border-gray-200 last:border-0'
                                     >
-                                      <span className='text-sm w-[95%]'>{fileName}</span>
+                                      <span className='text-sm w-[98%]'>{fileName}</span>
                                       <span
                                         onClick={() =>
                                           deleteLectureFile(
@@ -575,104 +814,34 @@ export default function Step3({
                                 </div>
                               </>
                             )}
+                            <div className='mt-2'>
+                              <span className='text-sm text-gray-600 mb-1'>Article Content:</span>
+                              <textarea
+                                onChange={e =>
+                                  handleTextValueChange(
+                                    section.position,
+                                    lesson.position,
+                                    "description",
+                                    e.target.value
+                                  )
+                                }
+                                className='w-full p-2 border border-dashed border-gray-200 rounded resize-none focus:outline-none focus:border-orange'
+                                placeholder='Add article content here...'
+                                rows={8}
+                              ></textarea>
+                            </div>
                           </div>
-                          {/* Notes for Lesson */}
-                          <div>
-                            <span className='text-sm text-gray-600 mb-1'>Lecture Note:</span>
-                            <textarea
-                              {...register(
-                                `section_${section.position}_lecture_${lesson.position}_notes`,
-                                {
-                                  required: "Lecture notes are required",
-                                  maxLength: {
-                                    value: 1000,
-                                    message: "Lecture notes cannot exceed 1000 characters",
-                                  },
-                                  pattern: {
-                                    value: /^[a-zA-Z0-9\s.,!?'"()-]*$/,
-                                    message: "Lecture notes contain invalid characters",
-                                  },
-                                }
-                              )}
-                              onChange={e =>
-                                handleTextValueChange(
-                                  section.position,
-                                  lesson.position,
-                                  "notes",
-                                  e.target.value
-                                )
-                              }
-                              defaultValue={lesson.notes}
-                              className={`w-full p-2 border border-dashed border-gray-200 rounded resize-none focus:outline-none focus:border-orange ${
-                                errors[
-                                  `section_${section.position}_lecture_${lesson.position}_notes`
-                                ] && "border-red-400 bg-red-50"
-                              }`}
-                              placeholder='Add lecture notes here...'
-                              rows={5}
-                              maxLength={1000}
-                            ></textarea>
-                            {errors[
-                              `section_${section.position}_lecture_${lesson.position}_notes`
-                            ] && (
-                              <p className='text-red-500 text-sm mt-1'>
-                                {
-                                  errors[
-                                    `section_${section.position}_lecture_${lesson.position}_notes`
-                                  ]?.message as string
-                                }
-                              </p>
-                            )}
+                        )}
+                        {lesson.type === "QUIZ" && (
+                          <div className='bg-gray-100/20 w-full h-full p-4 rounded'>
+                            <span className='text-gray-600'>Quiz content goes here...</span>
                           </div>
-                          {/* Description for Lesson */}
-                          <div>
-                            <span className='text-sm text-gray-600 mb-1'>Lecture Description:</span>
-                            <textarea
-                              {...register(
-                                `section_${section.position}_lecture_${lesson.position}_description`,
-                                {
-                                  required: "Lecture description is required",
-                                  maxLength: {
-                                    value: 1000,
-                                    message: "Lecture description cannot exceed 1000 characters",
-                                  },
-                                  pattern: {
-                                    value: /^[a-zA-Z0-9\s.,!?'"()-]*$/,
-                                    message: "Lecture description contain invalid characters",
-                                  },
-                                }
-                              )}
-                              onChange={e =>
-                                handleTextValueChange(
-                                  section.position,
-                                  lesson.position,
-                                  "description",
-                                  e.target.value
-                                )
-                              }
-                              defaultValue={lesson.description}
-                              className={`w-full p-2 border border-dashed border-gray-200 rounded resize-none focus:outline-none focus:border-orange ${
-                                errors[
-                                  `section_${section.position}_lecture_${lesson.position}_description`
-                                ] && "border-red-400 bg-red-50"
-                              }`}
-                              placeholder='Add lecture Description here...'
-                              rows={5}
-                              maxLength={1000}
-                            ></textarea>
-                            {errors[
-                              `section_${section.position}_lecture_${lesson.position}_description`
-                            ] && (
-                              <p className='text-red-500 text-sm mt-1'>
-                                {
-                                  errors[
-                                    `section_${section.position}_lecture_${lesson.position}_description`
-                                  ]?.message as string
-                                }
-                              </p>
-                            )}
+                        )}
+                        {lesson.type === "ASSIGNMENT" && (
+                          <div className='bg-gray-100/20 w-full h-full p-4 rounded'>
+                            <span className='text-gray-600'>Assignment content goes here...</span>
                           </div>
-                        </div>
+                        )}
                       </div>
                     )}
                   </div>

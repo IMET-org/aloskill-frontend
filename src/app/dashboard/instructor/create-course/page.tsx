@@ -12,7 +12,7 @@ export type CourseLesson = {
   title: string;
   description: string;
   notes?: string;
-  type: "VIDEO" | "ARTICLE" | "QUIZ" | "ASSIGNMENT";
+  type: "VIDEO" | "ARTICLE" | "QUIZ" | "ASSIGNMENT" | null;
   contentUrl?: string | null;
   files?: string[];
   duration?: number | null;
