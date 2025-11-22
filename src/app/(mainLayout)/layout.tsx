@@ -13,32 +13,22 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <div className='min-h-screen flex flex-col bg-gray-50'>
-      {/* Fixed Header */}
-      <header className='fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm'>
+      <div className='fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm'>
         <AnnouncementBar />
         <NavBar onMenuToggle={() => setIsSidebarOpen(prev => !prev)} />
-      </header>
-
-      {/* Main Content Container */}
+      </div>
       <div className='flex flex-1 pt-12'>
         {" "}
-        {/* Adjusted for header height */}
-        {/* Left Sidebar - Single instance with conditional rendering */}
         <LeftSidebar
           isOpen={isSidebarOpen}
           onClose={() => setIsSidebarOpen(false)}
         />
-        {/* Main Content Area */}
         <main className='flex-1 min-w-0 lg:ml-0 xl:mr-0'>
           {" "}
-          {/* min-w-0 prevents flex overflow */}
           <div className='container mx-auto px-4 py-6 max-w-7xl'>{children}</div>
         </main>
-        {/* Right Sidebar - Only visible on xl screens */}
         <RightSidebar />
       </div>
-
-      {/* Footer */}
       <FooterSimple />
     </div>
   );

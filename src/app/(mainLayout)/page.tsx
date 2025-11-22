@@ -17,8 +17,7 @@ import Newsletter from "@/components/shared/footer/Newsletter";
 import MobileMenu from "@/components/shared/menu/MobileMenu";
 import TabletDrawer from "@/components/shared/menu/TabletDrawer";
 import { useState } from "react";
-import FeaturedCoursesCarousel from "../(HomePageComponents)/FeaturedCoursesCarousel.tsx";
-import courses from "../courses/courses.js";
+import TestimonialSlider from "../(HomePageComponents)/(TestimonialSection)/TestimonialSlider.tsx";
 
 export default function HomePage() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -31,14 +30,16 @@ export default function HomePage() {
       </div> */}
 
       <HeroSection />
-      <FeaturedCoursesCarousel courses={courses} />
+
       {/* <SidebarAdBanner /> */}
       <StatsSection />
       <CategoriesSectionAnimated />
       <WhyLearnSectionAnimated />
+      {/* <FeaturedCoursesCarousel courses={courses} /> */}
       <PopularCoursesSection />
       <DiscoverBooksSectionCarousel />
       <InstructorsSectionAdvanced />
+      <TestimonialSlider />
       <CommunitySection />
       <GCommunitySection />
       <CertificateSectionSimple />

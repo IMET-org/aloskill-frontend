@@ -1,456 +1,588 @@
-import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp } from "lucide-react";
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+"use client";
 
-interface SliderProps {
-  slides: React.ReactNode[] | { content: React.ReactNode; id?: string | number }[];
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+
+/* -------------------------
+   Types
+--------------------------*/
+export interface SlideItem {
+  id?: string;
+  content: React.ReactNode;
+}
+
+export interface SliderBreakpoint {
+  visibleCount: number;
+}
+
+export interface SliderProps {
+  slides: React.ReactNode[] | SlideItem[];
   visibleCount?: number;
   loop?: boolean;
   autoplay?: boolean;
   autoplayInterval?: number;
   showArrows?: boolean;
   showDots?: boolean;
+  breakpoints?: Record<number, SliderBreakpoint>;
   className?: string;
-  gap?: number;
-  breakpoints?: {
-    [key: number]: { visibleCount: number; gap: number };
-  };
-  transitionDuration?: number;
-  customArrows?: {
-    prev?: React.ReactNode;
-    next?: React.ReactNode;
-  };
-  onSlideChange?: (currentIndex: number) => void;
-  direction?: "horizontal" | "vertical";
-  reverseOnEnd?: boolean; // New prop to enable reverse behavior
+  slideClassName?: string;
+  ariaLabel?: string;
+  centerMode?: boolean;
+  snap?: "none" | "mandatory";
+  onChange?: (currentIndex: number) => void;
+  prefersReducedMotion?: boolean;
 }
 
-const Slider: React.FC<SliderProps> = ({
-  slides,
-  visibleCount = 1,
-  loop = false,
-  autoplay = false,
-  autoplayInterval = 3000,
-  showArrows = true,
-  showDots = true,
-  className = "",
-  gap = 16,
-  breakpoints,
-  transitionDuration = 300,
-  customArrows,
-  onSlideChange,
-  direction = "horizontal",
-  reverseOnEnd = false, // Default to false for backward compatibility
-}) => {
-  const normalizedSlides = useMemo(() => {
-    return slides.map((slide, index) => {
-      if (slide == null) {
-        return { content: null, id: index };
-      }
-      if (React.isValidElement(slide) || typeof slide === "string" || typeof slide === "number") {
-        return { content: slide, id: index };
-      }
-      if (typeof slide === "object" && "content" in slide) {
-        const typedSlide = slide as { content: React.ReactNode; id?: string | number };
-        return { content: typedSlide.content, id: typedSlide.id ?? index };
-      }
-      return { content: null, id: index };
-    });
-  }, [slides]);
-
-  // For infinite loop, we clone slides at the beginning and end
-  const extendedSlides = useMemo(() => {
-    if (!loop || normalizedSlides.length <= visibleCount) {
-      return normalizedSlides;
-    }
-
-    const cloneBefore = normalizedSlides.slice(-visibleCount).map((slide, idx) => ({
-      ...slide,
-      id: `clone-before-${idx}`,
-    }));
-
-    const cloneAfter = normalizedSlides.slice(0, visibleCount).map((slide, idx) => ({
-      ...slide,
-      id: `clone-after-${idx}`,
-    }));
-
-    return [...cloneBefore, ...normalizedSlides, ...cloneAfter];
-  }, [normalizedSlides, loop, visibleCount]);
-
-  const [currentIndex, setCurrentIndex] = useState(loop ? visibleCount : 0);
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  const [touchStart, setTouchStart] = useState<number | null>(null);
-  const [touchEnd, setTouchEnd] = useState<number | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const autoplayRef = useRef<NodeJS.Timeout | null>(null);
-  const sliderRef = useRef<HTMLDivElement>(null);
-  const [currentVisibleCount, setCurrentVisibleCount] = useState(visibleCount);
-  const [currentGap, setCurrentGap] = useState(gap || 16);
-  const [isReversed, setIsReversed] = useState(false); // Track direction state
-
-  const totalPages = useMemo(() => {
-    return Math.ceil(normalizedSlides.length / currentVisibleCount);
-  }, [normalizedSlides.length, currentVisibleCount]);
-
-  const isAtStart = !loop && currentIndex === 0;
-  const isAtEnd = !loop && currentIndex >= normalizedSlides.length - currentVisibleCount;
-
-  const goToSlide = useCallback(
-    (index: number, immediate = false) => {
-      if (isTransitioning && !immediate) return;
-
-      setCurrentIndex(index);
-      setIsTransitioning(true);
-
-      const timeout = immediate ? 0 : transitionDuration;
-
-      setTimeout(() => {
-        setIsTransitioning(false);
-      }, timeout);
-    },
-    [isTransitioning, transitionDuration]
+/* -------------------------
+   Helpers
+--------------------------*/
+const normalizeSlides = (slides: React.ReactNode[] | SlideItem[]): SlideItem[] =>
+  slides.map((s, i) =>
+    React.isValidElement(s) || typeof s === "string" || typeof s === "number"
+      ? { id: `slide-${i}`, content: s }
+      : { id: (s as SlideItem).id || `slide-${i}`, content: (s as SlideItem).content }
   );
 
-  const handleTransitionEnd = useCallback(() => {
-    if (!loop) return;
+const usePrefersReducedMotion = (fallback = false) => {
+  const [reduced, setReduced] = useState(fallback);
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.matchMedia) return;
+    const m = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReduced(m.matches);
+    const handler = (e: MediaQueryListEvent) => setReduced(e.matches);
+    m.addEventListener("change", handler);
+    return () => m.removeEventListener("change", handler);
+  }, []);
+  return reduced;
+};
 
-    // If we're at a cloned slide, jump to the real slide without transition
-    if (currentIndex <= 0) {
-      // We're in the "before" clones, jump to end
-      const realIndex = normalizedSlides.length;
-      setTimeout(() => {
-        setIsTransitioning(false);
-        setCurrentIndex(realIndex);
-      }, 0);
-    } else if (currentIndex >= normalizedSlides.length + visibleCount) {
-      // We're in the "after" clones, jump to beginning
-      setTimeout(() => {
-        setIsTransitioning(false);
-        setCurrentIndex(visibleCount);
-      }, 0);
-    }
-  }, [loop, currentIndex, visibleCount, normalizedSlides.length]);
+/* -------------------------
+   Component
+--------------------------*/
+const Slider: React.FC<SliderProps> = ({
+  slides,
+  visibleCount: initialVisibleCount = 1,
+  loop = false,
+  autoplay = false,
+  autoplayInterval = 4000,
+  showArrows = true,
+  showDots = true,
+  breakpoints,
+  className = "",
+  slideClassName = "",
+  ariaLabel = "carousel",
+  centerMode = false,
+  snap = "none",
+  onChange,
+  prefersReducedMotion,
+}) => {
+  // Normalize slides
+  const baseSlides = useMemo(() => normalizeSlides(slides), [slides]);
+  const totalBase = baseSlides.length;
 
-  const nextSlide = useCallback(() => {
-    if (!loop && isAtEnd) {
-      if (reverseOnEnd) {
-        setIsReversed(true);
-        return;
-      }
+  // responsive visibleCount (useLayoutEffect for less flicker)
+  const [visibleCount, setVisibleCount] = useState(initialVisibleCount);
+  useLayoutEffect(() => {
+    if (!breakpoints) {
+      setVisibleCount(initialVisibleCount);
       return;
     }
-
-    const newIndex = currentIndex + 1;
-    goToSlide(newIndex);
-
-    // Calculate the actual slide index (excluding clones)
-    const actualIndex = loop
-      ? (((newIndex - visibleCount) % normalizedSlides.length) + normalizedSlides.length) %
-        normalizedSlides.length
-      : newIndex;
-    onSlideChange?.(actualIndex);
-  }, [
-    currentIndex,
-    isAtEnd,
-    loop,
-    goToSlide,
-    onSlideChange,
-    visibleCount,
-    normalizedSlides.length,
-    reverseOnEnd,
-  ]);
-
-  const prevSlide = useCallback(() => {
-    if (!loop && isAtStart) {
-      if (reverseOnEnd) {
-        setIsReversed(false);
-        return;
+    const update = () => {
+      const w = window.innerWidth;
+      const keys = Object.keys(breakpoints)
+        .map(Number)
+        .sort((a, b) => b - a);
+      for (const k of keys) {
+        if (w >= k) {
+          setVisibleCount(breakpoints[k]?.visibleCount ?? initialVisibleCount);
+          return;
+        }
       }
-      return;
+      setVisibleCount(initialVisibleCount);
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, [breakpoints, initialVisibleCount]);
+
+  // clones for seamless loop
+  const clonesCount = loop ? visibleCount : 0;
+  const slidesWithClones = useMemo(() => {
+    if (!loop || totalBase === 0) return baseSlides;
+    const head = baseSlides.slice(0, clonesCount).map((s, i) => ({
+      ...s,
+      id: `clone-head-${i}-${s.id}`,
+    }));
+    const tail = baseSlides.slice(-clonesCount).map((s, i) => ({
+      ...s,
+      id: `clone-tail-${i}-${s.id}`,
+    }));
+    return [...tail, ...baseSlides, ...head];
+  }, [loop, baseSlides, clonesCount, totalBase]);
+
+  const totalSlides = slidesWithClones.length;
+  const firstRealIndex = clonesCount; // index of baseSlides[0] inside slidesWithClones
+  const lastRealIndex = firstRealIndex + totalBase - 1;
+
+  // reduced motion
+  const reducedFromSystem = usePrefersReducedMotion(false);
+  const shouldReduceMotion = prefersReducedMotion ?? reducedFromSystem;
+
+  // state
+  const [current, setCurrent] = useState(firstRealIndex); // index in slidesWithClones
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStartX, setDragStartX] = useState(0);
+  const [dragOffsetX, setDragOffsetX] = useState(0);
+  const [trackWidthOnDrag, setTrackWidthOnDrag] = useState<number | null>(null);
+  const [isPaused, setIsPaused] = useState(false);
+
+  // refs
+  const trackRef = useRef<HTMLDivElement | null>(null);
+  const autoplayRef = useRef<number | null>(null);
+  const interactionTimeoutRef = useRef<number | null>(null);
+
+  // clamp helper (in real-index space)
+  const clampRealIndex = useCallback(
+    (realIndex: number) => {
+      if (totalBase === 0) return firstRealIndex;
+      if (realIndex < 0) return 0;
+      if (realIndex >= totalBase) return totalBase - 1;
+      return realIndex;
+    },
+    [totalBase, firstRealIndex]
+  );
+
+  /* -------------------------
+     NAVIGATION (all updates go through these)
+  --------------------------*/
+  // internal setter that keeps clones in mind; target is real slide index (0..totalBase-1)
+  const goToReal = useCallback(
+    (realIdx: number, { immediate = false } = {}) => {
+      if (totalBase === 0) return;
+      // compute the target index in slidesWithClones
+      const target = firstRealIndex + Math.max(0, Math.min(realIdx, totalBase - 1));
+
+      // if already transitioning, ignore (prevents double-trigger)
+      if (isTransitioning && !immediate) return;
+
+      // perform transition
+      setIsTransitioning(!immediate && !shouldReduceMotion);
+      setCurrent(target);
+      onChange?.(Math.max(0, Math.min(realIdx, totalBase - 1)));
+
+      if (!shouldReduceMotion && !immediate) {
+        // end of transition
+        window.setTimeout(() => setIsTransitioning(false), 300);
+      } else {
+        setIsTransitioning(false);
+      }
+    },
+    [firstRealIndex, isTransitioning, onChange, shouldReduceMotion, totalBase]
+  );
+
+  // go next/prev in real index steps
+  const goToNext = useCallback(() => {
+    if (totalBase === 0) return;
+    const currentReal = (current - firstRealIndex + totalBase) % totalBase;
+    let nextReal = currentReal + visibleCount;
+    if (!loop) nextReal = Math.min(nextReal, totalBase - visibleCount);
+    if (nextReal >= totalBase && !loop) return;
+    if (loop) nextReal = nextReal % totalBase;
+    goToReal(nextReal);
+  }, [current, firstRealIndex, goToReal, loop, totalBase, visibleCount]);
+
+  const goToPrev = useCallback(() => {
+    if (totalBase === 0) return;
+    const currentReal = (current - firstRealIndex + totalBase) % totalBase;
+    let prevReal = currentReal - visibleCount;
+    if (!loop) prevReal = Math.max(0, prevReal);
+    if (prevReal < 0 && !loop) return;
+    if (loop) {
+      // wrap
+      prevReal = ((prevReal % totalBase) + totalBase) % totalBase;
     }
-
-    const newIndex = currentIndex - 1;
-    goToSlide(newIndex);
-
-    const actualIndex = loop
-      ? (((newIndex - visibleCount) % normalizedSlides.length) + normalizedSlides.length) %
-        normalizedSlides.length
-      : newIndex;
-    onSlideChange?.(actualIndex);
-  }, [
-    currentIndex,
-    isAtStart,
-    loop,
-    goToSlide,
-    onSlideChange,
-    visibleCount,
-    normalizedSlides.length,
-    reverseOnEnd,
-  ]);
+    goToReal(prevReal);
+  }, [current, firstRealIndex, goToReal, loop, totalBase, visibleCount]);
 
   const goToPage = useCallback(
     (pageIndex: number) => {
-      const targetIndex = loop ? pageIndex + visibleCount : pageIndex;
-      goToSlide(targetIndex);
-      onSlideChange?.(pageIndex);
+      const real = pageIndex * visibleCount;
+      goToReal(real);
     },
-    [goToSlide, loop, visibleCount, onSlideChange]
+    [goToReal, visibleCount]
   );
 
-  // Autoplay with reverse support
-  const autoplayAction = useCallback(() => {
-    if (reverseOnEnd) {
-      if (isReversed) {
-        prevSlide();
-      } else {
-        nextSlide();
-      }
-    } else {
-      nextSlide();
-    }
-  }, [reverseOnEnd, isReversed, nextSlide, prevSlide]);
-
-  // Reset autoplay
-  const resetAutoplay = useCallback(() => {
-    if (!autoplay) return;
-
-    if (autoplayRef.current) {
-      clearInterval(autoplayRef.current);
-    }
-
-    autoplayRef.current = setInterval(autoplayAction, autoplayInterval);
-  }, [autoplay, autoplayAction, autoplayInterval]);
-
-  useEffect(() => {
-    if (!autoplay) return;
-
-    resetAutoplay();
-
-    return () => {
-      if (autoplayRef.current) {
-        clearInterval(autoplayRef.current);
-      }
-    };
-  }, [autoplay, resetAutoplay]);
-
-  const handleMouseEnter = useCallback(() => {
-    if (autoplay && autoplayRef.current) {
-      clearInterval(autoplayRef.current);
+  /* -------------------------
+     Autoplay
+  --------------------------*/
+  const clearAutoplay = useCallback(() => {
+    if (autoplayRef.current !== null) {
+      window.clearInterval(autoplayRef.current);
       autoplayRef.current = null;
     }
-  }, [autoplay]);
+  }, []);
 
-  const handleMouseLeave = useCallback(() => {
-    if (autoplay) {
-      resetAutoplay();
+  const startAutoplay = useCallback(() => {
+    clearAutoplay();
+    if (!autoplay || isPaused || totalBase <= visibleCount) return;
+    autoplayRef.current = window.setInterval(
+      () => {
+        goToNext();
+      },
+      Math.max(500, autoplayInterval)
+    );
+  }, [autoplay, autoplayInterval, clearAutoplay, goToNext, isPaused, totalBase, visibleCount]);
+
+  useEffect(() => {
+    startAutoplay();
+    return () => clearAutoplay();
+  }, [startAutoplay, clearAutoplay, current, isPaused]);
+
+  // Pause/resume helpers with unified cleanup
+  const pause = useCallback(() => {
+    setIsPaused(true);
+    clearAutoplay();
+    if (interactionTimeoutRef.current) {
+      window.clearTimeout(interactionTimeoutRef.current);
+      interactionTimeoutRef.current = null;
     }
-  }, [autoplay, resetAutoplay]);
+  }, [clearAutoplay]);
 
-  const minSwipeDistance = 50;
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    const firstTouch = e.targetTouches.item(0);
-    if (!firstTouch) return;
-    setTouchEnd(null);
-    setTouchStart(direction === "horizontal" ? firstTouch.clientX : firstTouch.clientY);
-    setIsDragging(true);
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    const firstTouch = e.targetTouches.item(0);
-    if (!firstTouch) return;
-    setTouchEnd(direction === "horizontal" ? firstTouch.clientX : firstTouch.clientY);
-  };
-
-  const handleTouchEnd = () => {
-    if (!touchStart || !touchEnd) {
-      setIsDragging(false);
-      return;
+  const resume = useCallback(() => {
+    if (interactionTimeoutRef.current) {
+      window.clearTimeout(interactionTimeoutRef.current);
     }
+    // small delay so quick hover/focus won't restart immediately
+    interactionTimeoutRef.current = window.setTimeout(() => {
+      setIsPaused(false);
+    }, 400);
+  }, []);
 
-    const distance = touchStart - touchEnd;
-    const isForwardSwipe = distance > minSwipeDistance;
-    const isBackwardSwipe = distance < -minSwipeDistance;
-
-    if (isForwardSwipe) {
-      nextSlide();
-    } else if (isBackwardSwipe) {
-      prevSlide();
-    }
-
-    setIsDragging(false);
-    resetAutoplay();
-  };
-
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (direction === "horizontal") {
-        if (e.key === "ArrowLeft") {
-          e.preventDefault();
-          prevSlide();
-          resetAutoplay();
-        } else if (e.key === "ArrowRight") {
-          e.preventDefault();
-          nextSlide();
-          resetAutoplay();
-        }
-      } else {
-        if (e.key === "ArrowUp") {
-          e.preventDefault();
-          prevSlide();
-          resetAutoplay();
-        } else if (e.key === "ArrowDown") {
-          e.preventDefault();
-          nextSlide();
-          resetAutoplay();
-        }
-      }
+  /* -------------------------
+     Drag / Swipe
+  --------------------------*/
+  const onPointerDown = useCallback(
+    (e: React.PointerEvent) => {
+      if (!trackRef.current) return;
+      (e.target as Element).setPointerCapture(e.pointerId);
+      setIsDragging(true);
+      setDragStartX(e.clientX);
+      setDragOffsetX(0);
+      setTrackWidthOnDrag(trackRef.current.offsetWidth);
+      pause();
     },
-    [prevSlide, nextSlide, resetAutoplay, direction]
+    [pause]
   );
 
-  const translateValue = useMemo(() => {
-    const slideSize = 100 / currentVisibleCount;
-    const gapAdjustment = (currentGap * currentIndex) / currentVisibleCount;
-    return -(currentIndex * slideSize);
-  }, [currentIndex, currentVisibleCount, currentGap]);
+  const onPointerMove = useCallback(
+    (e: React.PointerEvent) => {
+      if (!isDragging) return;
+      const offset = e.clientX - dragStartX;
+      setDragOffsetX(offset);
+    },
+    [isDragging, dragStartX]
+  );
 
-  const currentPageIndex = useMemo(() => {
-    if (loop) {
-      const actualIndex =
-        (((currentIndex - visibleCount) % normalizedSlides.length) + normalizedSlides.length) %
-        normalizedSlides.length;
-      return actualIndex;
+  const finalizeDrag = useCallback(() => {
+    if (!isDragging) return;
+    const threshold = Math.max(40, (trackWidthOnDrag || 1) * 0.12); // 12% or 40px min
+    if (Math.abs(dragOffsetX) > threshold) {
+      if (dragOffsetX > 0) goToPrev();
+      else goToNext();
     }
-    return currentIndex;
-  }, [currentIndex, loop, visibleCount, normalizedSlides.length]);
+    setIsDragging(false);
+    setDragOffsetX(0);
+    setTrackWidthOnDrag(null);
+    resume();
+  }, [isDragging, dragOffsetX, goToNext, goToPrev, resume, trackWidthOnDrag]);
 
-  const isHorizontal = direction === "horizontal";
+  // Cancel drag (pointer leave) - should cancel rather than commit
+  const cancelDrag = useCallback(() => {
+    if (!isDragging) return;
+    setIsDragging(false);
+    setDragOffsetX(0);
+    setTrackWidthOnDrag(null);
+    resume();
+  }, [isDragging, resume]);
 
+  /* -------------------------
+     Keyboard
+  --------------------------*/
+  const onKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      pause();
+      switch (e.key) {
+        case "ArrowLeft":
+          e.preventDefault();
+          goToPrev();
+          break;
+        case "ArrowRight":
+          e.preventDefault();
+          goToNext();
+          break;
+        case "Home":
+          e.preventDefault();
+          goToReal(0);
+          break;
+        case "End":
+          e.preventDefault();
+          goToReal(totalBase - visibleCount);
+          break;
+      }
+      resume();
+    },
+    [goToPrev, goToNext, goToReal, resume, pause, totalBase, visibleCount]
+  );
+
+  /* -------------------------
+     Handle clone boundary correction after transition
+     (When using clones, jump to the corresponding real slide without transition)
+  --------------------------*/
+  useEffect(() => {
+    if (!loop) return;
+    if (isTransitioning) return; // only correct after transition ends
+    // if current landed on a clone head / tail, jump to equivalent real index (no transition)
+    if (current < firstRealIndex) {
+      // landed in tail-clone zone: map to equivalent real index
+      const offsetFromTail = firstRealIndex - current; // e.g. 1 -> maps to last - 0
+      const real = (totalBase - offsetFromTail) % totalBase;
+      // jump immediately
+      setCurrent(firstRealIndex + real);
+      // no onChange because it's same slide; but call to keep external sync:
+      onChange?.(real);
+    } else if (current > lastRealIndex) {
+      // landed in head-clone zone
+      const offsetIntoHead = current - lastRealIndex - 1;
+      const real = offsetIntoHead % totalBase;
+      setCurrent(firstRealIndex + real);
+      onChange?.(real);
+    }
+  }, [current, firstRealIndex, lastRealIndex, loop, onChange, totalBase, isTransitioning]);
+
+  /* -------------------------
+     Clamp current when visibleCount / totalBase changes
+  --------------------------*/
+  useEffect(() => {
+    if (totalBase === 0) return;
+    // compute real index and clamp to safe range
+    const realIndex = (current - firstRealIndex + totalBase) % totalBase;
+    const maxStart = Math.max(0, totalBase - visibleCount);
+    const newReal = Math.min(realIndex, maxStart);
+    if (newReal !== realIndex) {
+      // immediate jump to clamped real index
+      const target = firstRealIndex + newReal;
+      setCurrent(target);
+      onChange?.(newReal);
+    }
+  }, [visibleCount, totalBase]); // intentionally minimal deps
+
+  /* -------------------------
+     Cleanup timers on unmount
+  --------------------------*/
+  useEffect(
+    () => () => {
+      // cleanup
+      clearAutoplay();
+      if (interactionTimeoutRef.current) {
+        window.clearTimeout(interactionTimeoutRef.current);
+        interactionTimeoutRef.current = null;
+      }
+    },
+    [clearAutoplay]
+  );
+
+  /* -------------------------
+     Render calculations
+  --------------------------*/
+  // width per slide in %
+  const slideWidthPct = 100 / visibleCount;
+  // translateX in percent (based on current index in slidesWithClones)
+  const baseTranslate = -(current * slideWidthPct);
+  // dragOffset expressed in percent of track width (use trackWidthOnDrag if exists, else compute)
+  const trackWidth = trackRef.current?.offsetWidth ?? trackWidthOnDrag ?? 1;
+  const dragPct = (dragOffsetX / trackWidth) * 100;
+  const translateX = baseTranslate + dragPct;
+
+  // pages/dots
+  const totalPages = Math.max(1, Math.ceil(totalBase / visibleCount));
+  const currentRealPage = Math.floor(
+    ((current - firstRealIndex + totalBase) % totalBase) / visibleCount
+  );
+
+  /* -------------------------
+     Edge cases: no slides or single slide
+  --------------------------*/
+  if (totalBase === 0) {
+    return (
+      <div
+        className={`py-8 text-center text-gray-500 ${className}`}
+        role='region'
+        aria-label={ariaLabel}
+      >
+        No slides available
+      </div>
+    );
+  }
+
+  if (totalBase === 1 && !loop) {
+    return (
+      <div
+        className={`relative ${className}`}
+        role='region'
+        aria-label={ariaLabel}
+      >
+        <div className='overflow-hidden'>
+          <div className={`w-full ${slideClassName}`}>{baseSlides[0]!.content}</div>
+        </div>
+      </div>
+    );
+  }
+
+  /* -------------------------
+     JSX
+  --------------------------*/
   return (
     <div
-      ref={sliderRef}
-      className={`relative w-full ${className}`}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      onKeyDown={handleKeyDown}
-      tabIndex={0}
+      className={`relative ${className}`}
       role='region'
-      aria-label='Content slider'
-      aria-live={autoplay ? "polite" : "off"}
+      aria-roledescription='carousel'
+      aria-label={ariaLabel}
+      onMouseEnter={autoplay ? pause : undefined}
+      onMouseLeave={autoplay ? resume : undefined}
+      onFocus={autoplay ? pause : undefined}
+      onBlur={autoplay ? resume : undefined}
     >
+      {/* Live region for accessible announcements */}
+      {autoplay && (
+        <div
+          className='sr-only'
+          aria-live='polite'
+          aria-atomic='true'
+        >
+          Slide {((current - firstRealIndex + totalBase) % totalBase) + 1} of {totalBase}
+        </div>
+      )}
+
+      {/* Track container */}
       <div
-        className='overflow-hidden relative'
-        style={!isHorizontal ? { height: "100%" } : {}}
+        className='overflow-hidden'
+        onKeyDown={onKeyDown}
+        tabIndex={0}
+        aria-roledescription='carousel'
       >
         <div
-          className={`flex ${isHorizontal ? "flex-row" : "flex-col"} ${isDragging ? "" : "transition-transform ease-out"}`}
-          style={{
-            transform: isHorizontal
-              ? `translateX(${translateValue}%)`
-              : `translateY(${translateValue}%)`,
-            transitionDuration: isDragging ? "0ms" : `${transitionDuration}ms`,
-            gap: `${currentGap}px`,
-            height: !isHorizontal ? "100%" : "auto",
+          ref={trackRef}
+          className='flex gap-4'
+          role='list'
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={e => {
+            // release pointer capture
+            try {
+              (e.target as Element).releasePointerCapture?.((e as any).pointerId);
+            } catch {}
+            finalizeDrag();
           }}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-          onTransitionEnd={handleTransitionEnd}
+          onPointerCancel={cancelDrag}
+          onPointerLeave={() => {
+            // if dragging -> cancel, otherwise do nothing
+            if (isDragging) cancelDrag();
+          }}
+          style={{
+            transform: `translateX(${translateX}%)`,
+            transition:
+              isTransitioning || (!isDragging && !shouldReduceMotion)
+                ? "transform 300ms cubic-bezier(0.4,0,0.2,1)"
+                : "none",
+            touchAction: "pan-y",
+            willChange: "transform",
+            cursor: isDragging ? "grabbing" : "grab",
+          }}
         >
-          {extendedSlides.map((slide, index) => (
-            <div
-              key={slide.id}
-              className='flex shrink-0 select-none'
-              style={{
-                [isHorizontal ? "flexBasis" : "minHeight"]:
-                  `calc(${100 / currentVisibleCount}% - ${(currentGap * (currentVisibleCount - 1)) / currentVisibleCount}px)`,
-                width: !isHorizontal ? "100%" : "auto",
-              }}
-            >
-              {slide.content}
-            </div>
-          ))}
+          {slidesWithClones.map((s, idx) => {
+            const visible = idx >= current && idx < current + visibleCount;
+            return (
+              <div
+                key={s.id || `${idx}`}
+                role='listitem'
+                aria-hidden={!visible}
+                className={`flex-shrink-0 ${slideClassName}`}
+                style={{ width: `${slideWidthPct}%` }}
+              >
+                {s.content}
+              </div>
+            );
+          })}
         </div>
       </div>
 
-      {showArrows && normalizedSlides.length > currentVisibleCount && (
+      {/* Arrows */}
+      {showArrows && totalBase > visibleCount && (
         <>
           <button
-            onClick={() => {
-              prevSlide();
-              resetAutoplay();
-            }}
-            disabled={isAtStart && !reverseOnEnd}
-            className={`absolute ${
-              isHorizontal ? "left-2 top-1/2 -translate-y-1/2" : "top-2 left-1/2 -translate-x-1/2"
-            } z-10 bg-white/90 hover:bg-white shadow-lg rounded-full p-2 
-              transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed
-              focus:outline-none focus:ring-2 focus:ring-blue-500`}
             aria-label='Previous slide'
+            onClick={goToPrev}
+            className='absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-2 shadow z-10 disabled:opacity-50'
+            disabled={!loop && current - firstRealIndex <= 0}
           >
-            {customArrows?.prev ||
-              (isHorizontal ? (
-                <ChevronLeft className='w-6 h-6 text-gray-800' />
-              ) : (
-                <ChevronUp className='w-6 h-6 text-gray-800' />
-              ))}
+            <svg
+              className='w-5 h-5'
+              viewBox='0 0 24 24'
+              fill='none'
+              stroke='currentColor'
+            >
+              <path
+                strokeWidth={2}
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                d='M15 19l-7-7 7-7'
+              />
+            </svg>
           </button>
-
           <button
-            onClick={() => {
-              nextSlide();
-              resetAutoplay();
-            }}
-            disabled={isAtEnd && !reverseOnEnd}
-            className={`absolute ${
-              isHorizontal
-                ? "right-2 top-1/2 -translate-y-1/2"
-                : "bottom-2 left-1/2 -translate-x-1/2"
-            } z-10 bg-white/90 hover:bg-white shadow-lg rounded-full p-2 
-              transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed
-              focus:outline-none focus:ring-2 focus:ring-blue-500`}
             aria-label='Next slide'
+            onClick={goToNext}
+            className='absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-2 shadow z-10 disabled:opacity-50'
+            disabled={!loop && current - firstRealIndex >= totalBase - visibleCount}
           >
-            {customArrows?.next ||
-              (isHorizontal ? (
-                <ChevronRight className='w-6 h-6 text-gray-800' />
-              ) : (
-                <ChevronDown className='w-6 h-6 text-gray-800' />
-              ))}
+            <svg
+              className='w-5 h-5'
+              viewBox='0 0 24 24'
+              fill='none'
+              stroke='currentColor'
+            >
+              <path
+                strokeWidth={2}
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                d='M9 5l7 7-7 7'
+              />
+            </svg>
           </button>
         </>
       )}
 
-      {showDots && normalizedSlides.length > 1 && (
+      {/* Dots */}
+      {showDots && totalPages > 1 && (
         <div
-          className={`flex ${isHorizontal ? "flex-row" : "flex-col"} justify-center gap-2 ${isHorizontal ? "mt-4" : "absolute right-4 top-1/2 -translate-y-1/2"}`}
+          className='flex justify-center gap-2 mt-3'
           role='tablist'
+          aria-label='Carousel pages'
         >
-          {normalizedSlides.map((_, pageIndex) => {
-            const isActive = currentPageIndex === pageIndex;
-            return (
-              <button
-                key={pageIndex}
-                onClick={() => {
-                  goToPage(pageIndex);
-                  resetAutoplay();
-                }}
-                className={`rounded-full transition-all duration-300
-                  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
-                  ${
-                    isActive
-                      ? `bg-blue-600 ${isHorizontal ? "w-8 h-2.5" : "w-2.5 h-8"}`
-                      : `bg-gray-300 hover:bg-gray-400 w-2.5 h-2.5`
-                  }`}
-                aria-label={`Go to slide ${pageIndex + 1}`}
-                aria-current={isActive}
-                role='tab'
-              />
-            );
-          })}
+          {Array.from({ length: totalPages }).map((_, page) => (
+            <button
+              key={page}
+              role='tab'
+              aria-current={page === currentRealPage}
+              aria-label={`Go to page ${page + 1}`}
+              onClick={() => goToPage(page)}
+              className={`rounded-full transition-all ${page === currentRealPage ? "w-6 h-2 bg-blue-600" : "w-2 h-2 bg-gray-300 hover:bg-gray-400"}`}
+            />
+          ))}
         </div>
       )}
     </div>
   );
 };
+
 export default Slider;

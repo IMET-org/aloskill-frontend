@@ -1,7 +1,7 @@
 // components/InstructorCard.tsx - FIXED VERSION
 
 import type { InstructorCardProps } from "@/types/instructor.types";
-import { Award, Share2, Star } from "lucide-react";
+import { ArrowRight, Award, Share2, Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -12,9 +12,6 @@ function InstructorCard({
   onLeave,
   animationDelay = 0,
 }: InstructorCardProps) {
-  console.log("instructorrrr::", instructor);
-
-  // Generate a border color based on expertise or category
   const getBorderColor = () => {
     const colors = [
       "#3b82f6", // blue
@@ -29,8 +26,6 @@ function InstructorCard({
       "#14b8a6", // teal
     ];
 
-    // Use instructor ID to generate consistent random color
-    // This ensures same instructor always gets same color
     const hash = instructor.id.split("").reduce((acc, char) => {
       return char.charCodeAt(0) + ((acc << 5) - acc);
     }, 0);
@@ -146,11 +141,11 @@ function InstructorCard({
         </div>
 
         {/* Instructor Info Card */}
-        <div className='absolute bottom-4 left-4 right-4 bg-white rounded-xl p-4 shadow-lg'>
+        <div className='absolute bottom-4 left-4 right-4 bg-white rounded-lg p-2 shadow-lg'>
           <div className='flex items-center justify-between'>
             <div className='flex-1 min-w-0'>
-              <h3 className='text-lg font-bold text-gray-900 mb-1 truncate'>{instructor.name}</h3>
-              <p className='text-sm text-gray-600 font-medium truncate mb-1'>
+              <h3 className='text-md font-bold text-gray-900 mb-1 truncate'>{instructor.name}</h3>
+              <p className='text-sm text-gray-600  truncate mb-1'>
                 {instructor?.skills && instructor?.skills.join(", ")}
               </p>
 
@@ -176,20 +171,8 @@ function InstructorCard({
               </div> */}
             </div>
 
-            <div className='flex items-center justify-center w-10 h-10 bg-purple-50 rounded-lg hover:bg-[#DA7C36] transition-colors duration-300 shrink-0 ml-2'>
-              <svg
-                className='w-6 h-6 text-purple-400 hover:text-white transition-colors duration-300'
-                fill='none'
-                stroke='currentColor'
-                viewBox='0 0 24 24'
-              >
-                <path
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  strokeWidth={2}
-                  d='M14 5l7 7m0 0l-7 7m7-7H3'
-                />
-              </svg>
+            <div className='flex items-center justify-center w-8 h-8 bg-purple-50 rounded-lg hover:bg-[#DA7C36] transition-colors duration-300 shrink-0 ml-2'>
+              <ArrowRight className='w-4 h-4' />
             </div>
           </div>
         </div>

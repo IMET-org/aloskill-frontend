@@ -1,8 +1,8 @@
 "use client";
 
 import { BookOpen, ChevronLeft, ChevronRight, Sparkles, Star, TrendingUp } from "lucide-react";
-import Image from "next/image";
 import { useEffect, useState } from "react";
+import { SidebarImageSlider } from "./SidebarImageSlider.jsx";
 
 const cards = [
   {
@@ -35,26 +35,9 @@ const cards = [
   },
 ];
 
-const images = [
-  "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&h=300&fit=crop",
-  "https://images.unsplash.com/photo-1495446815901-a7297e633e8d?w=400&h=300&fit=crop",
-  "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&h=300&fit=crop",
-  "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&h=300&fit=crop",
-];
-
 export default function RightSidebar() {
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
-
-  // Auto-scroll images
-  useEffect(() => {
-    if (isPaused) return;
-    const timer = setInterval(() => {
-      setCurrentImageIndex(prev => (prev + 1) % images.length);
-    }, 3000);
-    return () => clearInterval(timer);
-  }, [isPaused]);
 
   // Auto-scroll cards
   useEffect(() => {
@@ -77,57 +60,7 @@ export default function RightSidebar() {
     >
       <div className='p-4 space-y-4'>
         {/* Image Slider */}
-        <div className='relative group rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300'>
-          <div className='relative h-48 bg-gray-100'>
-            {images.map((image, index) => (
-              <Image
-                key={index}
-                src={image}
-                alt={`Book showcase ${index + 1}`}
-                width={288}
-                height={192}
-                className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
-                  index === currentImageIndex ? "opacity-100" : "opacity-0"
-                }`}
-                priority={index === 0}
-              />
-            ))}
-
-            {/* Navigation Arrows */}
-            <button
-              onClick={() =>
-                setCurrentImageIndex(prev => (prev - 1 + images.length) % images.length)
-              }
-              className='absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-md'
-              aria-label='Previous image'
-            >
-              <ChevronLeft className='w-4 h-4 text-gray-700' />
-            </button>
-            <button
-              onClick={() => setCurrentImageIndex(prev => (prev + 1) % images.length)}
-              className='absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-md'
-              aria-label='Next image'
-            >
-              <ChevronRight className='w-4 h-4 text-gray-700' />
-            </button>
-
-            {/* Dot Indicators */}
-            <div className='absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2'>
-              {images.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentImageIndex(index)}
-                  className={`h-2 rounded-full transition-all duration-300 ${
-                    index === currentImageIndex
-                      ? "bg-white w-6"
-                      : "bg-white/60 hover:bg-white/80 w-2"
-                  }`}
-                  aria-label={`Go to image ${index + 1}`}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
+        <SidebarImageSlider />
 
         {/* Animated Card Slider */}
         <div className='relative group'>

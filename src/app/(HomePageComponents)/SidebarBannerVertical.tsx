@@ -8,14 +8,14 @@ export function SidebarAdBanner() {
   ];
 
   return (
-    <div className='w-80 mx-auto h-96'>
+    <div className='w-80 mx-auto'>
       <Slider
         slides={ads.map((ad, i) => (
           <div
             key={i}
-            className={`${ad.bg} text-black  rounded-lg p-6 h-32 flex flex-col justify-center`}
+            className={`${ad.bg} text-black w-full rounded-lg p-6 h-32 flex flex-col justify-center`}
           >
-            <h3 className='text-3xl font-bold '>{ad.title}</h3>
+            <h3 className='text-3xl font-bold'>{ad.title}</h3>
             <p className='text-lg'>{ad.subtitle}</p>
           </div>
         ))}
@@ -23,9 +23,8 @@ export function SidebarAdBanner() {
         autoplay
         autoplayInterval={3000}
         loop
-        showArrows={true}
+        showArrows={false}
         showDots={true}
-        direction='horizontal'
       />
     </div>
   );

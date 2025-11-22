@@ -43,8 +43,8 @@ const SectionHeader = memo(function SectionHeader({
             </span>
           </div>
         )}
-        <h2 className='text-xl font-black'>{title}</h2>
-        {subtitle && <p className='mt-3 text-gray-600 text-lg'>{subtitle}</p>}
+        <h2 className='text-2xl font-black w-2/3'>{title}</h2>
+        {subtitle && <p className='mt-6 text-gray-600 text-md'>{subtitle}</p>}
       </div>
 
       {showButton && (

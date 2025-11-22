@@ -1,12 +1,13 @@
 // File: components/home/PopularCoursesSection.tsx
 "use client";
 
-import type { Course } from "@/app/(mainLayout)/courses/course.types.ts";
 import SectionHeader from "@/components/sections/SectionHeader";
+import Slider from "@/components/slider/Slider.tsx";
 import { Pencil } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
-import CourseSlider from "./CourseSlider.tsx";
+import CourseCard from "../(withoutSidebarLayout)/courses/CourseCard.tsx";
+import type { Course } from "../(withoutSidebarLayout)/courses/allCourses.types.ts";
 
 // Mock data - In production, fetch from API
 const INITIAL_COURSES: Course[] = [
@@ -54,6 +55,134 @@ const INITIAL_COURSES: Course[] = [
   },
   {
     id: 3,
+    image: "https://images.unsplash.com/photo-1556761175-b413da4baf72?w=500&q=80",
+    category: "Social Marketing",
+    categoryColor: "bg-purple-700",
+    rating: 4.5,
+    reviewCount: "4.5k",
+    price: 50.0,
+    originalPrice: 75.0,
+    discount: 33,
+    title: "Starting SEO As Your Home Based Business",
+    lessons: 8,
+    duration: "19h 30m",
+    students: "20+",
+    level: "Intermediate",
+    language: "English",
+    certificate: true,
+    instructor: {
+      name: "Morgan",
+      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Morgan",
+    },
+  },
+  {
+    id: 4,
+    image: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=500&q=80",
+    category: "Digital Marketing",
+    categoryColor: "bg-blue-900",
+    rating: 4.5,
+    reviewCount: "4.5k",
+    price: 50.0,
+    originalPrice: 100.0,
+    discount: 50,
+    title: "IT Statistics Data Science And Business Analysis",
+    lessons: 10,
+    duration: "19h 30m",
+    students: "20+",
+    level: "Beginner",
+    language: "English",
+    certificate: true,
+    instructor: {
+      name: "Samantha",
+      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Samantha",
+    },
+  },
+  {
+    id: 5,
+    image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=500&q=80",
+    category: "Social Marketing",
+    categoryColor: "bg-purple-700",
+    rating: 4.5,
+    reviewCount: "4.5k",
+    price: 50.0,
+    title: "Beginner Adobe Illustrator For Graphic Design",
+    lessons: 10,
+    duration: "19h 30m",
+    students: "20+",
+    level: "Beginner",
+    language: "English",
+    certificate: true,
+    instructor: {
+      name: "Charles",
+      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Charles",
+    },
+  },
+  {
+    id: 6,
+    image: "https://images.unsplash.com/photo-1556761175-b413da4baf72?w=500&q=80",
+    category: "Social Marketing",
+    categoryColor: "bg-purple-700",
+    rating: 4.5,
+    reviewCount: "4.5k",
+    price: 50.0,
+    originalPrice: 75.0,
+    discount: 33,
+    title: "Starting SEO As Your Home Based Business",
+    lessons: 8,
+    duration: "19h 30m",
+    students: "20+",
+    level: "Intermediate",
+    language: "English",
+    certificate: true,
+    instructor: {
+      name: "Morgan",
+      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Morgan",
+    },
+  },
+  {
+    id: 7,
+    image: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=500&q=80",
+    category: "Digital Marketing",
+    categoryColor: "bg-blue-900",
+    rating: 4.5,
+    reviewCount: "4.5k",
+    price: 50.0,
+    originalPrice: 100.0,
+    discount: 50,
+    title: "IT Statistics Data Science And Business Analysis",
+    lessons: 10,
+    duration: "19h 30m",
+    students: "20+",
+    level: "Beginner",
+    language: "English",
+    certificate: true,
+    instructor: {
+      name: "Samantha",
+      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Samantha",
+    },
+  },
+  {
+    id: 8,
+    image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=500&q=80",
+    category: "Social Marketing",
+    categoryColor: "bg-purple-700",
+    rating: 4.5,
+    reviewCount: "4.5k",
+    price: 50.0,
+    title: "Beginner Adobe Illustrator For Graphic Design",
+    lessons: 10,
+    duration: "19h 30m",
+    students: "20+",
+    level: "Beginner",
+    language: "English",
+    certificate: true,
+    instructor: {
+      name: "Charles",
+      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Charles",
+    },
+  },
+  {
+    id: 9,
     image: "https://images.unsplash.com/photo-1556761175-b413da4baf72?w=500&q=80",
     category: "Social Marketing",
     categoryColor: "bg-purple-700",
@@ -190,7 +319,18 @@ export default function PopularCoursesSection() {
       setIsLoading(false);
     }
   }, []);
-
+  // Map courses to CourseCard components
+  const courseSlides = courses.map(course => (
+    <CourseCard
+      key={course.id}
+      {...course}
+      onEnroll={handleEnroll}
+      onAddToCart={handleAddToCart}
+      onAddToWishlist={handleAddToWishlist}
+      isInCart={cartItems.has(String(course.id))}
+      isInWishlist={wishlistItems.has(String(course.id))}
+    />
+  ));
   return (
     <section
       className='py-16 md:py-24 bg-linear-to-b from-white to-gray-50 relative overflow-hidden'
@@ -223,29 +363,32 @@ export default function PopularCoursesSection() {
           isLoading={isLoading}
         />
 
-        {/* Courses Grid */}
-        {/* <CourseGrid
-          courses={courses}
-          isLoading={false}
-          onEnroll={handleEnroll}
-          onAddToCart={handleAddToCart}
-          onAddToWishlist={handleAddToWishlist}
-          cartItems={cartItems}
-          wishlistItems={wishlistItems}
-          emptyStateMessage='No popular courses available right now. Check back soon!'
-        /> */}
-
-        <CourseSlider
-          courses={courses}
-          isLoading={false}
-          autoScrollSpeed={3000} // 3 seconds per scroll
-          pauseOnHover={true} // Pause when user hovers
-          onEnroll={handleEnroll}
-          onAddToCart={handleAddToCart}
-          onAddToWishlist={handleAddToWishlist}
-          cartItems={cartItems}
-          wishlistItems={wishlistItems}
+        <Slider
+          slides={courseSlides}
+          visibleCount={3}
+          breakpoints={{
+            0: { visibleCount: 1 },
+            640: { visibleCount: 2 },
+            1024: { visibleCount: 3 },
+          }}
+          autoplay
+          loop
+          autoplayInterval={3000}
+          showArrows
+          showDots
         />
+
+        {/* <CourseSlider
+          courses={courses}
+          isLoading={false}
+          autoScrollSpeed={50}
+          pauseOnHover={true}
+          onEnroll={handleEnroll}
+          onAddToCart={handleAddToCart}
+          onAddToWishlist={handleAddToWishlist}
+          cartItems={cartItems}
+          wishlistItems={wishlistItems}
+        /> */}
       </div>
     </section>
   );
