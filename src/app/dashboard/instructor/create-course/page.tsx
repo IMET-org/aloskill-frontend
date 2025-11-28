@@ -7,15 +7,35 @@ import Step2 from "./Step2.tsx";
 import Step3 from "./Step3.tsx";
 import Step4 from "./Step4.tsx";
 
+type Quiz = {
+  title: string;
+  description?: string;
+  duration?: number;
+  passingScore: number;
+  attemptsAllowed: number;
+  questions: {
+    position: number;
+    text: string;
+    type: "MULTIPLE_CHOICE" | "TRUE_FALSE" | "SINGLE_CHOICE";
+    points: number;
+    options: {
+      position: number;
+      text: string;
+      isCorrect: boolean;
+    }[];
+  }[];
+};
+
 export type CourseLesson = {
   position: number;
   title: string;
   description: string;
   notes?: string;
-  type: "VIDEO" | "ARTICLE" | "QUIZ" | "ASSIGNMENT" | null;
+  type: "VIDEO" | "ARTICLE" | "QUIZ" | null;
   contentUrl?: string | null;
   files?: string[];
   duration?: number | null;
+  quiz?: Quiz;
 };
 
 type CourseInstructor = {

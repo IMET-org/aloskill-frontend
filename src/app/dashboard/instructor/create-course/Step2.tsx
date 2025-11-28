@@ -1,12 +1,6 @@
 /* eslint-disable jsx-a11y/alt-text */
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Image,
-  Play,
-  Plus,
-  Trash,
-  Upload,
-} from "lucide-react";
+import { Image, Play, Plus, Trash, Upload } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import z from "zod";
@@ -25,29 +19,38 @@ const CourseDescriptionSchema = z.object({
   description: z
     .string()
     .trim()
-    .min(10, 'Description must be at least 10 characters long')
-    .regex(/^[^<>]*$/, 'Description must not contain any opening or closing HTML tags'),
+    .min(10, "Description must be at least 10 characters long")
+    .regex(/^[^<>]*$/, "Description must not contain any opening or closing HTML tags"),
   whatYouTeach: z
-    .array(z.string()
-      .trim()
-      .min(10, 'Must be at least 10 characters long.')
-      .max(120, 'Cannot exceed 120 characters.'),)
-    .min(1, 'You must define at least one teaching objective.')
-    .max(5, 'You can define a maximum of 5 teaching objectives.'),
+    .array(
+      z
+        .string()
+        .trim()
+        .min(10, "Must be at least 10 characters long.")
+        .max(120, "Cannot exceed 120 characters.")
+    )
+    .min(1, "You must define at least one teaching objective.")
+    .max(5, "You can define a maximum of 5 teaching objectives."),
   targetAudience: z
-    .array(z.string()
-      .trim()
-      .min(10, 'Must be at least 10 characters long.')
-      .max(120, 'Cannot exceed 120 characters.'),)
-    .min(1, 'You must define at least one teaching objective.')
-    .max(5, 'You can define a maximum of 5 teaching objectives.'),
+    .array(
+      z
+        .string()
+        .trim()
+        .min(10, "Must be at least 10 characters long.")
+        .max(120, "Cannot exceed 120 characters.")
+    )
+    .min(1, "You must define at least one teaching objective.")
+    .max(5, "You can define a maximum of 5 teaching objectives."),
   requirements: z
-    .array(z.string()
-      .trim()
-      .min(10, 'Must be at least 10 characters long.')
-      .max(120, 'Cannot exceed 120 characters.'),)
-    .min(1, 'You must define at least one requirement.')
-    .max(5, 'You can define a maximum of 5 requirements.'),
+    .array(
+      z
+        .string()
+        .trim()
+        .min(10, "Must be at least 10 characters long.")
+        .max(120, "Cannot exceed 120 characters.")
+    )
+    .min(1, "You must define at least one requirement.")
+    .max(5, "You can define a maximum of 5 requirements."),
 });
 
 function Step2({
@@ -61,27 +64,38 @@ function Step2({
   courseData: CreateCourseData;
   setCourseData: React.Dispatch<React.SetStateAction<CreateCourseData>>;
 }) {
-  const courseDescriptionParsed: {description:string, whatYouTeach:string[], targetAudience:string[], requirements:string[]} = (() => {
+  const courseDescriptionParsed: {
+    description: string;
+    whatYouTeach: string[];
+    targetAudience: string[];
+    requirements: string[];
+  } = (() => {
     try {
-      const parsedData = JSON.parse(courseData.description || '{}');
+      const parsedData = JSON.parse(courseData.description || "{}");
       return {
-        description: parsedData.description || '',
+        description: parsedData.description || "",
         whatYouTeach: parsedData.whatYouTeach ? parsedData.whatYouTeach.split("||") : [""],
         targetAudience: parsedData.targetAudience ? parsedData.targetAudience.split("||") : [""],
         requirements: parsedData.requirements ? parsedData.requirements.split("||") : [""],
       };
     } catch {
       return {
-        description: '',
+        description: "",
         whatYouTeach: [""],
         targetAudience: [""],
         requirements: [""],
       };
     }
   })();
-  const [whatYouTeach, setWhatYouTeach] = useState<string[]>(courseDescriptionParsed.whatYouTeach|| [""]);
-  const [targetAudience, setTargetAudience] = useState<string[]>(courseDescriptionParsed.targetAudience|| [""]);
-  const [requirements, setRequirements] = useState<string[]>(courseDescriptionParsed.requirements|| [""]);
+  const [whatYouTeach, setWhatYouTeach] = useState<string[]>(
+    courseDescriptionParsed.whatYouTeach || [""]
+  );
+  const [targetAudience, setTargetAudience] = useState<string[]>(
+    courseDescriptionParsed.targetAudience || [""]
+  );
+  const [requirements, setRequirements] = useState<string[]>(
+    courseDescriptionParsed.requirements || [""]
+  );
   const {
     register,
     handleSubmit,
@@ -92,22 +106,27 @@ function Step2({
     const { description, whatYouTeach, targetAudience, requirements } = data;
     setCourseData(prev => ({
       ...prev,
-      description: JSON.stringify({description, whatYouTeach: whatYouTeach.join("||"), targetAudience: targetAudience.join("||"), requirements: requirements.join("||")}),
+      description: JSON.stringify({
+        description,
+        whatYouTeach: whatYouTeach.join("||"),
+        targetAudience: targetAudience.join("||"),
+        requirements: requirements.join("||"),
+      }),
     }));
     setCurrentStep(currentStep + 1);
   };
 
   const addNewItem = (field: string) => {
     if (field === "whatYouTeach") {
-      if(whatYouTeach.length >=5) return;
+      if (whatYouTeach.length >= 5) return;
       setWhatYouTeach(prev => [...prev, ""]);
     }
     if (field === "targetAudience") {
-      if(targetAudience.length >=5) return;
+      if (targetAudience.length >= 5) return;
       setTargetAudience(prev => [...prev, ""]);
     }
     if (field === "requirements") {
-      if(requirements.length >=5) return;
+      if (requirements.length >= 5) return;
       setRequirements(prev => [...prev, ""]);
     }
   };
@@ -152,13 +171,10 @@ function Step2({
     setCurrentStep(currentStep - 1);
   };
 
-
   return (
     <div className='w-full bg-white'>
       {/* Header */}
-      <StepHeader
-        headingText='Advance Information'
-      />
+      <StepHeader headingText='Advance Information' />
       {/* Form Content */}
       <form onSubmit={handleSubmit(onSubmit)}>
         <div>
@@ -181,8 +197,9 @@ function Step2({
                     <span className='font-semibold'>Important</span>
                   </p>
                   <p className='text-sm text-gray-600'>
-                    <span className='font-semibold'>guidelines:</span> 1200x800 pixels or 12:8 Ratio.
-                    Supported format: <span className='font-semibold'>.jpg, .jpeg, or .png</span>
+                    <span className='font-semibold'>guidelines:</span> 1200x800 pixels or 12:8
+                    Ratio. Supported format:{" "}
+                    <span className='font-semibold'>.jpg, .jpeg, or .png</span>
                   </p>
                   <button className='flex items-center gap-2 px-4 py-1.5 bg-orange-50 text-orange rounded font-medium hover:bg-orange-100 transition-colors'>
                     <Upload size={16} />
@@ -227,7 +244,7 @@ function Step2({
                 {...register("description", {
                   required: "Description is required",
                 })}
-                defaultValue={courseDescriptionParsed.description || ''}
+                defaultValue={courseDescriptionParsed.description || ""}
                 placeholder='Enter you course descriptions'
                 rows={4}
                 className={`w-full px-4 py-1.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-orange-light focus:border-transparent placeholder:text-sm resize-none ${errors.description ? "border-red-200 bg-red-50" : "border-gray-200"}`}
@@ -245,7 +262,7 @@ function Step2({
                 What you will teach in this course ({whatYouTeach.length}/5)
               </h4>
               <button
-                type="button"
+                type='button'
                 onClick={() => addNewItem("whatYouTeach")}
                 className='flex items-center gap-1 text-orange-500 font-medium text-sm hover:text-orange transition-colors cursor-pointer'
               >
@@ -258,7 +275,12 @@ function Step2({
                 <div key={index}>
                   <div className='flex items-center justify-between mb-1'>
                     <label className='block text-xs text-gray-600'>0{index + 1}</label>
-                    <span onClick={() => deleteItem("whatYouTeach", index)} className="p-2 rounded-full hover:bg-gray-50 cursor-pointer"><Trash className="w-4 h-4" /></span>
+                    <span
+                      onClick={() => deleteItem("whatYouTeach", index)}
+                      className='p-2 rounded-full hover:bg-gray-50 cursor-pointer'
+                    >
+                      <Trash className='w-4 h-4' />
+                    </span>
                   </div>
                   <div className='relative'>
                     <input
@@ -271,20 +293,18 @@ function Step2({
                       className={`w-full px-4 py-1.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-orange-light focus:border-transparent placeholder:text-sm resize-none ${errors.whatYouTeach?.[index] ? "border-red-200 bg-red-50" : "border-gray-200"}`}
                     />
                     {errors.whatYouTeach?.[index] && (
-                      <p className="text-sm text-red-600">
-                        {errors.whatYouTeach[index].message}
-                      </p>
+                      <p className='text-sm text-red-600'>{errors.whatYouTeach[index].message}</p>
                     )}
-                    <span className={`absolute right-4 ${errors.whatYouTeach?.[index] ? "top-[15%] bg-red-50" : "top-1/2 -translate-y-1/2 bg-white"} text-xs text-gray-400 pl-2`}>
+                    <span
+                      className={`absolute right-4 ${errors.whatYouTeach?.[index] ? "top-[15%] bg-red-50" : "top-1/2 -translate-y-1/2 bg-white"} text-xs text-gray-400 pl-2`}
+                    >
                       {item.length}/120
                     </span>
                   </div>
                 </div>
               ))}
               {errors.whatYouTeach?.message && (
-                <p className="text-sm text-red-600">
-                  {errors.whatYouTeach.message}
-                </p>
+                <p className='text-sm text-red-600'>{errors.whatYouTeach.message}</p>
               )}
             </div>
           </div>
@@ -292,9 +312,11 @@ function Step2({
           {/* Target Audience */}
           <div className='p-6 border-b border-gray-200'>
             <div className='flex items-center justify-between mb-4'>
-              <h4 className='font-semibold text-gray-900'>Target Audience ({targetAudience.length}/5)</h4>
+              <h4 className='font-semibold text-gray-900'>
+                Target Audience ({targetAudience.length}/5)
+              </h4>
               <button
-                type="button"
+                type='button'
                 onClick={() => addNewItem("targetAudience")}
                 className='flex items-center gap-1 text-orange-500 font-medium text-sm hover:text-orange transition-colors cursor-pointer'
               >
@@ -307,7 +329,12 @@ function Step2({
                 <div key={index}>
                   <div className='flex items-center justify-between mb-1'>
                     <label className='block text-xs text-gray-600'>0{index + 1}</label>
-                    <span onClick={() => deleteItem("targetAudience", index)} className="p-2 rounded-full hover:bg-gray-50 cursor-pointer"><Trash className="w-4 h-4" /></span>
+                    <span
+                      onClick={() => deleteItem("targetAudience", index)}
+                      className='p-2 rounded-full hover:bg-gray-50 cursor-pointer'
+                    >
+                      <Trash className='w-4 h-4' />
+                    </span>
                   </div>
                   <div className='relative'>
                     <input
@@ -315,25 +342,25 @@ function Step2({
                       type='text'
                       placeholder='Who this course is for...'
                       value={item}
-                      onChange={e => handleArrayInputChange("targetAudience", index, e.target.value)}
+                      onChange={e =>
+                        handleArrayInputChange("targetAudience", index, e.target.value)
+                      }
                       maxLength={120}
                       className={`w-full px-4 py-1.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-orange-light focus:border-transparent placeholder:text-sm resize-none ${errors.targetAudience?.[index] ? "border-red-200 bg-red-50" : "border-gray-200"}`}
                     />
                     {errors.targetAudience?.[index] && (
-                      <p className="text-sm text-red-600">
-                        {errors.targetAudience[index].message}
-                      </p>
+                      <p className='text-sm text-red-600'>{errors.targetAudience[index].message}</p>
                     )}
-                    <span className={`absolute right-4 ${errors.targetAudience?.[index] ? "top-[15%] bg-red-50" : "top-1/2 -translate-y-1/2 bg-white"} text-xs text-gray-400 pl-2`}>
+                    <span
+                      className={`absolute right-4 ${errors.targetAudience?.[index] ? "top-[15%] bg-red-50" : "top-1/2 -translate-y-1/2 bg-white"} text-xs text-gray-400 pl-2`}
+                    >
                       {item.length}/120
                     </span>
                   </div>
                 </div>
               ))}
               {errors.targetAudience?.message && (
-                <p className="text-sm text-red-600">
-                  {errors.targetAudience.message}
-                </p>
+                <p className='text-sm text-red-600'>{errors.targetAudience.message}</p>
               )}
             </div>
           </div>
@@ -341,9 +368,11 @@ function Step2({
           {/* Course requirements */}
           <div className='p-6 pb-0'>
             <div className='flex items-center justify-between mb-4'>
-              <h4 className='font-semibold text-gray-900'>Course requirements ({requirements.length}/5)</h4>
+              <h4 className='font-semibold text-gray-900'>
+                Course requirements ({requirements.length}/5)
+              </h4>
               <button
-                type="button"
+                type='button'
                 onClick={() => addNewItem("requirements")}
                 className='flex items-center gap-1 text-orange-500 font-medium text-sm hover:text-orange transition-colors cursor-pointer'
               >
@@ -356,7 +385,12 @@ function Step2({
                 <div key={index}>
                   <div className='flex items-center justify-between mb-1'>
                     <label className='block text-xs text-gray-600'>0{index + 1}</label>
-                    <span onClick={() => deleteItem("requirements", index)} className="p-2 rounded-full hover:bg-gray-50 cursor-pointer"><Trash className="w-4 h-4" /></span>
+                    <span
+                      onClick={() => deleteItem("requirements", index)}
+                      className='p-2 rounded-full hover:bg-gray-50 cursor-pointer'
+                    >
+                      <Trash className='w-4 h-4' />
+                    </span>
                   </div>
                   <div className='relative'>
                     <input
@@ -369,26 +403,24 @@ function Step2({
                       className={`w-full px-4 py-1.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-orange-light focus:border-transparent placeholder:text-sm resize-none ${errors.requirements?.[index] ? "border-red-200 bg-red-50" : "border-gray-200"}`}
                     />
                     {errors.requirements?.[index] && (
-                      <p className="text-sm text-red-600">
-                        {errors.requirements[index].message}
-                      </p>
+                      <p className='text-sm text-red-600'>{errors.requirements[index].message}</p>
                     )}
-                    <span className={`absolute right-4 ${errors.requirements?.[index] ? "top-[15%] bg-red-50" : "top-1/2 -translate-y-1/2 bg-white"} text-xs text-gray-400 pl-2`}>
+                    <span
+                      className={`absolute right-4 ${errors.requirements?.[index] ? "top-[15%] bg-red-50" : "top-1/2 -translate-y-1/2 bg-white"} text-xs text-gray-400 pl-2`}
+                    >
                       {item.length}/120
                     </span>
                   </div>
                 </div>
               ))}
               {errors.requirements?.message && (
-                <p className="text-sm text-red-600">
-                  {errors.requirements.message}
-                </p>
+                <p className='text-sm text-red-600'>{errors.requirements.message}</p>
               )}
             </div>
           </div>
 
           {/* Footer Actions */}
-          <div className="p-6">
+          <div className='p-6'>
             <CourseFooter
               handlePrevious={handlePrevious}
               isSubmitting={isSubmitting}
