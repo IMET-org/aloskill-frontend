@@ -1,15 +1,13 @@
 "use client";
 
+import GCommunitySection from "@/app/(HomePageComponents)/(CommunitySection)/GCommunitySection.tsx";
 import HeroSection from "@/app/(HomePageComponents)/(HeroSection)/HeroSection";
+import StatsSection from "@/app/(HomePageComponents)/(StatsSection)/StatsSection.tsx";
 import { CategoriesSectionAnimated } from "@/app/(HomePageComponents)/CategoriesSectionAnimated";
 import { CertificateSectionSimple } from "@/app/(HomePageComponents)/CertificateSectionSimple";
-import CommunitySection from "@/app/(HomePageComponents)/CommunitySection";
-import ConsultationSection from "@/app/(HomePageComponents)/ConsultationSection";
 import { DiscoverBooksSectionCarousel } from "@/app/(HomePageComponents)/DiscoverBooksSectionCarousel";
-import GCommunitySection from "@/app/(HomePageComponents)/GCommunitySection";
 import { InstructorsSectionAdvanced } from "@/app/(HomePageComponents)/InstructorsSectionAdvanced";
 import PopularCoursesSection from "@/app/(HomePageComponents)/PopularCoursesSection";
-import StatsSection from "@/app/(HomePageComponents)/StatsSection";
 import { WhyLearnSectionAnimated } from "@/app/(HomePageComponents)/WhyLearnSectionAnimated";
 
 import BackToTop from "@/components/shared/BackToTop";
@@ -17,6 +15,7 @@ import Newsletter from "@/components/shared/footer/Newsletter";
 import MobileMenu from "@/components/shared/menu/MobileMenu";
 import TabletDrawer from "@/components/shared/menu/TabletDrawer";
 import { useState } from "react";
+import ContactSection from "../(HomePageComponents)/(ContactSection)/ContactSection.tsx";
 import TestimonialSlider from "../(HomePageComponents)/(TestimonialSection)/TestimonialSlider.tsx";
 
 export default function HomePage() {
@@ -40,10 +39,11 @@ export default function HomePage() {
       <DiscoverBooksSectionCarousel />
       <InstructorsSectionAdvanced />
       <TestimonialSlider />
-      <CommunitySection />
+      {/* <CommunitySection /> */}
       <GCommunitySection />
       <CertificateSectionSimple />
-      <ConsultationSection />
+      <ContactSection />
+      {/* <ConsultationSection /> */}
       <Newsletter />
 
       {/* Mobile/Tablet Components (Page-specific) */}

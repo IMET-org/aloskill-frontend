@@ -74,7 +74,7 @@ export default function GradientButton({
     backgroundClasses[variant],
     isDisabled
       ? "opacity-50 cursor-not-allowed"
-      : "hover:scale-105 hover:shadow-lg active:scale-95",
+      : "hover:-translate-y-1 hover:shadow-2xl active:scale-95",
     className,
   ]
     .filter(Boolean)

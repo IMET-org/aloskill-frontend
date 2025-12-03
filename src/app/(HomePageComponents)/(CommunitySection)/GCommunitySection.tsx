@@ -1,3 +1,5 @@
+import BorderGradientButton from "@/components/buttons/BorderGradientButton.tsx";
+import SectionMiddleHeader from "@/components/sections/SectionMiddleHeader.tsx";
 import Image from "next/image";
 
 // You can replace these with actual image URLs
@@ -116,38 +118,13 @@ const members = [
 const GCommunitySection = () => {
   return (
     <>
-      {/* This style block contains the keyframe animation. In a real Next.js app, you'd put this in your global CSS file. */}
-      <style
-        jsx
-        global
-      >{`
-        @keyframes float {
-          0% {
-            transform: translateY(0px);
-          }
-          50% {
-            transform: translateY(-30px);
-          }
-          100% {
-            transform: translateY(0px);
-          }
-        }
-      `}</style>
-
       <section className='bg-[#FFFBF5] py-20 sm:py-32'>
         <div className='container mx-auto px-4'>
-          <div className='max-w-3xl mx-auto text-center'>
-            <h2 className='text-3xl md:text-5xl font-bold text-gray-800 leading-tight mb-4'>
-              Learn Together, Grow Together
-            </h2>
-            <p className='text-lg text-gray-600 mb-8'>
-              Join the Aloskill Community to connect with other learners, ask questions, share
-              ideas, and build your network.
-            </p>
-            <button className='bg-[#F97316] text-white font-bold py-3 px-8 rounded-full hover:bg-orange-600 transition-all duration-300 transform hover:scale-105'>
-              Join the Community
-            </button>
-          </div>
+          <SectionMiddleHeader
+            title='Learn Together, Grow Together'
+            subtitle='Join the Aloskill Community to connect with other learners, ask questions, share ideas, and build your network.'
+            className='mt-12'
+          />
 
           <div className='relative h-96 w-full max-w-6xl mx-auto mt-16'>
             {members.map(member => (
@@ -169,6 +146,14 @@ const GCommunitySection = () => {
                 </div>
               </div>
             ))}
+          </div>
+          <div className='flex justify-center items-center'>
+            <BorderGradientButton
+              onClick={() => console.log("Clicked")}
+              className='mt-12'
+            >
+              Join the Community
+            </BorderGradientButton>
           </div>
         </div>
       </section>

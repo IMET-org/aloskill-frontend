@@ -1,6 +1,6 @@
 import SectionMiddleHeader from "@/components/sections/SectionMiddleHeader.tsx";
 import FadeSlider from "@/components/slider/FadeSlider.tsx";
-import TrustedBadge from "../TrustedBadge.tsx";
+import TrustedBadge from "../(TrustedBadge)/TrustedBadge.tsx";
 import TestimonialCard from "./TestimonialCard.tsx";
 
 export default function TestimonialSlider() {

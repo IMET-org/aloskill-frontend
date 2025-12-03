@@ -12,7 +12,7 @@
   --font-size-xl: clamp(1.5rem, 1.2rem + 1vw, 2rem);
   --font-size-2xl: clamp(1.5rem, 1.5rem + 1.5vw, 2.5rem);
   --font-size-3xl: clamp(2.5rem, 2rem + 2vw, 4rem);
-  /* --font-size-4xl: clamp(3rem, 2.5rem + 2.5vw, 5rem); */
+  --font-size-4xl: clamp(3rem, 3rem + 2.5vw, 5rem);
 
   /* === 🎨 Base Colors === */
   --color-bg-light: #ffffff;
