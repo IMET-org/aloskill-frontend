@@ -2,17 +2,12 @@
 
 import { X } from "lucide-react";
 import { type ChangeEvent, useState } from "react";
+import type { CourseModule } from "./page";
 
 interface Lecture {
   id: number;
   name: string;
   expanded: boolean;
-}
-
-interface Section {
-  id: number;
-  name: string;
-  lectures: Lecture[];
 }
 
 const CourseModal = ({
@@ -27,15 +22,15 @@ const CourseModal = ({
   setOpeModal: React.Dispatch<
     React.SetStateAction<{ type: string; sectionId?: number; lectureId?: number }>
   >;
-  sections: Section[];
-  setSections: React.Dispatch<React.SetStateAction<Section[]>>;
+  sections: CourseModule[];
+  setSections: React.Dispatch<React.SetStateAction<CourseModule[]>>;
   sectionId: number | undefined;
   lectureId: number | undefined;
 }) => {
   const [preview, setPreview] = useState("");
   const [file, setFile] = useState<File | null>(null);
 
-  const updateLectureField = (
+  const _updateLectureField = (
     sectionId: number | undefined,
     lectureId: number | undefined,
     field: keyof Lecture,
@@ -43,22 +38,64 @@ const CourseModal = ({
   ) => {
     setSections(prevSections =>
       prevSections.map(section => {
-        if (section.id !== sectionId) {
+        if (section.position !== sectionId) {
           return section;
         }
 
-        const updatedLectures = section.lectures.map(lecture => {
-          if (lecture.id !== lectureId) {
-            return lecture;
+        const updatedLectures = section.lessons.map(lesson => {
+          if (lesson.position !== lectureId) {
+            return lesson;
           }
           return {
-            ...lecture,
+            ...lesson,
             [field]: value,
           };
         });
         return {
           ...section,
           lectures: updatedLectures,
+        };
+      })
+    );
+  };
+
+  const updateModuleNamefield = (sectionId: number | undefined, value: string) => {
+    setSections(prevSections =>
+      prevSections.map(section => {
+        if (section.position !== sectionId) {
+          return section;
+        }
+        return {
+          ...section,
+          title: value,
+        };
+      })
+    );
+  };
+
+  const updateLectureNameField = (
+    sectionId: number | undefined,
+    lectureId: number | undefined,
+    value: string
+  ) => {
+    setSections(prevSections =>
+      prevSections.map(section => {
+        if (section.position !== sectionId) {
+          return section;
+        }
+
+        const updatedLectures = section.lessons.map(lecture => {
+          if (lecture.position !== lectureId) {
+            return lecture;
+          }
+          return {
+            ...lecture,
+            title: value,
+          };
+        });
+        return {
+          ...section,
+          lessons: updatedLectures,
         };
       })
     );
@@ -138,6 +175,8 @@ const CourseModal = ({
                 switch (modalType) {
                   case "sectionName":
                     return "Edit Section Name";
+                  case "lectureName":
+                    return "Edit Lecture Name";
                   case "videoUpload":
                     return "Lecture Video";
                   case "fileUpload":
@@ -169,14 +208,29 @@ const CourseModal = ({
                   return (
                     <div>
                       <label className='block text-xs font-medium text-gray-700 mb-1'>
-                        Section
+                        Section Name
                       </label>
                       <input
                         type='text'
-                        value={sections[0]?.name || ""}
-                        onChange={e =>
-                          updateLectureField(sectionId, lectureId, "name", e.target.value)
+                        defaultValue={sections[(sectionId || 0) - 1]?.title || ""}
+                        onChange={e => updateModuleNamefield(sectionId, e.target.value)}
+                        placeholder='Enter section name here...'
+                        className='w-full px-3 py-1.5 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-orange-light focus:border-transparent placeholder:text-gray-400 placeholder:text-sm'
+                      />
+                    </div>
+                  );
+                case "lectureName":
+                  return (
+                    <div>
+                      <label className='block text-xs font-medium text-gray-700 mb-1'>
+                        Lecture Name
+                      </label>
+                      <input
+                        type='text'
+                        defaultValue={
+                          sections[(sectionId || 0) - 1]?.lessons[(lectureId || 0) - 1]?.title || ""
                         }
+                        onChange={e => updateLectureNameField(sectionId, lectureId, e.target.value)}
                         placeholder='Enter section name here...'
                         className='w-full px-3 py-1.5 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-orange-light focus:border-transparent placeholder:text-gray-400 placeholder:text-sm'
                       />
@@ -186,7 +240,7 @@ const CourseModal = ({
                   return (
                     <>
                       {preview ? (
-                        <div className='w-full h-[80px] flex items-center gap-2'>
+                        <div className='w-full h-20 flex items-center gap-2'>
                           <div className='w-[28%] h-full'>
                             <video
                               src={preview}
@@ -242,7 +296,7 @@ const CourseModal = ({
                   return (
                     <>
                       {preview ? (
-                        <div className='w-full h-[80px] flex flex-col items-center justify-center gap-2 border border-gray-200 rounded'>
+                        <div className='w-full h-20 flex flex-col items-center justify-center gap-2 border border-gray-200 rounded'>
                           <p className='text-gray-800 text-md'>{file?.name}</p>
                           <button
                             onClick={handleReplaceFile}
@@ -317,7 +371,7 @@ const CourseModal = ({
                         />
                       </div>
                       {preview ? (
-                        <div className='w-full h-[80px] flex flex-col items-center justify-center gap-2 border border-gray-200 rounded'>
+                        <div className='w-full h-20 flex flex-col items-center justify-center gap-2 border border-gray-200 rounded'>
                           <p className='text-gray-800 text-md'>{file?.name}</p>
                           <button
                             onClick={handleReplaceFile}
@@ -327,7 +381,7 @@ const CourseModal = ({
                           </button>
                         </div>
                       ) : (
-                        <div className='w-full h-[80px] flex items-center justify-center px-6 border border-gray-200 rounded'>
+                        <div className='w-full h-20 flex items-center justify-center px-6 border border-gray-200 rounded'>
                           <label
                             htmlFor='file'
                             className='block w-full text-sm text-center'

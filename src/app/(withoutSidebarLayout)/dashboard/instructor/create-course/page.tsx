@@ -7,8 +7,79 @@ import Step2 from "./Step2.tsx";
 import Step3 from "./Step3.tsx";
 import Step4 from "./Step4.tsx";
 
+type Quiz = {
+  title: string;
+  description?: string;
+  duration?: number;
+  passingScore: number;
+  attemptsAllowed: number;
+  questions: {
+    position: number;
+    text: string;
+    type: "MULTIPLE_CHOICE" | "TRUE_FALSE" | "SINGLE_CHOICE";
+    points: number;
+    options: {
+      position: number;
+      text: string;
+      isCorrect: boolean;
+    }[];
+  }[];
+};
+
+export type CourseLesson = {
+  position: number;
+  title: string;
+  description: string;
+  notes?: string;
+  type: "VIDEO" | "ARTICLE" | "QUIZ" | null;
+  contentUrl?: string | null;
+  files?: string[];
+  duration?: number | null;
+  quiz?: Quiz;
+};
+
+type CourseInstructor = {
+  instructorId: string;
+  role: 'PRIMARY' | 'CO_INSTRUCTOR';
+};
+
+export type CourseModule = {
+  title: string;
+  position: number;
+  lessons: CourseLesson[];
+};
+
+export type CreateCourseData = {
+  title: string;
+  slug: string;
+  categoryId: string;
+  description: string;
+  originalPrice: number;
+  discountPercent?: number;
+  discountPrice?: number | null;
+  discountEndDate?: Date | null;
+  language: 'ENGLISH' | 'BANGLA';
+  level: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | 'EXPERT';
+  thumbnailUrl?: string | null;
+  modules: CourseModule[];
+  courseInstructors?: CourseInstructor[];
+};
+
 export default function CourseCreationForm() {
   const [currentStep, setCurrentStep] = useState(1);
+  const [courseData, setCourseData] = useState<CreateCourseData>({
+    title: "",
+    slug: "",
+    categoryId: "",
+    description: "",
+    originalPrice: 0,
+    discountPercent: 0,
+    discountPrice: 0,
+    discountEndDate: null,
+    language: "ENGLISH",
+    level: "BEGINNER",
+    modules: [],
+  });
 
   const steps = [
     { id: 1, name: "Basic Information", icon: Layers, progress: "7/12" },
@@ -59,6 +130,8 @@ export default function CourseCreationForm() {
           <Step1
             currentStep={currentStep}
             setCurrentStep={setCurrentStep}
+            courseData={courseData}
+            setCourseData={setCourseData}
           />
         )}
 
@@ -66,6 +139,8 @@ export default function CourseCreationForm() {
           <Step2
             currentStep={currentStep}
             setCurrentStep={setCurrentStep}
+            courseData={courseData}
+            setCourseData={setCourseData}
           />
         )}
 
@@ -73,6 +148,8 @@ export default function CourseCreationForm() {
           <Step3
             currentStep={currentStep}
             setCurrentStep={setCurrentStep}
+            courseData={courseData}
+            setCourseData={setCourseData}
           />
         )}
 

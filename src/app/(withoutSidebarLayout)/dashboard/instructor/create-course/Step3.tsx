@@ -1,14 +1,29 @@
-import { ChevronDown, ChevronUp, Menu, Pencil, Plus, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { ChevronDown, ChevronUp, Menu, Pencil, Plus, Trash, Trash2, Upload } from "lucide-react";
+import { type ChangeEvent, useState } from "react";
+import { useForm } from "react-hook-form";
+import CourseFooter from "./CourseFooter.tsx";
 import CourseModal from "./CourseModal.tsx";
 import StepHeader from "./StepHeader.tsx";
+import { type CourseLesson, type CourseModule, type CreateCourseData } from "./page.tsx";
 
+type ExtendedCourseLesson = CourseLesson & {
+  expanded?: boolean;
+  lessonTypeSelection?: boolean;
+};
+
+type ExtendedCourseModule = CourseModule & {
+  lessons: ExtendedCourseLesson[];
+};
 export default function Step3({
   currentStep,
   setCurrentStep,
+  courseData: _courseData,
+  setCourseData: _setCourseData,
 }: {
   currentStep: number;
   setCurrentStep: (step: number) => void;
+  courseData: CreateCourseData;
+  setCourseData: React.Dispatch<React.SetStateAction<CreateCourseData>>;
 }) {
   const [openModal, setOpeModal] = useState<{
     type: string;
@@ -19,40 +34,79 @@ export default function Step3({
     sectionId: undefined,
     lectureId: undefined,
   });
-  const [sections, setSections] = useState([
+
+  const [sections, setSections] = useState<ExtendedCourseModule[]>([
     {
-      id: 1,
-      name: "Section name",
-      lectures: [
-        { id: 1, name: "Lecture name", expanded: false },
-        { id: 2, name: "Lecture name", expanded: false },
+      position: 1,
+      title: "Module 1",
+      lessons: [
+        {
+          position: 1,
+          title: "Lesson 1",
+          description: "",
+          notes: "",
+          type: null,
+          contentUrl: "",
+          files: [] as string[],
+          duration: null,
+          expanded: false,
+          lessonTypeSelection: true,
+        },
       ],
     },
   ]);
+  const [showAddQuestions, setShowAddQuestions] = useState<boolean>(false);
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = useForm();
 
   const addSection = () => {
     setSections([
       ...sections,
       {
-        id: sections.length + 1,
-        name: "Section name",
-        lectures: [],
+        position: sections.length + 1,
+        title: `Module ${sections.length + 1}`,
+        lessons: [
+          {
+            position: 1,
+            title: "Lecture 1",
+            description: "",
+            notes: "",
+            type: null,
+            contentUrl: "",
+            files: [] as string[],
+            duration: null,
+            expanded: false,
+            lessonTypeSelection: true,
+          },
+        ],
       },
     ]);
   };
 
-  const addLecture = (sectionId: number) => {
+  const addLesson = (moduleId: number) => {
     setSections(
       sections.map(section => {
-        if (section.id === sectionId) {
+        if (section.position === moduleId) {
           return {
             ...section,
-            lectures: [
-              ...section.lectures,
+            lessons: [
+              ...section.lessons,
               {
-                id: section.lectures.length + 1,
-                name: "Lecture name",
+                position: section.lessons.length + 1,
+                title: `Lesson ${section.lessons.length + 1}`,
+                description: "",
+                notes: "",
+                type: null,
+                contentUrl: "",
+                files: [] as string[],
+                duration: null,
                 expanded: false,
+                lessonTypeSelection: true,
               },
             ],
           };
@@ -62,15 +116,45 @@ export default function Step3({
     );
   };
 
-  const toggleLecture = (sectionId: number, lectureId: number) => {
+  const toggleLectureAndType = (
+    sectionId: number,
+    lectureId: number,
+    field: "expanded" | "lessonTypeSelection",
+    lectureType?: "VIDEO" | "ARTICLE" | "QUIZ"
+  ) => {
     setSections(
       sections.map(section => {
-        if (section.id === sectionId) {
+        if (section.position === sectionId) {
           return {
             ...section,
-            lectures: section.lectures.map(lecture => {
-              if (lecture.id === lectureId) {
-                return { ...lecture, expanded: !lecture.expanded };
+            lessons: section.lessons.map((lecture: ExtendedCourseLesson) => {
+              if (lecture.position === lectureId) {
+                if (lectureType) {
+                  if (lectureType === "QUIZ") {
+                    return {
+                      ...lecture,
+                      type: lectureType,
+                      [field]: !lecture[field as keyof ExtendedCourseLesson],
+                      quiz: {
+                        title: `Quiz Title`,
+                        description: "Write your quiz description here",
+                        duration: 0,
+                        passingScore: 0,
+                        attemptsAllowed: 1,
+                        questions: [],
+                      },
+                    };
+                  } else {
+                    return {
+                      ...lecture,
+                      type: lectureType,
+                      [field]: !lecture[field as keyof ExtendedCourseLesson],
+                    };
+                  }
+                }
+                if (field) {
+                  return { ...lecture, [field]: !lecture[field as keyof ExtendedCourseLesson] };
+                }
               }
               return lecture;
             }),
@@ -81,17 +165,37 @@ export default function Step3({
     );
   };
 
-  const deleteSection = (sectionId: number) => {
-    setSections(sections.filter(section => section.id !== sectionId));
+  const deleteSection = (moduleId: number) => {
+    const confirmPrompt = window.confirm(
+      "Are you sure you want to delete this section? All lectures within this section will also be deleted."
+    );
+    if (confirmPrompt) {
+      setSections(sections.filter(section => section.position !== moduleId));
+    }
   };
 
-  const deleteLecture = (sectionId: number, lectureId: number) => {
+  const handleTextValueChange = (
+    sectionId: number,
+    lectureId: number,
+    type: string,
+    value: string
+  ) => {
     setSections(
       sections.map(section => {
-        if (section.id === sectionId) {
+        if (section.position === sectionId) {
           return {
             ...section,
-            lectures: section.lectures.filter(lecture => lecture.id !== lectureId),
+            lessons: section.lessons.map(lesson => {
+              if (lesson.position === lectureId) {
+                if (type === "notes") {
+                  return { ...lesson, notes: value };
+                }
+                if (type === "description") {
+                  return { ...lesson, description: value };
+                }
+              }
+              return lesson;
+            }),
           };
         }
         return section;
@@ -99,24 +203,350 @@ export default function Step3({
     );
   };
 
-  const handleSave = () => {
-    alert("Curriculum saved!");
-  };
-
-  const handleSaveAndPreview = () => {
-    alert("Saved! Opening preview...");
-  };
-
-  const handleSaveAndNext = () => {
-    if (currentStep < 4) {
-      setCurrentStep(currentStep + 1);
+  const deleteLecture = (moduleId: number, lessonId: number) => {
+    const confirmPrompt = window.confirm("Are you sure you want to delete this Lesson?");
+    if (!confirmPrompt) {
+      return;
     }
+    setSections(
+      sections.map(section => {
+        if (section.position === moduleId) {
+          return {
+            ...section,
+            lessons: section.lessons.filter(lesson => lesson.position !== lessonId),
+          };
+        }
+        return section;
+      })
+    );
+  };
+
+  const handleFileSelect = (
+    e: ChangeEvent<HTMLInputElement>,
+    sectionId: number,
+    lectureId: number
+  ) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+
+      if (file) {
+        const isVideo = file.type.startsWith("video/");
+        const isPDF = file.type.startsWith("application/pdf");
+
+        if (isVideo) {
+          setSections(sections =>
+            sections.map(section => {
+              if (section.position === sectionId) {
+                return {
+                  ...section,
+                  lessons: section.lessons.map(lesson => {
+                    if (lesson.position === lectureId) {
+                      return { ...lesson, contentUrl: file.name };
+                    }
+                    return lesson;
+                  }),
+                };
+              }
+              return section;
+            })
+          );
+          return;
+        }
+
+        if (isPDF) {
+          const fileNames = Array.from(e.target.files ?? []).map(f => f.name);
+          setSections(sections =>
+            sections.map(section => {
+              if (section.position === sectionId) {
+                return {
+                  ...section,
+                  lessons: section.lessons.map(lesson => {
+                    if (lesson.position === lectureId) {
+                      return { ...lesson, files: fileNames };
+                    }
+                    return lesson;
+                  }),
+                };
+              }
+              return section;
+            })
+          );
+          return;
+        }
+      }
+    }
+  };
+
+  const addQuizQuestion = (
+    moduleId: number,
+    lessonId: number,
+    quizType: "MULTIPLE_CHOICE" | "TRUE_FALSE" | "SINGLE_CHOICE"
+  ) => {
+    setSections(
+      sections.map(section => {
+        if (section.position === moduleId) {
+          return {
+            ...section,
+            lessons: section.lessons.map(lesson => {
+              if (lesson.position === lessonId) {
+                if (lesson.quiz) {
+                  return {
+                    ...lesson,
+                    quiz: {
+                      ...lesson.quiz,
+                      questions: [
+                        ...lesson.quiz.questions,
+                        {
+                          position: lesson.quiz.questions.length + 1,
+                          text: `Question ${lesson.quiz.questions.length + 1}`,
+                          type: quizType,
+                          points: 1,
+                          options:
+                            quizType === "TRUE_FALSE"
+                              ? [
+                                  {
+                                    position: 1,
+                                    text: "true",
+                                    isCorrect: false,
+                                  },
+                                  {
+                                    position: 2,
+                                    text: "false",
+                                    isCorrect: false,
+                                  },
+                                ]
+                              : [
+                                  {
+                                    position: 1,
+                                    text: "",
+                                    isCorrect: false,
+                                  },
+                                  {
+                                    position: 2,
+                                    text: "",
+                                    isCorrect: false,
+                                  },
+                                  {
+                                    position: 3,
+                                    text: "",
+                                    isCorrect: false,
+                                  },
+                                  {
+                                    position: 4,
+                                    text: "",
+                                    isCorrect: false,
+                                  },
+                                ],
+                        },
+                      ],
+                    },
+                  };
+                }
+              }
+              return lesson;
+            }),
+          };
+        }
+        return section;
+      })
+    );
+    setShowAddQuestions(false);
+  };
+
+  const addQuizOption = (
+    moduleId: number,
+    lessonId: number,
+    questionId: number,
+    optionId: number,
+    value: string
+  ) => {
+    setSections(
+      sections.map(section => {
+        if (section.position === moduleId) {
+          return {
+            ...section,
+            lessons: section.lessons.map(lesson => {
+              if (lesson.position === lessonId) {
+                if (lesson.quiz) {
+                  return {
+                    ...lesson,
+                    quiz: {
+                      ...lesson.quiz,
+                      questions: lesson.quiz?.questions.map(question => {
+                        if (question.position === questionId) {
+                          return {
+                            ...question,
+                            options: question.options.map(option => {
+                              if (option.position === optionId) {
+                                return {
+                                  ...option,
+                                  text: value,
+                                };
+                              }
+                              return option;
+                            }),
+                          };
+                        }
+                        return question;
+                      }),
+                    },
+                  };
+                }
+              }
+              return lesson;
+            }),
+          };
+        }
+        return section;
+      })
+    );
+  };
+
+  const updateQuizOptionCorrectAnswere = (
+    moduleId: number,
+    lessonId: number,
+    questionId: number,
+    optionId: number
+  ) => {
+    setSections(
+      sections.map(section => {
+        if (section.position === moduleId) {
+          return {
+            ...section,
+            lessons: section.lessons.map(lesson => {
+              if (lesson.position === lessonId) {
+                if (lesson.quiz) {
+                  return {
+                    ...lesson,
+                    quiz: {
+                      ...lesson.quiz,
+                      questions: lesson.quiz?.questions.map(question => {
+                        if (question.position === questionId) {
+                          return {
+                            ...question,
+                            options: question.options.map(option => {
+                              if (option.position === optionId) {
+                                if (option.isCorrect) {
+                                  return { ...option, isCorrect: false };
+                                } else {
+                                  if (question.type === "MULTIPLE_CHOICE") {
+                                    if (question.options.filter(o => o.isCorrect).length >= 3) {
+                                      alert(
+                                        "You can select maximum three correct answer for multiple choice questions."
+                                      );
+                                    } else {
+                                      return { ...option, isCorrect: true };
+                                    }
+                                  } else if (question.type === "SINGLE_CHOICE") {
+                                    if (question.options.filter(o => o.isCorrect).length >= 1) {
+                                      alert(
+                                        "You can only select one correct answer for single choice questions."
+                                      );
+                                    } else {
+                                      return { ...option, isCorrect: true };
+                                    }
+                                  } else {
+                                    if (question.options.filter(o => o.isCorrect).length >= 1) {
+                                      alert(
+                                        "You can only select one correct answer for true false questions."
+                                      );
+                                    } else {
+                                      return { ...option, isCorrect: true };
+                                    }
+                                  }
+                                }
+                              }
+                              return option;
+                            }),
+                          };
+                        }
+                        return question;
+                      }),
+                    },
+                  };
+                }
+              }
+              return lesson;
+            }),
+          };
+        }
+        return section;
+      })
+    );
+  };
+
+  const deleteLectureFile = (
+    sectionId: number,
+    lectureId: number,
+    fileName?: string,
+    type?: string
+  ) => {
+    setSections(
+      sections.map(section => {
+        if (section.position === sectionId) {
+          return {
+            ...section,
+            lessons: section.lessons.map(lesson => {
+              if (lesson.position === lectureId) {
+                if (type === "video") {
+                  return { ...lesson, video: "" };
+                }
+                if (type === "description") {
+                  return { ...lesson, description: "" };
+                }
+                if (type === "notes") {
+                  return { ...lesson, notes: "" };
+                }
+                return {
+                  ...lesson,
+                  files: lesson.files && lesson.files.filter(file => file !== fileName),
+                };
+              }
+              return lesson;
+            }),
+          };
+        }
+        return section;
+      })
+    );
+  };
+
+  const handleDeleteQuiz = (moduleId: number, lessonId: number, questionId: number) => {
+    setSections(
+      sections.map(section => {
+        if (section.position === moduleId) {
+          return {
+            ...section,
+            lessons: section.lessons.map(lesson => {
+              if (lesson.position === lessonId) {
+                if (lesson.quiz) {
+                  return {
+                    ...lesson,
+                    quiz: {
+                      ...lesson.quiz,
+                      questions: lesson.quiz?.questions.filter(q => q.position !== questionId),
+                    },
+                  };
+                }
+              }
+              return lesson;
+            }),
+          };
+        }
+        return section;
+      })
+    );
   };
 
   const handlePrevious = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
     }
+  };
+
+  const onSubmit = (_data: unknown) => {
+    // Proceed to the next step or handle form submission
+    setCurrentStep(currentStep + 1);
   };
 
   const loadModalComponent = (type: string) => {
@@ -135,18 +565,17 @@ export default function Step3({
   return (
     <div className='w-full bg-white'>
       {/* Header */}
-      <StepHeader
-        headingText='Course Curriculum'
-        handleSave={handleSave}
-        handleSaveAndPreview={handleSaveAndPreview}
-      />
+      <StepHeader headingText='Course Curriculum' />
       {/* Form Content */}
-      <div className='p-6'>
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className='p-6'
+      >
         {/* Sections */}
         <div className='space-y-4'>
           {sections.map((section, sectionIndex) => (
             <div
-              key={section.id}
+              key={section.position}
               className='bg-gray-50 rounded p-4'
             >
               {/* Section Header */}
@@ -157,13 +586,14 @@ export default function Step3({
                     className='text-gray-500'
                   />
                   <span className='text-sm font-medium text-gray-800'>
-                    Sections 0{sectionIndex + 1} :
+                    Module 0{sectionIndex + 1} :
                   </span>
-                  <span className='text-gray-800 text-sm'>{section.name}</span>
+                  <span className='text-gray-800 text-sm'>{section.title}</span>
                 </div>
                 <div className='flex items-center gap-2'>
                   <button
-                    onClick={() => addLecture(section.id)}
+                    type='button'
+                    onClick={() => addLesson(section.position)}
                     className='p-1.5 hover:bg-gray-200 rounded transition-colors'
                   >
                     <Plus
@@ -172,7 +602,10 @@ export default function Step3({
                     />
                   </button>
                   <button
-                    onClick={() => setOpeModal({ type: "sectionName", sectionId: section.id })}
+                    type='button'
+                    onClick={() =>
+                      setOpeModal({ type: "sectionName", sectionId: section.position })
+                    }
                     className='p-1.5 hover:bg-gray-200 rounded transition-colors'
                   >
                     <Pencil
@@ -181,7 +614,8 @@ export default function Step3({
                     />
                   </button>
                   <button
-                    onClick={() => deleteSection(section.id)}
+                    type='button'
+                    onClick={() => deleteSection(section.position)}
                     className='p-1.5 hover:bg-gray-200 rounded transition-colors'
                   >
                     <Trash2
@@ -194,35 +628,46 @@ export default function Step3({
 
               {/* Lectures */}
               <div className='flex flex-col gap-4'>
-                {section.lectures.map(lecture => (
-                  <div
-                    key={lecture.id}
-                    className='relative'
-                  >
-                    <div className='flex items-center justify-between px-4 py-2 bg-white'>
+                {section.lessons.map((lesson: ExtendedCourseLesson) => (
+                  <div key={lesson.position}>
+                    <div className='flex items-center justify-between px-4 py-2 bg-white relative'>
                       <div className='flex items-center gap-3'>
                         <Menu
                           size={16}
                           className='text-gray-500'
                         />
-                        <span className='text-gray-800 text-sm'>{lecture.name}</span>
+                        <span className='text-gray-800 text-sm'>{lesson.title}</span>
                       </div>
                       <div className='flex items-center gap-3'>
                         <button
-                          onClick={() => toggleLecture(section.id, lecture.id)}
+                          type='button'
+                          onClick={() =>
+                            toggleLectureAndType(section.position, lesson.position, "expanded")
+                          }
                           className='flex items-center gap-2 px-2 py-1.5 bg-orange-50 text-orange-500 rounded text-sm hover:bg-orange-100 transition-colors'
                         >
                           Contents
-                          {lecture.expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                          {lesson.expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                         </button>
-                        <button className='p-1.5 hover:bg-gray-100 rounded transition-colors'>
+                        <button
+                          type='button'
+                          onClick={() =>
+                            setOpeModal({
+                              type: "lectureName",
+                              sectionId: section.position,
+                              lectureId: lesson.position,
+                            })
+                          }
+                          className='p-1.5 hover:bg-gray-100 rounded transition-colors'
+                        >
                           <Pencil
                             size={16}
                             className='text-gray-500'
                           />
                         </button>
                         <button
-                          onClick={() => deleteLecture(section.id, lecture.id)}
+                          type='button'
+                          onClick={() => deleteLecture(section.position, lesson.position)}
                           className='p-1.5 hover:bg-gray-100 rounded transition-colors'
                         >
                           <Trash2
@@ -232,70 +677,804 @@ export default function Step3({
                         </button>
                       </div>
                     </div>
+                    <input
+                      type='hidden'
+                      {...register(`section_${section.position}_lecture_${lesson.position}_type`, {
+                        required: `Please select a content type for Module ${section.position} lesson ${lesson.position}.`,
+                      })}
+                      value={lesson.type || ""}
+                    />
+                    {lesson.type === null &&
+                      errors[`section_${section.position}_lecture_${lesson.position}_type`] && (
+                        <p className='text-red-500 text-sm mt-1'>
+                          {
+                            errors[`section_${section.position}_lecture_${lesson.position}_type`]
+                              ?.message as string
+                          }
+                        </p>
+                      )}
+                    <input
+                      type='hidden'
+                      {...register(
+                        `section_${section.position}_lecture_${lesson.position}_addQuiz_type`,
+                        {
+                          required: `Please Add a Quiz for Module ${section.position} lesson ${lesson.position}.`,
+                        }
+                      )}
+                    />
+                    {lesson.quiz &&
+                      !showAddQuestions &&
+                      lesson.quiz?.questions.length === 0 &&
+                      errors[
+                        `section_${section.position}_lecture_${lesson.position}_addQuiz_type`
+                      ] && (
+                        <p className='text-red-500 text-sm mt-1'>
+                          {
+                            errors[
+                              `section_${section.position}_lecture_${lesson.position}_addQuiz_type`
+                            ]?.message as string
+                          }
+                        </p>
+                      )}
 
-                    {/* Expanded Content Menu */}
-                    {lecture.expanded && (
-                      <div className='bg-white rounded w-[20%] z-100 absolute right-[10%] p-2'>
-                        <button
-                          onClick={() =>
-                            setOpeModal({
-                              type: "videoUpload",
-                              sectionId: section.id,
-                              lectureId: lecture.id,
-                            })
+                    <input
+                      type='hidden'
+                      {...register(
+                        `section_${section.position}_lecture_${lesson.position}_quiz_type`,
+                        {
+                          required: `Please select a Quiz type for Module ${section.position} lesson ${lesson.position}.`,
+                        }
+                      )}
+                    />
+                    {lesson.quiz &&
+                      lesson.quiz?.questions.length <= 0 &&
+                      showAddQuestions &&
+                      errors[
+                        `section_${section.position}_lecture_${lesson.position}_quiz_type`
+                      ] && (
+                        <p className='text-red-500 text-sm mt-1'>
+                          {
+                            errors[
+                              `section_${section.position}_lecture_${lesson.position}_quiz_type`
+                            ]?.message as string
                           }
-                          className='w-full px-2 py-1.5 text-left text-sm text-gray-800 hover:bg-gray-50 transition-colors'
-                        >
-                          Video
-                        </button>
-                        <button
-                          onClick={() =>
-                            setOpeModal({
-                              type: "fileUpload",
-                              sectionId: section.id,
-                              lectureId: lecture.id,
-                            })
-                          }
-                          className='w-full px-2 py-1.5 text-left text-sm text-gray-800 hover:bg-gray-50 transition-colors'
-                        >
-                          Attach File
-                        </button>
-                        <button
-                          onClick={() =>
-                            setOpeModal({
-                              type: "caption",
-                              sectionId: section.id,
-                              lectureId: lecture.id,
-                            })
-                          }
-                          className='w-full px-2 py-1.5 text-left text-sm text-gray-800 hover:bg-gray-50 transition-colors'
-                        >
-                          Captions
-                        </button>
-                        <button
-                          onClick={() =>
-                            setOpeModal({
-                              type: "description",
-                              sectionId: section.id,
-                              lectureId: lecture.id,
-                            })
-                          }
-                          className='w-full px-2 py-1.5 text-left text-sm text-gray-800 hover:bg-gray-50 transition-colors'
-                        >
-                          Description
-                        </button>
-                        <button
-                          onClick={() =>
-                            setOpeModal({
-                              type: "notes",
-                              sectionId: section.id,
-                              lectureId: lecture.id,
-                            })
-                          }
-                          className='w-full px-2 py-1.5 text-left text-sm text-gray-800 hover:bg-gray-50 transition-colors'
-                        >
-                          Lecture Notes
-                        </button>
+                        </p>
+                      )}
+                    {/* Expanded Content */}
+                    {lesson.expanded && (
+                      <div className='h-auto bg-white p-4 pt-0'>
+                        {/* Contents Type Selection */}
+                        {lesson.lessonTypeSelection && (
+                          <div>
+                            <span className='text-sm text-gray-600 mb-1'>
+                              Select a content type :
+                            </span>
+                            <div className='flex items-center justify-center gap-10 border border-dashed border-gray-200 p-2'>
+                              <button
+                                type='button'
+                                onClick={() => {
+                                  toggleLectureAndType(
+                                    section.position,
+                                    lesson.position,
+                                    "lessonTypeSelection",
+                                    "VIDEO"
+                                  );
+                                  setValue(
+                                    `section_${section.position}_lecture_${lesson.position}_type`,
+                                    "VIDEO"
+                                  );
+                                }}
+                                className='px-3 py-1.5 border border-gray-100 text-gray-800 rounded text-sm hover:bg-gray-100 transition-colors duration-500 cursor-pointer'
+                              >
+                                Video
+                              </button>
+                              <button
+                                type='button'
+                                onClick={() => {
+                                  toggleLectureAndType(
+                                    section.position,
+                                    lesson.position,
+                                    "lessonTypeSelection",
+                                    "ARTICLE"
+                                  );
+                                  setValue(
+                                    `section_${section.position}_lecture_${lesson.position}_type`,
+                                    "ARTICLE"
+                                  );
+                                }}
+                                className='px-3 py-1.5 border border-gray-100 text-gray-800 rounded text-sm hover:bg-gray-100 transition-colors duration-500 cursor-pointer'
+                              >
+                                Article
+                              </button>
+                              <button
+                                type='button'
+                                onClick={() => {
+                                  toggleLectureAndType(
+                                    section.position,
+                                    lesson.position,
+                                    "lessonTypeSelection",
+                                    "QUIZ"
+                                  );
+                                  setValue(
+                                    `section_${section.position}_lecture_${lesson.position}_type`,
+                                    "QUIZ"
+                                  );
+                                }}
+                                className='px-3 py-1.5 border border-gray-100 text-gray-800 rounded text-sm hover:bg-gray-100 transition-colors duration-500 cursor-pointer'
+                              >
+                                Quiz
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                        {/* Contents Details */}
+                        {lesson.type === "VIDEO" && (
+                          <div className='bg-gray-100/20 w-full h-full p-2 pb-0 flex flex-col gap-1 rounded'>
+                            {/* Video and Files */}
+                            <div className='flex items-center justify-center gap-3'>
+                              {/* Add Video For Lessons */}
+                              {lesson.contentUrl ? (
+                                <>
+                                  <div className='w-full rounded border border-dashed border-gray-200 p-3 flex items-center justify-start hover:bg-gray-100/40 transition-colors relative'>
+                                    <span className='text-sm w-[95%]'>{lesson.contentUrl}</span>
+                                    <span
+                                      onClick={() =>
+                                        deleteLectureFile(
+                                          section.position,
+                                          lesson.position,
+                                          undefined,
+                                          "video"
+                                        )
+                                      }
+                                      className='absolute right-2 h-full w-fit flex items-center cursor-pointer'
+                                    >
+                                      <Trash className='w-4 h-4' />
+                                    </span>
+                                  </div>
+                                </>
+                              ) : (
+                                <>
+                                  <div
+                                    className={`w-full rounded border border-dashed border-gray-200 p-3 flex items-center justify-center hover:bg-gray-100/40 transition-colors ${
+                                      errors[
+                                        `section_${section.position}_lecture_${lesson.position}_video`
+                                      ] && "bg-red-50"
+                                    }`}
+                                  >
+                                    <label
+                                      htmlFor='lessonVideo'
+                                      className={`flex items-center justify-center gap-2 text-sm w-full cursor-pointer`}
+                                    >
+                                      <Upload className='w-3 h-3' /> Add Video
+                                    </label>
+                                    <input
+                                      {...register(
+                                        `section_${section.position}_lecture_${lesson.position}_video`,
+                                        {
+                                          required: "Video is required for this lesson",
+                                        }
+                                      )}
+                                      onChange={e =>
+                                        handleFileSelect(e, section.position, lesson.position)
+                                      }
+                                      id='lessonVideo'
+                                      type='file'
+                                      accept='.mp4,.mov'
+                                      className='hidden'
+                                    />
+                                  </div>
+                                </>
+                              )}
+
+                              {/* Add File For Lessons */}
+                              {lesson.files && lesson.files.length > 0 ? (
+                                <>
+                                  <div className='w-full rounded border border-dashed border-gray-200 p-2 flex flex-col items-center justify-start hover:bg-gray-100/40 transition-colors'>
+                                    {lesson.files.map((fileName, index) => (
+                                      <div
+                                        key={index}
+                                        className='w-full p-1 flex items-center'
+                                      >
+                                        <span className='text-sm w-[95%]'>{fileName}</span>
+                                        <span
+                                          onClick={() =>
+                                            deleteLectureFile(
+                                              section.position,
+                                              lesson.position,
+                                              fileName
+                                            )
+                                          }
+                                          className='h-full w-fit flex items-center cursor-pointer'
+                                        >
+                                          <Trash className='w-4 h-4' />
+                                        </span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </>
+                              ) : (
+                                <>
+                                  <div className='w-full rounded border border-dashed border-gray-200 p-3 flex items-center justify-center cursor-pointer hover:bg-gray-100/40 transition-colors'>
+                                    <label
+                                      htmlFor='lessonfile'
+                                      className='flex items-center justify-center gap-2 text-sm w-full cursor-pointer'
+                                    >
+                                      <Upload className='w-3 h-3' /> Attach File
+                                    </label>
+                                    <input
+                                      onChange={e =>
+                                        handleFileSelect(e, section.position, lesson.position)
+                                      }
+                                      id='lessonfile'
+                                      multiple={true}
+                                      type='file'
+                                      accept='.pdf,.doc,.docx,.ppt,.pptx'
+                                      className='hidden'
+                                    />
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                            {errors[
+                              `section_${section.position}_lecture_${lesson.position}_video`
+                            ] && (
+                              <p className='text-red-500 text-sm mt-1'>
+                                {
+                                  errors[
+                                    `section_${section.position}_lecture_${lesson.position}_video`
+                                  ]?.message as string
+                                }
+                              </p>
+                            )}
+                            {/* Notes for Lesson */}
+                            <div>
+                              <span className='text-sm text-gray-600 mb-1'>Lecture Note:</span>
+                              <textarea
+                                {...register(
+                                  `section_${section.position}_lecture_${lesson.position}_notes`,
+                                  {
+                                    required: "Lecture notes are required",
+                                    maxLength: {
+                                      value: 1000,
+                                      message: "Lecture notes cannot exceed 1000 characters",
+                                    },
+                                    pattern: {
+                                      value: /^[a-zA-Z0-9\s.,!?'"()-]*$/,
+                                      message: "Lecture notes contain invalid characters",
+                                    },
+                                  }
+                                )}
+                                onChange={e =>
+                                  handleTextValueChange(
+                                    section.position,
+                                    lesson.position,
+                                    "notes",
+                                    e.target.value
+                                  )
+                                }
+                                defaultValue={lesson.notes}
+                                className={`w-full p-2 border border-dashed border-gray-200 rounded resize-none focus:outline-none focus:border-orange ${
+                                  errors[
+                                    `section_${section.position}_lecture_${lesson.position}_notes`
+                                  ] && "border-red-400 bg-red-50"
+                                }`}
+                                placeholder='Add lecture notes here...'
+                                rows={5}
+                                maxLength={1000}
+                              ></textarea>
+                              {errors[
+                                `section_${section.position}_lecture_${lesson.position}_notes`
+                              ] && (
+                                <p className='text-red-500 text-sm mt-1'>
+                                  {
+                                    errors[
+                                      `section_${section.position}_lecture_${lesson.position}_notes`
+                                    ]?.message as string
+                                  }
+                                </p>
+                              )}
+                            </div>
+                            {/* Description for Lesson */}
+                            <div>
+                              <span className='text-sm text-gray-600 mb-1'>
+                                Lecture Description:
+                              </span>
+                              <textarea
+                                {...register(
+                                  `section_${section.position}_lecture_${lesson.position}_description`,
+                                  {
+                                    required: "Lecture description is required",
+                                    maxLength: {
+                                      value: 1000,
+                                      message: "Lecture description cannot exceed 1000 characters",
+                                    },
+                                    pattern: {
+                                      value: /^[a-zA-Z0-9\s.,!?'"()-]*$/,
+                                      message: "Lecture description contain invalid characters",
+                                    },
+                                  }
+                                )}
+                                onChange={e =>
+                                  handleTextValueChange(
+                                    section.position,
+                                    lesson.position,
+                                    "description",
+                                    e.target.value
+                                  )
+                                }
+                                defaultValue={lesson.description}
+                                className={`w-full p-2 border border-dashed border-gray-200 rounded resize-none focus:outline-none focus:border-orange ${
+                                  errors[
+                                    `section_${section.position}_lecture_${lesson.position}_description`
+                                  ] && "border-red-400 bg-red-50"
+                                }`}
+                                placeholder='Add lecture Description here...'
+                                rows={5}
+                                maxLength={1000}
+                              ></textarea>
+                              {errors[
+                                `section_${section.position}_lecture_${lesson.position}_description`
+                              ] && (
+                                <p className='text-red-500 text-sm mt-1'>
+                                  {
+                                    errors[
+                                      `section_${section.position}_lecture_${lesson.position}_description`
+                                    ]?.message as string
+                                  }
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                        {lesson.type === "ARTICLE" && (
+                          <div className='bg-gray-100/20 w-full h-full p-2 pb-0 flex flex-col gap-1 rounded'>
+                            {/* Add File For Lessons */}
+                            {lesson.files && lesson.files.length > 0 ? (
+                              <>
+                                <div className='w-full rounded border border-dashed border-gray-200 p-2 flex flex-col items-center justify-start hover:bg-gray-100/40 transition-colors'>
+                                  {lesson.files.map((fileName, index) => (
+                                    <div
+                                      key={index}
+                                      className='p-1 flex items-center w-full border-b border-gray-200 last:border-0'
+                                    >
+                                      <span className='text-sm w-[98%]'>{fileName}</span>
+                                      <span
+                                        onClick={() =>
+                                          deleteLectureFile(
+                                            section.position,
+                                            lesson.position,
+                                            fileName
+                                          )
+                                        }
+                                        className='h-full w-fit flex items-center cursor-pointer'
+                                      >
+                                        <Trash className='w-4 h-4' />
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </>
+                            ) : (
+                              <>
+                                <div className='w-full rounded border border-dashed border-gray-200 p-3 flex items-center justify-center cursor-pointer hover:bg-gray-100/40 transition-colors'>
+                                  <label
+                                    htmlFor='lessonfile'
+                                    className='flex items-center justify-center gap-2 text-sm w-full cursor-pointer'
+                                  >
+                                    <Upload className='w-3 h-3' /> Attach File
+                                  </label>
+                                  <input
+                                    onChange={e =>
+                                      handleFileSelect(e, section.position, lesson.position)
+                                    }
+                                    id='lessonfile'
+                                    multiple={true}
+                                    type='file'
+                                    accept='.pdf,.doc,.docx,.ppt,.pptx'
+                                    className='hidden'
+                                  />
+                                </div>
+                              </>
+                            )}
+                            <div className='mt-2'>
+                              <span className='text-sm text-gray-600 mb-1'>Article Content:</span>
+                              <textarea
+                                onChange={e =>
+                                  handleTextValueChange(
+                                    section.position,
+                                    lesson.position,
+                                    "description",
+                                    e.target.value
+                                  )
+                                }
+                                className='w-full p-2 border border-dashed border-gray-200 rounded resize-none focus:outline-none focus:border-orange'
+                                placeholder='Add article content here...'
+                                rows={8}
+                              ></textarea>
+                            </div>
+                          </div>
+                        )}
+                        {lesson.type === "QUIZ" && (
+                          <div className='bg-gray-100/40 w-full p-4 rounded flex flex-col gap-3'>
+                            {/* Add Quiz */}
+                            <div>
+                              <span className='text-sm text-gray-600 mb-1'>Add a Quiz :</span>
+                              <div className='flex items-center justify-center gap-10 border border-dashed border-gray-200 p-2'>
+                                <button
+                                  type='button'
+                                  onClick={() => {
+                                    setShowAddQuestions(true);
+                                    setValue(
+                                      `section_${section.position}_lecture_${lesson.position}_addQuiz_type`,
+                                      "ADD_QUIZ"
+                                    );
+                                  }}
+                                  className='flex items-center gap-2 px-3 py-1.5 border border-gray-100 text-gray-800 rounded! text-sm hover:bg-gray-100 transition-colors duration-500 cursor-pointer'
+                                >
+                                  <Plus className='w-4 h-4' />
+                                  Add Quiz Question
+                                </button>
+                              </div>
+                            </div>
+
+                            {showAddQuestions && (
+                              <>
+                                <div>
+                                  <span className='text-sm text-gray-600 mb-1'>
+                                    Select Question type :
+                                  </span>
+                                  <div className='flex items-center justify-center gap-10 border border-dashed border-gray-200 p-2'>
+                                    <button
+                                      type='button'
+                                      onClick={() => {
+                                        addQuizQuestion(
+                                          section.position,
+                                          lesson.position,
+                                          "MULTIPLE_CHOICE"
+                                        );
+                                        setValue(
+                                          `section_${section.position}_lecture_${lesson.position}_quiz_type`,
+                                          "MULTIPLE_CHOICE"
+                                        );
+                                      }}
+                                      className='px-3 py-1.5 border border-gray-100 text-gray-800 rounded text-sm hover:bg-gray-100 transition-colors duration-500 cursor-pointer'
+                                    >
+                                      MULTIPLE_CHOICE
+                                    </button>
+                                    <button
+                                      type='button'
+                                      onClick={() => {
+                                        addQuizQuestion(
+                                          section.position,
+                                          lesson.position,
+                                          "SINGLE_CHOICE"
+                                        );
+                                        setValue(
+                                          `section_${section.position}_lecture_${lesson.position}_quiz_type`,
+                                          "SINGLE_CHOICE"
+                                        );
+                                      }}
+                                      className='px-3 py-1.5 border border-gray-100 text-gray-800 rounded text-sm hover:bg-gray-100 transition-colors duration-500 cursor-pointer'
+                                    >
+                                      SINGLE_CHOICE
+                                    </button>
+                                    <button
+                                      type='button'
+                                      onClick={() => {
+                                        addQuizQuestion(
+                                          section.position,
+                                          lesson.position,
+                                          "TRUE_FALSE"
+                                        );
+                                        setValue(
+                                          `section_${section.position}_lecture_${lesson.position}_quiz_type`,
+                                          "TRUE_FALSE"
+                                        );
+                                      }}
+                                      className='px-3 py-1.5 border border-gray-100 text-gray-800 rounded text-sm hover:bg-gray-100 transition-colors duration-500 cursor-pointer'
+                                    >
+                                      TRUE_FALSE
+                                    </button>
+                                  </div>
+                                </div>
+                              </>
+                            )}
+
+                            {lesson.quiz?.questions &&
+                              lesson.quiz.questions.length > 0 &&
+                              lesson.quiz.questions.map(question => (
+                                <div
+                                  key={question.position}
+                                  className='bg-white p-3 group'
+                                >
+                                  <div className='flex items-center justify-between mb-2'>
+                                    <span className='text-sm text-gray-600'>
+                                      {`Question ${question.position} : ${question.type}`}
+                                    </span>
+                                    <Trash
+                                      onClick={() =>
+                                        handleDeleteQuiz(
+                                          section.position,
+                                          lesson.position,
+                                          question.position
+                                        )
+                                      }
+                                      className='w-3.5 h-3.5 hidden group-hover:block cursor-pointer'
+                                    />
+                                  </div>
+                                  <div className='grid grid-cols-4 gap-2'>
+                                    {/* Quiz Points */}
+                                    <div className=''>
+                                      <span className='text-sm text-gray-600 mb-1'>
+                                        Points of this Qustion :
+                                      </span>
+                                      <input
+                                        type='number'
+                                        min={1}
+                                        max={10}
+                                        defaultValue={question.points}
+                                        className='w-full px-2 py-1.5 border border-gray-200 focus:outline-none focus:border-orange text-sm appearance-none rounded'
+                                      ></input>
+                                    </div>
+                                    {/* Quiz Qustion */}
+                                    <textarea
+                                      {...register(
+                                        `section_${section.position}_lecture_${lesson.position}_quiz_question_${question.position}`,
+                                        {
+                                          required: "Must be add question title",
+                                        }
+                                      )}
+                                      placeholder='Enter your qustion title...'
+                                      rows={3}
+                                      className='w-full px-2 py-1.5 border border-gray-200 focus:outline-none focus:border-orange text-sm col-span-4 resize-none rounded'
+                                    ></textarea>
+                                    <input
+                                      type='hidden'
+                                      {...register(
+                                        `section_${section.position}_lecture_${lesson.position}_${question.position}_type`,
+                                        {
+                                          required: `Please Choose a option for correct answere for ${section.position} lesson ${lesson.position} Qustion ${question.position}.`,
+                                        }
+                                      )}
+                                    />
+                                    {/* Quiz Options */}
+                                    {question.type === "MULTIPLE_CHOICE" ||
+                                    question.type === "SINGLE_CHOICE" ? (
+                                      <>
+                                        {/* Option 1 */}
+                                        <div className='col-span-2 flex'>
+                                          <span
+                                            onClick={() => {
+                                              updateQuizOptionCorrectAnswere(
+                                                section.position,
+                                                lesson.position,
+                                                question.position,
+                                                1
+                                              );
+                                              setValue(
+                                                `section_${section.position}_lecture_${lesson.position}_${question.position}_type`,
+                                                1
+                                              );
+                                            }}
+                                            className={`w-7 h-full border border-r-0 border-gray-200 rounded-l text-center cursor-pointer ${question.options[0]?.isCorrect && "bg-orange"}`}
+                                          ></span>
+                                          <input
+                                            {...register(
+                                              `section_${section.position}_lecture_${lesson.position}_quiz_option_${question.position}_option_1`,
+                                              {
+                                                required: `${`section_${section.position}_lecture_${lesson.position}_quiz_option_${question.position}_option_1`} must be add option`,
+                                              }
+                                            )}
+                                            type='text'
+                                            defaultValue={
+                                              question.options && question.options[0]?.text
+                                            }
+                                            onChange={e =>
+                                              addQuizOption(
+                                                section.position,
+                                                lesson.position,
+                                                question.position,
+                                                1,
+                                                e.target.value
+                                              )
+                                            }
+                                            placeholder='Enter Opton 1'
+                                            className='w-full px-2 py-1.5 border border-gray-200 focus:outline-none focus:border-orange text-sm rounded-r'
+                                          ></input>
+                                        </div>
+                                        {/* Option 2 */}
+                                        <div className='col-span-2 flex'>
+                                          <span
+                                            onClick={() => {
+                                              updateQuizOptionCorrectAnswere(
+                                                section.position,
+                                                lesson.position,
+                                                question.position,
+                                                2
+                                              );
+                                              setValue(
+                                                `section_${section.position}_lecture_${lesson.position}_${question.position}_type`,
+                                                2
+                                              );
+                                            }}
+                                            className={`w-7 h-full border border-r-0 border-gray-200 rounded-l text-center cursor-pointer ${question.options[1]?.isCorrect && "bg-orange"}`}
+                                          ></span>
+                                          <input
+                                            {...register(
+                                              `section_${section.position}_lecture_${lesson.position}_quiz_option_${question.position}_option_2`,
+                                              {
+                                                required: `${`section_${section.position}_lecture_${lesson.position}_quiz_option_${question.position}_option_2`} must be add option`,
+                                              }
+                                            )}
+                                            type='text'
+                                            defaultValue={
+                                              question.options && question.options[1]?.text
+                                            }
+                                            onChange={e =>
+                                              addQuizOption(
+                                                section.position,
+                                                lesson.position,
+                                                question.position,
+                                                2,
+                                                e.target.value
+                                              )
+                                            }
+                                            placeholder='Enter Opton 2'
+                                            className='w-full px-2 py-1.5 border border-gray-200 focus:outline-none focus:border-orange text-sm rounded-r'
+                                          ></input>
+                                        </div>
+                                        {/* Option 3 */}
+                                        <div className='col-span-2 flex'>
+                                          <span
+                                            onClick={() => {
+                                              updateQuizOptionCorrectAnswere(
+                                                section.position,
+                                                lesson.position,
+                                                question.position,
+                                                3
+                                              );
+                                              setValue(
+                                                `section_${section.position}_lecture_${lesson.position}_${question.position}_type`,
+                                                3
+                                              );
+                                            }}
+                                            className={`w-7 h-full border border-r-0 border-gray-200 rounded-l text-center cursor-pointer ${question.options[2]?.isCorrect && "bg-orange"}`}
+                                          ></span>
+                                          <input
+                                            {...register(
+                                              `section_${section.position}_lecture_${lesson.position}_quiz_option_${question.position}_option_3`,
+                                              {
+                                                required: `${`section_${section.position}_lecture_${lesson.position}_quiz_option_${question.position}_option_3`} must be add option`,
+                                              }
+                                            )}
+                                            type='text'
+                                            defaultValue={
+                                              question.options && question.options[2]?.text
+                                            }
+                                            onChange={e =>
+                                              addQuizOption(
+                                                section.position,
+                                                lesson.position,
+                                                question.position,
+                                                3,
+                                                e.target.value
+                                              )
+                                            }
+                                            placeholder='Enter Opton 3'
+                                            className='w-full px-2 py-1.5 border border-gray-200 focus:outline-none focus:border-orange text-sm rounded-r'
+                                          ></input>
+                                        </div>
+                                        {/* Option 4 */}
+                                        <div className='col-span-2 flex'>
+                                          <span
+                                            onClick={() => {
+                                              updateQuizOptionCorrectAnswere(
+                                                section.position,
+                                                lesson.position,
+                                                question.position,
+                                                4
+                                              );
+                                              setValue(
+                                                `section_${section.position}_lecture_${lesson.position}_${question.position}_type`,
+                                                4
+                                              );
+                                            }}
+                                            className={`w-7 h-full border border-r-0 border-gray-200 rounded-l text-center cursor-pointer ${question.options[3]?.isCorrect && "bg-orange"}`}
+                                          ></span>
+                                          <input
+                                            {...register(
+                                              `section_${section.position}_lecture_${lesson.position}_quiz_option_${question.position}_option_4`,
+                                              {
+                                                required: `${`section_${section.position}_lecture_${lesson.position}_quiz_option_${question.position}_option_4`} must be add option`,
+                                              }
+                                            )}
+                                            type='text'
+                                            defaultValue={
+                                              question.options && question.options[3]?.text
+                                            }
+                                            onChange={e =>
+                                              addQuizOption(
+                                                section.position,
+                                                lesson.position,
+                                                question.position,
+                                                4,
+                                                e.target.value
+                                              )
+                                            }
+                                            placeholder='Enter Opton 4'
+                                            className='w-full px-2 py-1.5 border border-gray-200 focus:outline-none focus:border-orange text-sm rounded-r'
+                                          ></input>
+                                        </div>
+                                      </>
+                                    ) : (
+                                      <>
+                                        {/* True False Answer */}
+                                        <div className='col-span-2 flex'>
+                                          <span
+                                            onClick={() => {
+                                              updateQuizOptionCorrectAnswere(
+                                                section.position,
+                                                lesson.position,
+                                                question.position,
+                                                1
+                                              );
+                                              setValue(
+                                                `section_${section.position}_lecture_${lesson.position}_${question.position}_type`,
+                                                1
+                                              );
+                                            }}
+                                            className={`w-7 h-full border border-r-0 border-gray-200 rounded-l text-center cursor-pointer ${question.options[0]?.isCorrect && "bg-orange"}`}
+                                          ></span>
+                                          <input
+                                            type='text'
+                                            value={question.options && question?.options[0]?.text}
+                                            readOnly
+                                            className='w-full px-2 py-1.5 border border-gray-200 focus:outline-none focus:border-orange text-sm rounded-r'
+                                          ></input>
+                                        </div>
+                                        <div className='col-span-2 flex'>
+                                          <span
+                                            onClick={() => {
+                                              updateQuizOptionCorrectAnswere(
+                                                section.position,
+                                                lesson.position,
+                                                question.position,
+                                                2
+                                              );
+                                              setValue(
+                                                `section_${section.position}_lecture_${lesson.position}_${question.position}_type`,
+                                                2
+                                              );
+                                            }}
+                                            className={`w-7 h-full border border-r-0 border-gray-200 rounded-l text-center cursor-pointer ${question.options[1]?.isCorrect && "bg-orange"}`}
+                                          ></span>
+                                          <input
+                                            type='text'
+                                            value={question.options && question?.options[1]?.text}
+                                            readOnly
+                                            className='w-full px-2 py-1.5 border border-gray-200 focus:outline-none focus:border-orange text-sm rounded-r'
+                                          ></input>
+                                        </div>
+                                      </>
+                                    )}
+                                    {question.options.filter(o => o.text.length > 0).length >=
+                                      (question.type === "TRUE_FALSE" ? 2 : 4) &&
+                                      errors[
+                                        `section_${section.position}_lecture_${lesson.position}_${question.position}_type`
+                                      ] && (
+                                        <p className='text-red-500 text-sm mt-1 col-span-4'>
+                                          {
+                                            errors[
+                                              `section_${section.position}_lecture_${lesson.position}_${question.position}_type`
+                                            ]?.message as string
+                                          }
+                                        </p>
+                                      )}
+                                  </div>
+                                </div>
+                              ))}
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
@@ -307,6 +1486,7 @@ export default function Step3({
 
         {/* Add Sections Button */}
         <button
+          type='button'
           onClick={addSection}
           className='w-full py-2 bg-orange-50 text-orange-500 rounded font-medium hover:bg-orange-100 transition-colors mt-4 cursor-pointer'
         >
@@ -314,26 +1494,21 @@ export default function Step3({
         </button>
 
         {/* Footer Actions */}
-        <div className='flex items-center justify-between pt-6 mt-4 border-t border-gray-200'>
-          <button
-            onClick={handlePrevious}
-            className='px-4 py-1.5 text-gray-800 font-medium hover:bg-gray-100 transition-colors bg-gray-50 rounded cursor-pointer'
-          >
-            Previous
-          </button>
-          <button
-            onClick={handleSaveAndNext}
-            className='px-4 py-1.5 bg-orange-500 text-white rounded font-medium hover:bg-orange-600 transition-colors cursor-pointer'
-          >
-            Save & Next
-          </button>
+        <div className='p-6'>
+          <CourseFooter
+            handlePrevious={handlePrevious}
+            isSubmitting={isSubmitting}
+            currentStep={currentStep}
+          />
         </div>
-      </div>
+      </form>
 
       {(() => {
         switch (openModal.type) {
           case "sectionName":
             return loadModalComponent("sectionName");
+          case "lectureName":
+            return loadModalComponent("lectureName");
           case "videoUpload":
             return loadModalComponent("videoUpload");
           case "fileUpload":
