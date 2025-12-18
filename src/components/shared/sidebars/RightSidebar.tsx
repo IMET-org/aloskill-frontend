@@ -54,7 +54,7 @@ export default function RightSidebar() {
 
   return (
     <aside
-      className='hidden xl:block sticky top-24 right-0 w-64 h-[calc(100vh-6rem)] overflow-y-auto'
+      className='hidden xl:block sticky top-28 right-0 w-56 h-[calc(100vh-6rem)] overflow-y-auto'
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >

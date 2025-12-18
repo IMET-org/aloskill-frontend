@@ -25,7 +25,13 @@
   --color-orange-dark: #d15100;
   --color-orange-light: #fc9759;
 }
+/* 
+bg-[var(--color-orange-dark)] 
+bg-[var(--color-orange)]
+text-[var(--color-text-dark)]
+text-(--color-text-dark)
 
+*/
 
 
 /* =======================================================

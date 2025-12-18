@@ -35,16 +35,16 @@ export function WhyLearnSectionAnimated() {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   return (
-    <section className='py-16 md:py-24 bg-linear-to-b from-gray-50 to-white'>
+    <section className='py-16 md:py-24 bg-linear-to-b from-gray-50 to-white '>
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
         {/* Section Header */}
         <SectionMiddleHeader
           title='Why Learn With Us?'
-          description='Our Courses are designed to help you achieve your goals. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempordunt ut
+          subtitle='Our Courses are designed to help you achieve your goals. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempordunt ut
             labore vanum...'
         />
 
-        <div className='grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-0'>
+        <div className='grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-0 mt-10'>
           {features.map((feature, index) => {
             const Icon = feature.icon;
             const isHovered = hoveredIndex === index;

@@ -1,17 +1,21 @@
 "use client";
 
 import {
-  Briefcase,
-  Calendar,
-  Facebook,
-  GraduationCap,
   Home,
-  Instagram,
-  Trophy,
-  Twitter,
-  UserCircle,
-  UserPlus,
+  BookOpen,
+  GraduationCap,
   Users,
+  Library,
+  CalendarDays,
+  Trophy,
+  MessageCircle,
+  Route,
+  HandCoins,
+  Star,
+  LifeBuoy,
+  Twitter,
+  Facebook,
+  Instagram,
   X,
 } from "lucide-react";
 import Link from "next/link";
@@ -24,24 +28,79 @@ interface LeftSidebarProps {
 
 // ✅ CLEANED: Removed duplicate items
 const navItems = [
-  { icon: Home, label: "Home", href: "/", color: "text-orange-700" },
-  { icon: UserCircle, label: "Sign In/Up", href: "/auth/signup", color: "text-orange-500" },
-  { icon: GraduationCap, label: "Instructors", href: "/instructors", color: "text-blue-500" },
-  { icon: Users, label: "Students", href: "/students", color: "text-green-500" },
-  { icon: Calendar, label: "Events", href: "/events", color: "text-purple-500" },
-  { icon: UserPlus, label: "Groups", href: "/groups", color: "text-pink-500" },
-  { icon: Trophy, label: "Challenge", href: "/challenge", color: "text-yellow-500" },
-  { icon: Briefcase, label: "Workshop", href: "/workshop", color: "text-indigo-500" },
-  { icon: UserPlus, label: "Groups", href: "/groupfg", color: "text-pink-500" },
-  { icon: Trophy, label: "Challenge", href: "/challengef", color: "text-yellow-500" },
-  { icon: Briefcase, label: "Workshop", href: "/workshokpg", color: "text-indigo-500" },
-  { icon: UserPlus, label: "Groups", href: "/groupfghg", color: "text-pink-500" },
-  { icon: Trophy, label: "Challenge", href: "/challengefhg", color: "text-yellow-500" },
-  { icon: Briefcase, label: "Workshop", href: "/workshokpggh", color: "text-indigo-500" },
-  { icon: UserPlus, label: "Groups", href: "/groupfghgkl", color: "text-pink-500" },
-  { icon: Trophy, label: "Challenge", href: "/challengefhgkl", color: "text-yellow-500" },
+  {
+    icon: Home,
+    label: "Home",
+    href: "/",
+    color: "text-orange-700",
+  },
+  {
+    icon: BookOpen,
+    label: "Courses",
+    href: "/courses",
+    color: "text-orange-500",
+  },
+  {
+    icon: GraduationCap,
+    label: "Instructors",
+    href: "/instructors",
+    color: "text-blue-500",
+  },
+  {
+    icon: Users,
+    label: "Students Hub",
+    href: "/students",
+    color: "text-green-500",
+  },
+  {
+    icon: Library,
+    label: "Books & Resources",
+    href: "/books",
+    color: "text-purple-500",
+  },
+  {
+    icon: CalendarDays,
+    label: "Events & Workshops",
+    href: "/events",
+    color: "text-pink-500",
+  },
+  {
+    icon: Trophy,
+    label: "Challenges",
+    href: "/challenges",
+    color: "text-yellow-500",
+  },
+  {
+    icon: MessageCircle,
+    label: "Community",
+    href: "/community",
+    color: "text-indigo-500",
+  },
+  {
+    icon: Route,
+    label: "Career & Skill Path",
+    href: "/career",
+    color: "text-sky-500",
+  },
+  {
+    icon: HandCoins,
+    label: "Earn with AloSkill",
+    href: "/earn",
+    color: "text-emerald-500",
+  },
+  {
+    icon: Star,
+    label: "Success Stories",
+    href: "/success",
+    color: "text-amber-500",
+  },
+  {
+    icon: LifeBuoy,
+    label: "Help & Support",
+    href: "/help",
+    color: "text-rose-500",
+  },
 ];
-
 export default function LeftSidebar({ isOpen = false, onClose }: LeftSidebarProps) {
   const pathname = usePathname();
 
@@ -60,7 +119,7 @@ export default function LeftSidebar({ isOpen = false, onClose }: LeftSidebarProp
       <aside
         className={`
           fixed lg:sticky
-          top-12 lg:top-24
+          top-12 lg:top-28
           left-0
           h-[calc(100vh-3rem)] lg:h-[calc(100vh-6rem)]
           w-50 lg:w-48

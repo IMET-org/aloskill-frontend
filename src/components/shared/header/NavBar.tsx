@@ -193,7 +193,7 @@ export default function NavBar({ onMenuToggle }: HeaderProps) {
 
   return (
     <>
-      <header className='w-full bg-white/80 backdrop-blur-md border-b border-gray-200/50 shadow-sm'>
+      <header className='w-full bg-transparent backdrop-blur-md border-b border-gray-200/50 shadow-sm'>
         <div className='flex items-center justify-between px-4 md:px-6 py-3 max-w-full mx-auto'>
           {/* Mobile Menu Button */}
           <button

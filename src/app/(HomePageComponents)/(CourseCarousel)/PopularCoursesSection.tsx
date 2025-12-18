@@ -2,12 +2,12 @@
 "use client";
 
 import SectionHeader from "@/components/sections/SectionHeader";
-import Slider from "@/components/slider/Slider.tsx";
+import Slider from "@/components/slider/Slider";
 import { Pencil } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
-import CourseCard from "../(withoutSidebarLayout)/courses/CourseCard.tsx";
-import type { Course } from "../(withoutSidebarLayout)/courses/allCourses.types.ts";
+import CourseCard from "../../(withoutSidebarLayout)/courses/CourseCard";
+import type { Course } from "../../(withoutSidebarLayout)/courses/allCourses.types";
 
 // Mock data - In production, fetch from API
 const INITIAL_COURSES: Course[] = [
@@ -215,6 +215,7 @@ export default function PopularCoursesSection() {
   const [cartItems, setCartItems] = useState<Set<string | number>>(new Set());
   const [wishlistItems, setWishlistItems] = useState<Set<string | number>>(new Set());
   const router = useRouter();
+
   /**
    * Handle course enrollment
    * In production: Navigate to checkout or enrollment page
@@ -289,7 +290,7 @@ export default function PopularCoursesSection() {
       // Mock: Add more courses (in production, append from API)
       const moreCourses: Course[] = [
         {
-          id: 4,
+          id: 10,
           image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=500&q=80",
           category: "Web Development",
           categoryColor: "bg-green-700",
@@ -318,7 +319,8 @@ export default function PopularCoursesSection() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [router]);
+
   // Map courses to CourseCard components
   const courseSlides = courses.map(course => (
     <CourseCard
@@ -327,13 +329,14 @@ export default function PopularCoursesSection() {
       onEnroll={handleEnroll}
       onAddToCart={handleAddToCart}
       onAddToWishlist={handleAddToWishlist}
-      isInCart={cartItems.has(String(course.id))}
-      isInWishlist={wishlistItems.has(String(course.id))}
+      isInCart={cartItems.has(course.id)}
+      isInWishlist={wishlistItems.has(course.id)}
     />
   ));
+
   return (
     <section
-      className='py-16 md:py-24 bg-linear-to-b from-white to-gray-50 relative overflow-hidden'
+      className='py-16 md:py-24 bg-gradient-to-b from-white to-gray-50 relative overflow-hidden'
       aria-labelledby='popular-courses-heading'
     >
       {/* Decorative Background Element */}
@@ -346,7 +349,6 @@ export default function PopularCoursesSection() {
 
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10'>
         {/* Section Header */}
-
         <SectionHeader
           badge='Top Popular Course'
           title={
@@ -363,32 +365,22 @@ export default function PopularCoursesSection() {
           isLoading={isLoading}
         />
 
+        {/* Fixed Slider Configuration */}
         <Slider
           slides={courseSlides}
-          visibleCount={3}
+          visibleCount={1}
           breakpoints={{
-            0: { visibleCount: 1 },
-            640: { visibleCount: 2 },
-            1024: { visibleCount: 3 },
+            640: { visibleCount: 1 }, // sm: 2 slides
+            768: { visibleCount: 2 }, // md: 3 slides
+            1280: { visibleCount: 3 }, // xl: 4 slides
           }}
           autoplay
           loop
           autoplayInterval={3000}
           showArrows
           showDots
+          gap={16}
         />
-
-        {/* <CourseSlider
-          courses={courses}
-          isLoading={false}
-          autoScrollSpeed={50}
-          pauseOnHover={true}
-          onEnroll={handleEnroll}
-          onAddToCart={handleAddToCart}
-          onAddToWishlist={handleAddToWishlist}
-          cartItems={cartItems}
-          wishlistItems={wishlistItems}
-        /> */}
       </div>
     </section>
   );

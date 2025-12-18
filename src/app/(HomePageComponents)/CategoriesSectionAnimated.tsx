@@ -99,7 +99,7 @@ export function CategoriesSectionAnimated() {
         {/* Header */}
         <SectionMiddleHeader
           title='Most demanding categories'
-          description='Learn from expert instructors in Bangla. Upgrade your skills with the most popular and effective online courses.'
+          subtitle='Learn from expert instructors in Bangla. Upgrade your skills with the most popular and effective online courses.'
         />
 
         <div className='py-16 grid grid-cols-2  lg:grid-cols-4 gap-4 xl:gap-6'>

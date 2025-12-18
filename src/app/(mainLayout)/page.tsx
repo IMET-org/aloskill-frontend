@@ -1,13 +1,13 @@
 "use client";
 
 import GCommunitySection from "@/app/(HomePageComponents)/(CommunitySection)/GCommunitySection.tsx";
+import PopularCoursesSection from "@/app/(HomePageComponents)/(CourseCarousel)/PopularCoursesSection.tsx";
 import HeroSection from "@/app/(HomePageComponents)/(HeroSection)/HeroSection";
 import StatsSection from "@/app/(HomePageComponents)/(StatsSection)/StatsSection.tsx";
 import { CategoriesSectionAnimated } from "@/app/(HomePageComponents)/CategoriesSectionAnimated";
 import { CertificateSectionSimple } from "@/app/(HomePageComponents)/CertificateSectionSimple";
 import { DiscoverBooksSectionCarousel } from "@/app/(HomePageComponents)/DiscoverBooksSectionCarousel";
 import { InstructorsSectionAdvanced } from "@/app/(HomePageComponents)/InstructorsSectionAdvanced";
-import PopularCoursesSection from "@/app/(HomePageComponents)/PopularCoursesSection";
 import { WhyLearnSectionAnimated } from "@/app/(HomePageComponents)/WhyLearnSectionAnimated";
 
 import BackToTop from "@/components/shared/BackToTop";
@@ -36,6 +36,7 @@ export default function HomePage() {
       <WhyLearnSectionAnimated />
       {/* <FeaturedCoursesCarousel courses={courses} /> */}
       <PopularCoursesSection />
+      {/* <CourseCarousel /> */}
       <DiscoverBooksSectionCarousel />
       <InstructorsSectionAdvanced />
       <TestimonialSlider />

@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import AuthButton from "@/components/shared/buttons/AuthButton";
 import { authService } from "@/lib/api/auth.service";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, CheckCircle2, Eye, EyeOff, Loader2, Lock } from "lucide-react";
@@ -156,20 +155,7 @@ export default function ResetPasswordPage() {
               )}
             </div>
 
-            <AuthButton
-              type='submit'
-              disabled={isSubmitting}
-              className='mt-4 w-full  disabled:opacity-50 disabled:cursor-not-allowed shadow-lg'
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className='w-5 h-5 animate-spin mr-2' /> Resetting...
-                </>
-              ) : (
-                "Reset Password"
-              )}
-            </AuthButton>
-            {/* <button
+            <button
               type='submit'
               disabled={isSubmitting}
               className='w-full py-3 rounded-xl text-white font-semibold bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center'
@@ -181,7 +167,7 @@ export default function ResetPasswordPage() {
               ) : (
                 "Reset Password"
               )}
-            </button> */}
+            </button>
           </form>
         )}
 

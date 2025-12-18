@@ -271,7 +271,7 @@ export default function FooterSimple() {
                 rel='noopener noreferrer'
                 className='inline-block'
               >
-                <div className='bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors'>
+                <div className='bg-(--color-text-dark) text-white px-6 py-2 rounded-lg text-sm font-semibold  transition-colors'>
                   Verified by
                   <br />
                   <span className='text-lg'>SSLCommerz</span>

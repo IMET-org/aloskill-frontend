@@ -1,7 +1,7 @@
+import { authOptions } from "@/app/api/auth/[...nextauth]/route.ts";
 import LogoutButton from "@/components/logOut.tsx";
 import LogoutAllDevicesButton from "@/components/logoutAll.tsx";
 import { getServerSession } from "next-auth";
-import { authOptions } from "../api/auth/[...nextauth]/route.ts";
 
 const Dashboard = async () => {
   const user = await getServerSession(authOptions);

@@ -97,10 +97,10 @@ export default function ContactSection() {
         {/* New Layout: Bento Grid Style */}
         <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
           {/* Large Form Card - Spans 2 columns */}
-          <div className='lg:col-span-2 bg-white rounded-3xl p-8 md:p-10 shadow-2xl border border-gray-100'>
+          <div className='lg:col-span-2 bg-white rounded-lg p-8 md:p-10 shadow-2xl border border-gray-100'>
             <div className='flex items-center gap-3 mb-8'>
               <div
-                className='w-10 h-10 rounded-2xl flex items-center justify-center shadow-lg'
+                className='w-10 h-10 rounded-lg flex items-center justify-center shadow-lg'
                 style={{ backgroundColor: "#da7c36" }}
               >
                 <MessageCircle className='w-4 h-4 text-white' />
@@ -116,7 +116,7 @@ export default function ContactSection() {
             {/* Status Messages */}
             {submitStatus.type && (
               <div
-                className={`mb-6 p-4 rounded-2xl flex items-start gap-3 ${
+                className={`mb-6 p-4 rounded-lg flex items-start gap-3 ${
                   submitStatus.type === "success"
                     ? "bg-green-50 border-2 border-green-200"
                     : "bg-red-50 border-2 border-red-200"
@@ -152,7 +152,7 @@ export default function ContactSection() {
                     id='firstName'
                     {...register("firstName")}
                     placeholder='John'
-                    className={`w-full px-5 py-3.5 bg-gray-50 border-2 rounded-2xl focus:outline-none focus:bg-white transition-all duration-300 ${
+                    className={`w-full px-5 py-2 bg-gray-50 border-2 rounded-lg focus:outline-none focus:bg-white transition-all duration-300 ${
                       errors.firstName
                         ? "border-red-400 focus:border-red-500"
                         : "border-gray-200 focus:border-orange-400"
@@ -179,7 +179,7 @@ export default function ContactSection() {
                     id='lastName'
                     {...register("lastName")}
                     placeholder='Doe'
-                    className={`w-full px-5 py-3.5 bg-gray-50 border-2 rounded-2xl focus:outline-none focus:bg-white transition-all duration-300 ${
+                    className={`w-full px-5 py-2 bg-gray-50 border-2 rounded-lg focus:outline-none focus:bg-white transition-all duration-300 ${
                       errors.lastName
                         ? "border-red-400 focus:border-red-500"
                         : "border-gray-200 focus:border-orange-400"
@@ -208,7 +208,7 @@ export default function ContactSection() {
                   id='email'
                   {...register("email")}
                   placeholder='john.doe@company.com'
-                  className={`w-full px-5 py-3.5 bg-gray-50 border-2 rounded-2xl focus:outline-none focus:bg-white transition-all duration-300 ${
+                  className={`w-full px-5 py-2 bg-gray-50 border-2 rounded-lg focus:outline-none focus:bg-white transition-all duration-300 ${
                     errors.email
                       ? "border-red-400 focus:border-red-500"
                       : "border-gray-200 focus:border-orange-400"
@@ -236,7 +236,7 @@ export default function ContactSection() {
                   id='subject'
                   {...register("subject")}
                   placeholder='How can we help you?'
-                  className={`w-full px-5 py-3.5 bg-gray-50 border-2 rounded-2xl focus:outline-none focus:bg-white transition-all duration-300 ${
+                  className={`w-full px-5 py-2 bg-gray-50 border-2 rounded-lg focus:outline-none focus:bg-white transition-all duration-300 ${
                     errors.subject
                       ? "border-red-400 focus:border-red-500"
                       : "border-gray-200 focus:border-orange-400"
@@ -264,7 +264,7 @@ export default function ContactSection() {
                   {...register("message")}
                   placeholder='Tell us about your needs...'
                   rows={4}
-                  className={`w-full px-5 py-3.5 bg-gray-50 border-2 rounded-2xl focus:outline-none focus:bg-white transition-all duration-300 resize-none ${
+                  className={`w-full px-5 py-2 bg-gray-50 border-2 rounded-lg focus:outline-none focus:bg-white transition-all duration-300 resize-none ${
                     errors.message
                       ? "border-red-400 focus:border-red-500"
                       : "border-gray-200 focus:border-orange-400"
@@ -320,7 +320,7 @@ export default function ContactSection() {
           <div className='space-y-6'>
             {/* Phone Card */}
             <div
-              className='relative rounded-3xl p-8 shadow-2xl overflow-hidden group hover:shadow-3xl transition-all duration-300 transform hover:-translate-y-2'
+              className='relative rounded-lg p-8 shadow-2xl overflow-hidden group hover:shadow-3xl transition-all duration-300 transform hover:-translate-y-2'
               style={{ backgroundColor: "#da7c36" }}
             >
               <div
@@ -328,7 +328,7 @@ export default function ContactSection() {
                 style={{ backgroundColor: "#fc9759" }}
               />
 
-              <div className='relative w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300'>
+              <div className='relative w-16 h-16 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300'>
                 <Phone className='w-8 h-8 text-white' />
               </div>
 
@@ -336,14 +336,14 @@ export default function ContactSection() {
               <p className='text-white/90 text-sm mb-6 leading-relaxed'>
                 Schedule a call with our experts to discuss your specific needs.
               </p>
-              <button className='px-6 py-3 bg-white text-orange-600 rounded-xl hover:bg-gray-50 transition-all duration-300 font-bold text-sm shadow-lg hover:shadow-xl'>
+              <button className='px-6 py-2 bg-white text-orange-600 rounded-lg hover:bg-gray-50 transition-all duration-300 font-bold text-sm shadow-lg hover:shadow-xl'>
                 Book Now
               </button>
             </div>
 
             {/* Email Card */}
             <div
-              className='relative rounded-3xl p-8 shadow-2xl overflow-hidden group hover:shadow-3xl transition-all duration-300 transform hover:-translate-y-2'
+              className='relative rounded-lg p-8 shadow-2xl overflow-hidden group hover:shadow-3xl transition-all duration-300 transform hover:-translate-y-2'
               style={{
                 background: "linear-gradient(135deg, #fc9759 0%, #da7c36 100%)",
               }}
@@ -353,7 +353,7 @@ export default function ContactSection() {
                 style={{ backgroundColor: "#d15100" }}
               />
 
-              <div className='relative w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300'>
+              <div className='relative w-16 h-16 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300'>
                 <Send className='w-8 h-8 text-white' />
               </div>
 
@@ -361,13 +361,13 @@ export default function ContactSection() {
               <p className='text-white/90 text-sm mb-6 leading-relaxed'>
                 Prefer email? Drop us a line and we'll respond promptly.
               </p>
-              <button className='px-6 py-3 bg-white text-orange-600 rounded-xl hover:bg-gray-50 transition-all duration-300 font-bold text-sm shadow-lg hover:shadow-xl'>
+              <button className='px-6 py-2 bg-white text-orange-600 rounded-lg hover:bg-gray-50 transition-all duration-300 font-bold text-sm shadow-lg hover:shadow-xl'>
                 Send Email
               </button>
             </div>
 
             {/* Info Badge */}
-            <div className='bg-white rounded-3xl p-6 shadow-lg border-2 border-gray-100'>
+            <div className='bg-white rounded-lg p-6 shadow-lg border-2 border-gray-100'>
               <div className='flex items-start gap-4'>
                 <div
                   className='w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0'
