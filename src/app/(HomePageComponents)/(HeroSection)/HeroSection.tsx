@@ -229,7 +229,7 @@ const itemVariants = {
     y: 0,
     transition: {
       duration: 0.6,
-      ease: [0.22, 1, 0.36, 1],
+      ease: [0.4, 0, 0.2, 1],
     },
   },
 };
@@ -449,14 +449,14 @@ export default function HeroSection() {
           variants={itemVariants}
         >
           <motion.h1
-            className='text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-gray-900 leading-tight'
+            className='text-4xl sm:text-6xl  font-black text-gray-900 leading-tight'
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
           >
-            Start Learning{" "}
+            Start{" "}
             <motion.span
-              className='inline-block text-transparent bg-clip-text bg-gradient-to-r from-orange-500 via-red-500 to-pink-500'
+              className='inline-block text-transparent bg-clip-text bg-gradient-to-r from-orange-dark via-orange-dark to-orange-200'
               animate={{
                 backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
               }}
@@ -469,7 +469,7 @@ export default function HeroSection() {
                 backgroundSize: "200% 200%",
               }}
             >
-              Today
+              Learning Today
             </motion.span>
           </motion.h1>
 

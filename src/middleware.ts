@@ -442,7 +442,16 @@ async function enforceAccessControl(
   const { pathname, searchParams } = request.nextUrl;
 
   // Public routes (no authentication required)
-  const publicRoutes = ["/", "/auth/signin", "/auth/signup", "/pricing", "/courses", "/blog"];
+  const publicRoutes = [
+    "/",
+    "/auth/signin",
+    "/auth/signup",
+    "/pricing",
+    "/courses",
+    "/blog",
+    "/products",
+    "/instructors",
+  ];
   if (publicRoutes.includes(pathname)) {
     return { granted: true, redirectUrl: "" };
   }

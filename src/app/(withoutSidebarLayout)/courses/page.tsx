@@ -1,10 +1,18 @@
 "use client";
 import CourseGrid from "@/components/grids/CourseGrid";
 import { PageHeading } from "@/components/shared/PageHeading.tsx";
-import { ChevronRight, Filter, Grid, LayoutList, Search, SlidersHorizontal, X } from "lucide-react";
+import {
+  ChevronRight,
+  Filter,
+  Grid,
+  LayoutList,
+  Search,
+  SlidersHorizontal,
+  Star,
+  X,
+} from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import type { Course } from "./allCourses.types.ts";
-
 
 // Mock courses data - Replace with API
 const ALL_COURSES: Course[] = [
@@ -416,26 +424,30 @@ export default function AllCoursesPage() {
     priceRange[1] !== 100;
 
   return (
-    <div className='bg-linear-to-tr from-pink-50 via-purple-50 to-white'>
-      <div className='min-h-screen  max-w-[80%] mx-auto'>
+    <div className='min-h-screen bg-gradient-to-br from-slate-50 via-white to-purple-50/30'>
+      <div className='mx-auto max-w-[1920px] '>
         <PageHeading />
+
         {/* Mobile Filter Button */}
         <button
           onClick={() => setShowMobileFilters(true)}
-          className='lg:hidden fixed bottom-6 right-6 z-50 w-14 h-14 bg-linear-to-r from-orange-500 to-orange-600 text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-transform'
+          className='lg:hidden fixed bottom-6 right-6 z-50 w-14 h-14 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-2xl shadow-lg shadow-orange-500/30 flex items-center justify-center hover:shadow-xl hover:shadow-orange-500/40 hover:scale-105 transition-all duration-200'
         >
-          <SlidersHorizontal className='w-6 h-6' />
+          <SlidersHorizontal className='w-5 h-5' />
         </button>
 
         {/* Mobile Filter Overlay */}
         {showMobileFilters && (
-          <div className='lg:hidden fixed inset-0 z-50 bg-black/50'>
-            <div className='absolute left-0 top-0 bottom-0 w-80 max-w-[85vw] bg-white overflow-y-auto'>
-              <div className='sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between z-10'>
-                <h2 className='text-lg font-bold text-gray-900'>Filters</h2>
+          <div className='lg:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm'>
+            <div className='absolute left-0 top-0 bottom-0 w-80 max-w-[85vw] bg-white shadow-2xl overflow-y-auto'>
+              <div className='sticky top-0 bg-white/95 backdrop-blur-md border-b border-gray-100 p-4 flex items-center justify-between z-10'>
+                <h2 className='text-lg font-bold text-gray-900 flex items-center gap-2'>
+                  <Filter className='w-5 h-5 text-orange-600' />
+                  Filters
+                </h2>
                 <button
                   onClick={() => setShowMobileFilters(false)}
-                  className='p-2 hover:bg-gray-100 rounded-lg transition-colors'
+                  className='p-2 hover:bg-gray-100 rounded-xl transition-colors'
                 >
                   <X className='w-5 h-5' />
                 </button>
@@ -462,91 +474,90 @@ export default function AllCoursesPage() {
           </div>
         )}
 
-        <div className='max-w-[1920px] mx-auto'>
-          <div className='flex'>
-            {/* Left Sidebar - Desktop */}
-            <aside className='hidden lg:block w-80 shrink-0 bg-white border-r border-gray-200 h-screen sticky top-0 overflow-y-auto'>
-              <div className='p-6'>
-                <div className='flex items-center justify-between mb-6'>
-                  <h2 className='text-xl font-black text-gray-900 flex items-center gap-2'>
-                    <Filter className='w-5 h-5' />
-                    Filters
-                  </h2>
-                  {hasActiveFilters && (
-                    <button
-                      onClick={clearAllFilters}
-                      className='text-sm text-orange-600 hover:text-orange-700 font-semibold'
-                    >
-                      Clear All
-                    </button>
-                  )}
+        <div className='flex '>
+          {/* Left Sidebar - Desktop */}
+          <aside className='hidden lg:block w-72 xl:w-80 shrink-0 bg-white/80 backdrop-blur-sm border-r border-gray-100 h-screen sticky top-0 overflow-y-auto shadow-sm pl-4  '>
+            <div className='p-6'>
+              <div className='flex items-center justify-between mb-6 pb-4 border-b border-gray-100'>
+                <h2 className='text-xl font-bold text-gray-900 flex items-center gap-2'>
+                  <div className='p-2 bg-orange-50 rounded-lg'>
+                    <Filter className='w-5 h-5 text-orange-600' />
+                  </div>
+                  Filters
+                </h2>
+                {hasActiveFilters && (
+                  <button
+                    onClick={clearAllFilters}
+                    className='text-sm text-orange-600 hover:text-orange-700 font-semibold hover:underline transition-all'
+                  >
+                    Clear All
+                  </button>
+                )}
+              </div>
+
+              <FilterSidebar
+                expandedSections={expandedSections}
+                toggleSection={toggleSection}
+                selectedCategory={selectedCategory}
+                setSelectedCategory={setSelectedCategory}
+                selectedLevel={selectedLevel}
+                setSelectedLevel={setSelectedLevel}
+                selectedLanguage={selectedLanguage}
+                setSelectedLanguage={setSelectedLanguage}
+                selectedRating={selectedRating}
+                setSelectedRating={setSelectedRating}
+                selectedDuration={selectedDuration}
+                setSelectedDuration={setSelectedDuration}
+                priceRange={priceRange}
+                setPriceRange={setPriceRange}
+                hasActiveFilters={hasActiveFilters}
+                clearAllFilters={clearAllFilters}
+              />
+            </div>
+          </aside>
+
+          {/* Main Content */}
+          <main className='flex-1 min-w-0'>
+            {/* Top Bar */}
+            <div className='sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm'>
+              <div className='px-4 sm:px-6 lg:px-8 py-5'>
+                {/* Search Bar */}
+                <div className='mb-5'>
+                  <div className='relative max-w-2xl'>
+                    <div className='absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400'>
+                      <Search className='w-5 h-5' />
+                    </div>
+                    <input
+                      type='text'
+                      placeholder='Search for courses...'
+                      value={searchQuery}
+                      onChange={e => setSearchQuery(e.target.value)}
+                      className='w-full pl-12 pr-4 py-2 rounded-lg border-2 border-gray-200 focus:border-orange-500 focus:outline-none focus:ring-4 focus:ring-orange-500/10 text-gray-900 placeholder-gray-400 transition-all shadow-sm hover:shadow-md'
+                    />
+                  </div>
                 </div>
 
-                <FilterSidebar
-                  expandedSections={expandedSections}
-                  toggleSection={toggleSection}
-                  selectedCategory={selectedCategory}
-                  setSelectedCategory={setSelectedCategory}
-                  selectedLevel={selectedLevel}
-                  setSelectedLevel={setSelectedLevel}
-                  selectedLanguage={selectedLanguage}
-                  setSelectedLanguage={setSelectedLanguage}
-                  selectedRating={selectedRating}
-                  setSelectedRating={setSelectedRating}
-                  selectedDuration={selectedDuration}
-                  setSelectedDuration={setSelectedDuration}
-                  priceRange={priceRange}
-                  setPriceRange={setPriceRange}
-                  hasActiveFilters={hasActiveFilters}
-                  clearAllFilters={clearAllFilters}
-                />
-              </div>
-            </aside>
-
-            {/* Main Content */}
-            <main className='flex-1 min-w-0'>
-              {/* Top Bar */}
-              <div className=' bg-white border-b border-gray-200 shadow-sm'>
-                <div className='px-4 sm:px-6 lg:px-8 py-4'>
-                  {/* Search Bar */}
-                  <div className='mb-4'>
-                    <div className='relative max-w-2xl'>
-                      <Search className='absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5' />
-                      <input
-                        type='text'
-                        placeholder='Search course...'
-                        value={searchQuery}
-                        onChange={e => setSearchQuery(e.target.value)}
-                        className='w-full pl-12 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-orange-500 focus:outline-none text-gray-900 placeholder-gray-400'
-                      />
+                {/* Controls */}
+                <div className='flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4'>
+                  <div className='flex items-center gap-4'>
+                    <div className='flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-50 to-purple-50 rounded-xl border border-orange-100'>
+                      <span className='text-sm font-semibold text-orange-600'>
+                        {filteredAndSortedCourses.length}
+                      </span>
+                      <span className='text-sm text-gray-600'>
+                        {filteredAndSortedCourses.length === 1 ? "course" : "courses"} found
+                      </span>
                     </div>
                   </div>
 
-                  {/* Controls */}
-                  <div className='flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4'>
-                    <div className='flex items-center gap-4'>
-                      <p className='text-sm text-gray-600'>
-                        Showing{" "}
-                        <span className='font-semibold text-gray-900'>
-                          {filteredAndSortedCourses.length}
-                        </span>{" "}
-                        results
-                      </p>
-                    </div>
-
-                    <div className='flex items-center gap-3'>
-                      {/* Sort */}
+                  <div className='flex items-center gap-3'>
+                    {/* Sort */}
+                    <div className='relative'>
                       <select
                         value={sortBy}
                         onChange={e => setSortBy(e.target.value)}
-                        className='px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-orange-500 text-sm bg-white'
+                        className='appearance-none px-5 py-2 pr-10 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 text-sm bg-white font-medium text-gray-700 cursor-pointer transition-all shadow-sm hover:shadow-md'
                       >
-                        <option
-                          value=''
-                          disabled
-                        >
-                          Sort By
-                        </option>
                         {SORT_OPTIONS.map(option => (
                           <option
                             key={option.value}
@@ -556,52 +567,53 @@ export default function AllCoursesPage() {
                           </option>
                         ))}
                       </select>
+                      <ChevronRight className='absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 rotate-90 pointer-events-none' />
+                    </div>
 
-                      {/* View Mode */}
-                      <div className='flex items-center gap-1 bg-gray-100 rounded-lg p-1'>
-                        <button
-                          onClick={() => setViewMode("grid")}
-                          className={`p-2 rounded transition-colors ${
-                            viewMode === "grid"
-                              ? "bg-white text-orange-600 shadow-sm"
-                              : "text-gray-600 hover:text-gray-900"
-                          }`}
-                          aria-label='Grid view'
-                        >
-                          <Grid className='w-4 h-4' />
-                        </button>
-                        <button
-                          onClick={() => setViewMode("list")}
-                          className={`p-2 rounded transition-colors ${
-                            viewMode === "list"
-                              ? "bg-white text-orange-600 shadow-sm"
-                              : "text-gray-600 hover:text-gray-900"
-                          }`}
-                          aria-label='List view'
-                        >
-                          <LayoutList className='w-4 h-4' />
-                        </button>
-                      </div>
+                    {/* View Mode */}
+                    <div className='flex items-center gap-1 bg-gray-100 rounded-lg p-1 shadow-sm'>
+                      <button
+                        onClick={() => setViewMode("grid")}
+                        className={`p-2 rounded-lg transition-all duration-200 ${
+                          viewMode === "grid"
+                            ? "bg-white text-orange-600 shadow-sm"
+                            : "text-gray-500 hover:text-gray-700"
+                        }`}
+                        aria-label='Grid view'
+                      >
+                        <Grid className='w-4 h-4' />
+                      </button>
+                      <button
+                        onClick={() => setViewMode("list")}
+                        className={`p-2 rounded-lg transition-all duration-200 ${
+                          viewMode === "list"
+                            ? "bg-white text-orange-600 shadow-sm"
+                            : "text-gray-500 hover:text-gray-700"
+                        }`}
+                        aria-label='List view'
+                      >
+                        <LayoutList className='w-4 h-4' />
+                      </button>
                     </div>
                   </div>
                 </div>
               </div>
+            </div>
 
-              {/* Courses Grid */}
-              <div className='p-4 sm:p-6 lg:p-8'>
-                <CourseGrid
-                  courses={filteredAndSortedCourses}
-                  isLoading={isLoading}
-                  onEnroll={handleEnroll}
-                  onAddToCart={handleAddToCart}
-                  onAddToWishlist={handleAddToWishlist}
-                  cartItems={cartItems}
-                  wishlistItems={wishlistItems}
-                  emptyStateMessage='No courses found. Try adjusting your filters.'
-                />
-              </div>
-            </main>
-          </div>
+            {/* Courses Grid */}
+            <div className='p-4'>
+              <CourseGrid
+                courses={filteredAndSortedCourses}
+                isLoading={isLoading}
+                onEnroll={handleEnroll}
+                onAddToCart={handleAddToCart}
+                onAddToWishlist={handleAddToWishlist}
+                cartItems={cartItems}
+                wishlistItems={wishlistItems}
+                emptyStateMessage='No courses found. Try adjusting your filters.'
+              />
+            </div>
+          </main>
         </div>
       </div>
     </div>
@@ -609,7 +621,6 @@ export default function AllCoursesPage() {
 }
 
 // Filter Sidebar Component
-
 function FilterSidebar({
   expandedSections,
   toggleSection,
@@ -627,18 +638,18 @@ function FilterSidebar({
   setPriceRange,
 }: FilterSidebarProps) {
   return (
-    <div className='space-y-6'>
+    <div className='space-y-3'>
       {/* Category */}
       <FilterSection
         title='CATEGORY'
         isExpanded={expandedSections.has("category")}
         onToggle={() => toggleSection("category")}
       >
-        <div className='space-y-2'>
+        <div className='space-y-1'>
           {CATEGORIES.map(cat => (
             <label
               key={cat.value}
-              className='flex items-center justify-between p-2 hover:bg-gray-50 rounded-lg cursor-pointer group'
+              className='flex items-center justify-between px-3 py-1 hover:bg-gradient-to-r hover:from-orange-50 hover:to-purple-50 rounded-lg cursor-pointer group transition-all'
             >
               <div className='flex items-center gap-3'>
                 <input
@@ -647,11 +658,15 @@ function FilterSidebar({
                   value={cat.value}
                   checked={selectedCategory === cat.value}
                   onChange={e => setSelectedCategory(e.target.value)}
-                  className='w-4 h-4 text-orange-600 focus:ring-orange-500'
+                  className='w-4 h-4 text-orange-600 focus:ring-orange-500 focus:ring-2'
                 />
-                <span className='text-sm text-gray-700 group-hover:text-gray-900'>{cat.label}</span>
+                <span className='text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors'>
+                  {cat.label}
+                </span>
               </div>
-              <span className='text-xs text-gray-400'>({cat.count})</span>
+              <span className='text-xs font-semibold text-gray-400 bg-gray-100 px-2 py-1 rounded-md'>
+                {cat.count}
+              </span>
             </label>
           ))}
         </div>
@@ -663,11 +678,11 @@ function FilterSidebar({
         isExpanded={expandedSections.has("rating")}
         onToggle={() => toggleSection("rating")}
       >
-        <div className='space-y-2'>
+        <div className='space-y-1.5'>
           {RATINGS.map(rating => (
             <label
               key={rating.value}
-              className='flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer group'
+              className='flex items-center gap-3 px-3 py-1  hover:bg-gradient-to-r hover:from-orange-50 hover:to-purple-50 rounded-xl cursor-pointer group transition-all'
             >
               <input
                 type='radio'
@@ -675,24 +690,24 @@ function FilterSidebar({
                 value={rating.value}
                 checked={selectedRating === rating.value}
                 onChange={e => setSelectedRating(e.target.value)}
-                className='w-4 h-4 text-orange-600 focus:ring-orange-500'
+                className='w-4 h-4 text-orange-600 focus:ring-orange-500 focus:ring-2'
               />
               <div className='flex items-center gap-2'>
                 {rating.value !== "all" && (
-                  <div className='flex items-center'>
+                  <div className='flex items-center gap-0.5'>
                     {[...Array(5)].map((_, i) => (
-                      <span
+                      <Star
                         key={i}
-                        className={`text-xs ${
-                          i < parseFloat(rating.value) ? "text-yellow-400" : "text-gray-300"
+                        className={`w-4 h-4 ${
+                          i < Math.floor(parseFloat(rating.value))
+                            ? "text-yellow-400 fill-yellow-400"
+                            : "text-gray-300"
                         }`}
-                      >
-                        ★
-                      </span>
+                      />
                     ))}
                   </div>
                 )}
-                <span className='text-sm text-gray-700 group-hover:text-gray-900'>
+                <span className='text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors'>
                   {rating.label}
                 </span>
               </div>
@@ -707,11 +722,11 @@ function FilterSidebar({
         isExpanded={expandedSections.has("level")}
         onToggle={() => toggleSection("level")}
       >
-        <div className='space-y-2'>
+        <div className='space-y-1.5'>
           {LEVELS.map(level => (
             <label
               key={level.value}
-              className='flex items-center justify-between p-2 hover:bg-gray-50 rounded-lg cursor-pointer group'
+              className='flex items-center justify-between px-3 py-1  hover:bg-gradient-to-r hover:from-orange-50 hover:to-purple-50 rounded-xl cursor-pointer group transition-all'
             >
               <div className='flex items-center gap-3'>
                 <input
@@ -720,13 +735,15 @@ function FilterSidebar({
                   value={level.value}
                   checked={selectedLevel === level.value}
                   onChange={e => setSelectedLevel(e.target.value)}
-                  className='w-4 h-4 text-orange-600 focus:ring-orange-500'
+                  className='w-4 h-4 text-orange-600 focus:ring-orange-500 focus:ring-2'
                 />
-                <span className='text-sm text-gray-700 group-hover:text-gray-900'>
+                <span className='text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors'>
                   {level.label}
                 </span>
               </div>
-              <span className='text-xs text-gray-400'>({level.count})</span>
+              <span className='text-xs font-semibold text-gray-400 bg-gray-100 px-2 py-1 rounded-md'>
+                {level.count}
+              </span>
             </label>
           ))}
         </div>
@@ -738,11 +755,11 @@ function FilterSidebar({
         isExpanded={expandedSections.has("language")}
         onToggle={() => toggleSection("language")}
       >
-        <div className='space-y-2'>
+        <div className='space-y-1.5'>
           {LANGUAGES.map(lang => (
             <label
               key={lang.value}
-              className='flex items-center justify-between p-2 hover:bg-gray-50 rounded-lg cursor-pointer group'
+              className='flex items-center justify-between px-3 py-1  hover:bg-gradient-to-r hover:from-orange-50 hover:to-purple-50 rounded-xl cursor-pointer group transition-all'
             >
               <div className='flex items-center gap-3'>
                 <input
@@ -751,13 +768,15 @@ function FilterSidebar({
                   value={lang.value}
                   checked={selectedLanguage === lang.value}
                   onChange={e => setSelectedLanguage(e.target.value)}
-                  className='w-4 h-4 text-orange-600 focus:ring-orange-500'
+                  className='w-4 h-4 text-orange-600 focus:ring-orange-500 focus:ring-2'
                 />
-                <span className='text-sm text-gray-700 group-hover:text-gray-900'>
+                <span className='text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors'>
                   {lang.label}
                 </span>
               </div>
-              <span className='text-xs text-gray-400'>({lang.count})</span>
+              <span className='text-xs font-semibold text-gray-400 bg-gray-100 px-2 py-1 rounded-md'>
+                {lang.count}
+              </span>
             </label>
           ))}
         </div>
@@ -769,11 +788,11 @@ function FilterSidebar({
         isExpanded={expandedSections.has("duration")}
         onToggle={() => toggleSection("duration")}
       >
-        <div className='space-y-2'>
+        <div className='space-y-1.5'>
           {DURATIONS.map(duration => (
             <label
               key={duration.value}
-              className='flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer group'
+              className='flex items-center gap-3 px-3 py-1  hover:bg-gradient-to-r hover:from-orange-50 hover:to-purple-50 rounded-xl cursor-pointer group transition-all'
             >
               <input
                 type='radio'
@@ -781,9 +800,9 @@ function FilterSidebar({
                 value={duration.value}
                 checked={selectedDuration === duration.value}
                 onChange={e => setSelectedDuration(e.target.value)}
-                className='w-4 h-4 text-orange-600 focus:ring-orange-500'
+                className='w-4 h-4 text-orange-600 focus:ring-orange-500 focus:ring-2'
               />
-              <span className='text-sm text-gray-700 group-hover:text-gray-900'>
+              <span className='text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors'>
                 {duration.label}
               </span>
             </label>
@@ -797,44 +816,77 @@ function FilterSidebar({
         isExpanded={expandedSections.has("price")}
         onToggle={() => toggleSection("price")}
       >
-        <div className='space-y-4'>
-          <div className='flex items-center justify-between text-sm'>
-            <span className='text-gray-600'>Min: ${priceRange[0]}</span>
-            <span className='text-gray-600'>Max: ${priceRange[1]}</span>
+        <div className='space-y-5'>
+          <div className='flex items-center justify-between px-1'>
+            <div className='flex flex-col'>
+              <span className='text-xs text-gray-500 font-medium'>Min</span>
+              <span className='text-lg font-bold text-gray-900'>${priceRange[0]}</span>
+            </div>
+            <div className='h-px w-8 bg-gray-300'></div>
+            <div className='flex flex-col items-end'>
+              <span className='text-xs text-gray-500 font-medium'>Max</span>
+              <span className='text-lg font-bold text-gray-900'>${priceRange[1]}</span>
+            </div>
           </div>
-          <div className='space-y-2'>
-            <input
-              type='range'
-              min='0'
-              max='100'
-              value={priceRange[0]}
-              onChange={e => setPriceRange([parseInt(e.target.value), priceRange?.[1] ?? 100])}
-              className='w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-orange-600'
-            />
-            <input
-              type='range'
-              min='0'
-              max='100'
-              value={priceRange[1]}
-              onChange={e => setPriceRange([priceRange?.[0] ?? 0, parseInt(e.target.value)])}
-              className='w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-orange-600'
-            />
+
+          <div className='space-y-3 px-1'>
+            <div className='relative'>
+              <input
+                type='range'
+                min='0'
+                max='100'
+                value={priceRange[0]}
+                onChange={e => setPriceRange([parseInt(e.target.value), priceRange?.[1] ?? 100])}
+                className='w-full h-2 bg-gradient-to-r from-orange-200 to-orange-300 rounded-full appearance-none cursor-pointer accent-orange-600 hover:accent-orange-700'
+              />
+            </div>
+            <div className='relative'>
+              <input
+                type='range'
+                min='0'
+                max='100'
+                value={priceRange[1]}
+                onChange={e => setPriceRange([priceRange?.[0] ?? 0, parseInt(e.target.value)])}
+                className='w-full h-2 bg-gradient-to-r from-orange-200 to-orange-300 rounded-full appearance-none cursor-pointer accent-orange-600 hover:accent-orange-700'
+              />
+            </div>
           </div>
-          <div className='flex gap-2'>
-            <input
-              type='number'
-              value={priceRange[0]}
-              onChange={e => setPriceRange([parseInt(e.target.value) || 0, priceRange?.[1] ?? 100])}
-              className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-orange-500 text-sm'
-              placeholder='Min'
-            />
-            <input
-              type='number'
-              value={priceRange[1]}
-              onChange={e => setPriceRange([priceRange?.[0] ?? 0, parseInt(e.target.value) || 100])}
-              className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-orange-500 text-sm'
-              placeholder='Max'
-            />
+
+          <div className='flex gap-3'>
+            <div className='flex-1'>
+              <label className='text-xs font-medium text-gray-600 mb-1.5 block'>Min Price</label>
+              <div className='relative'>
+                <span className='absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm font-medium'>
+                  $
+                </span>
+                <input
+                  type='number'
+                  value={priceRange[0]}
+                  onChange={e =>
+                    setPriceRange([parseInt(e.target.value) || 0, priceRange?.[1] ?? 100])
+                  }
+                  className='w-full pl-7 pr-3 py-2.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 text-sm font-medium transition-all'
+                  placeholder='0'
+                />
+              </div>
+            </div>
+            <div className='flex-1'>
+              <label className='text-xs font-medium text-gray-600 mb-1.5 block'>Max Price</label>
+              <div className='relative'>
+                <span className='absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm font-medium'>
+                  $
+                </span>
+                <input
+                  type='number'
+                  value={priceRange[1]}
+                  onChange={e =>
+                    setPriceRange([priceRange?.[0] ?? 0, parseInt(e.target.value) || 100])
+                  }
+                  className='w-full pl-7 pr-3 py-2.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 text-sm font-medium transition-all'
+                  placeholder='100'
+                />
+              </div>
+            </div>
           </div>
         </div>
       </FilterSection>
@@ -843,22 +895,53 @@ function FilterSidebar({
 }
 
 // Filter Section Component
+interface FilterSectionProps {
+  title: string;
+  isExpanded: boolean;
+  onToggle: () => void;
+  children: React.ReactNode;
+}
+
+interface FilterSidebarProps {
+  expandedSections: Set<string>;
+  toggleSection: (section: string) => void;
+  selectedCategory: string;
+  setSelectedCategory: (value: string) => void;
+  selectedLevel: string;
+  setSelectedLevel: (value: string) => void;
+  selectedLanguage: string;
+  setSelectedLanguage: (value: string) => void;
+  selectedRating: string;
+  setSelectedRating: (value: string) => void;
+  selectedDuration: string;
+  setSelectedDuration: (value: string) => void;
+  priceRange: number[];
+  setPriceRange: (value: number[]) => void;
+  hasActiveFilters?: boolean;
+  clearAllFilters?: () => void;
+}
 
 function FilterSection({ title, isExpanded, onToggle, children }: FilterSectionProps) {
   return (
-    <div className='border-b border-gray-200 pb-6 last:border-b-0'>
+    <div className='border-b border-gray-100 pb-2 last:border-b-0'>
       <button
         onClick={onToggle}
-        className='w-full flex items-center justify-between mb-4 group'
+        className='w-full flex items-center justify-between  p-2  hover:bg-gray-50 rounded-xl transition-all group'
       >
-        <h3 className='text-xs font-bold text-gray-900 tracking-wider'>{title}</h3>
-        <ChevronRight
-          className={`w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-transform ${
-            isExpanded ? "rotate-90" : ""
-          }`}
-        />
+        <h3 className='text-sm font-bold text-gray-600 tracking-wider uppercase group-hover:text-gray-900 transition-colors'>
+          {title}
+        </h3>
+        <div
+          className={`p-1.5 bg-gray-100 rounded-lg group-hover:bg-orange-100 transition-all ${isExpanded ? "rotate-90" : ""}`}
+        >
+          <ChevronRight
+            className={`w-3.5 h-3.5 text-gray-500 group-hover:text-orange-600 transition-all`}
+          />
+        </div>
       </button>
-      {isExpanded && <div>{children}</div>}
+      {isExpanded && (
+        <div className='animate-in fade-in slide-in-from-top-2 duration-200'>{children}</div>
+      )}
     </div>
   );
 }

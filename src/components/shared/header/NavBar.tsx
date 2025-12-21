@@ -198,14 +198,16 @@ export default function NavBar({ onMenuToggle }: HeaderProps) {
           {/* Mobile Menu Button */}
           <button
             onClick={onMenuToggle}
-            className='lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors'
+            className='lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0'
             aria-label='Toggle menu'
           >
             <Menu className='w-6 h-6 text-gray-700' />
           </button>
 
           {/* Logo */}
-          <Logo />
+          <div className='flex-shrink-0 relative z-40'>
+            <Logo />
+          </div>
 
           {/* Category Button */}
           {/* <button className='hidden md:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-700 text-white rounded-full hover:from-orange-700 hover:to-orange-500 transition-all duration-300 shadow-md hover:shadow-lg'>
