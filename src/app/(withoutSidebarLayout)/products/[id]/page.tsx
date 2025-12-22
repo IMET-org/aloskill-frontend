@@ -1,6 +1,6 @@
 // app/products/[id]/page.tsx
 
-import ProductDetailsPage from "@/components/products/ProductDetailsPage.tsx";
+import ProductDetailsPage from "@/app/(withoutSidebarLayout)/products/ProductDetailsPage";
 import { getAllBooks, getBookById } from "@/data/books";
 import { type Metadata } from "next";
 import { notFound } from "next/navigation";

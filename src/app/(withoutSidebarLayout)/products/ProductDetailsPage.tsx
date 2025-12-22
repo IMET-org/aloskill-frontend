@@ -1,6 +1,4 @@
-// components/pages/ProductDetailsPage.tsx
 "use client";
-
 import type { Book } from "@/types/book";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -25,20 +23,6 @@ interface ProductDetailsPageProps {
   product: Book;
 }
 
-/**
- * Product Details Page Component
- * Displays comprehensive product information with interactive features
- *
- * Features:
- * - Image gallery with thumbnails
- * - Quantity selector
- * - Add to cart/wishlist
- * - Tabbed content (description, specs, reviews)
- * - Shipping information
- * - Social sharing
- *
- * @param product - The book/product to display
- */
 const ProductDetailsPage: React.FC<ProductDetailsPageProps> = ({ product }) => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
@@ -270,12 +254,12 @@ const ProductDetailsPage: React.FC<ProductDetailsPageProps> = ({ product }) => {
 
             {/* Price */}
             <div className='flex items-center gap-4'>
-              <span className='text-4xl font-bold text-[var(--color-orange)]'>
+              <span className='text-lg font-bold text-[var(--color-orange)]'>
                 ৳{product.price.toFixed(2)}
               </span>
               {product.originalPrice && (
                 <>
-                  <span className='text-2xl text-gray-400 line-through'>
+                  <span className='text-lg text-gray-400 line-through'>
                     ৳{product.originalPrice.toFixed(2)}
                   </span>
                   {product.discount && (
