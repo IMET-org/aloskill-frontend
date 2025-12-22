@@ -9,18 +9,36 @@ import { type CreateCourseData } from "./page.tsx";
 import StepHeader from "./StepHeader.tsx";
 
 type CourseDescriptionForm = {
+  objectives: string;
   description: string;
+  whyThisCourse: string[];
   whatYouTeach: string[];
   targetAudience: string[];
   requirements: string[];
 };
 
 const CourseDescriptionSchema = z.object({
+  objectives: z
+    .string()
+    .trim()
+    .min(10, "Objectives must be at least 10 characters long")
+    .max(100, "Objectives Cannot exceed 100 characters.")
+    .regex(/^[^<>]*$/, "Objectives must not contain any opening or closing HTML tags"),
   description: z
     .string()
     .trim()
     .min(10, "Description must be at least 10 characters long")
     .regex(/^[^<>]*$/, "Description must not contain any opening or closing HTML tags"),
+  whyThisCourse: z
+    .array(
+      z
+        .string()
+        .trim()
+        .min(10, "Must be at least 10 characters long.")
+        .max(120, "Cannot exceed 120 characters.")
+    )
+    .min(1, "You must define at least one teaching objective.")
+    .max(5, "You can define a maximum of 5 teaching objectives."),
   whatYouTeach: z
     .array(
       z
@@ -53,7 +71,7 @@ const CourseDescriptionSchema = z.object({
     .max(5, "You can define a maximum of 5 requirements."),
 });
 
-function Step2({
+function AdvanceInformation({
   currentStep,
   setCurrentStep,
   courseData,
@@ -65,7 +83,9 @@ function Step2({
   setCourseData: React.Dispatch<React.SetStateAction<CreateCourseData>>;
 }) {
   const courseDescriptionParsed: {
+    objectives: string;
     description: string;
+    whyThisCourse: string[];
     whatYouTeach: string[];
     targetAudience: string[];
     requirements: string[];
@@ -73,20 +93,27 @@ function Step2({
     try {
       const parsedData = JSON.parse(courseData.description || "{}");
       return {
+        objectives: parsedData.objectives || "",
         description: parsedData.description || "",
+        whyThisCourse: parsedData.whyThisCourse ? parsedData.whyThisCourse.split("||") : [""],
         whatYouTeach: parsedData.whatYouTeach ? parsedData.whatYouTeach.split("||") : [""],
         targetAudience: parsedData.targetAudience ? parsedData.targetAudience.split("||") : [""],
         requirements: parsedData.requirements ? parsedData.requirements.split("||") : [""],
       };
     } catch {
       return {
+        objectives: "",
         description: "",
+        whyThisCourse: [""],
         whatYouTeach: [""],
         targetAudience: [""],
         requirements: [""],
       };
     }
   })();
+  const [whyThisCourse, setWhyThisCourse] = useState<string[]>(
+    courseDescriptionParsed.whyThisCourse || [""]
+  );
   const [whatYouTeach, setWhatYouTeach] = useState<string[]>(
     courseDescriptionParsed.whatYouTeach || [""]
   );
@@ -98,16 +125,20 @@ function Step2({
   );
   const {
     register,
+    unregister,
     handleSubmit,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<CourseDescriptionForm>({ resolver: zodResolver(CourseDescriptionSchema) });
 
   const onSubmit = (data: CourseDescriptionForm) => {
-    const { description, whatYouTeach, targetAudience, requirements } = data;
+    const { objectives, description, whatYouTeach, targetAudience, requirements } = data;
     setCourseData(prev => ({
       ...prev,
       description: JSON.stringify({
+        objectives,
         description,
+        whyThisCourse: whyThisCourse.join("||"),
         whatYouTeach: whatYouTeach.join("||"),
         targetAudience: targetAudience.join("||"),
         requirements: requirements.join("||"),
@@ -117,39 +148,53 @@ function Step2({
   };
 
   const addNewItem = (field: string) => {
+    if (field === "whyThisCourse") {
+      if (whyThisCourse.length >= 5) return;
+      setValue(`whyThisCourse.${whyThisCourse.length}`, "");
+      setWhyThisCourse(prev => [...prev, ""]);
+    }
     if (field === "whatYouTeach") {
       if (whatYouTeach.length >= 5) return;
+      setValue(`whatYouTeach.${whatYouTeach.length}`, "");
       setWhatYouTeach(prev => [...prev, ""]);
     }
     if (field === "targetAudience") {
       if (targetAudience.length >= 5) return;
+      setValue(`targetAudience.${targetAudience.length}`, "");
       setTargetAudience(prev => [...prev, ""]);
     }
     if (field === "requirements") {
       if (requirements.length >= 5) return;
+      setValue(`requirements.${requirements.length}`, "");
       setRequirements(prev => [...prev, ""]);
     }
   };
 
   const deleteItem = (field: string, index: number) => {
+    if (field === "whyThisCourse") {
+      unregister(`whyThisCourse.${index}`);
+      setWhyThisCourse(prev => prev.filter((_, i) => i !== index));
+    }
     if (field === "whatYouTeach") {
-      const updatedArray = [...whatYouTeach];
-      updatedArray.splice(index, 1);
-      setWhatYouTeach(updatedArray);
+      unregister(`whatYouTeach.${index}`);
+      setWhatYouTeach(prev => prev.filter((_, i) => i !== index));
     }
     if (field === "targetAudience") {
-      const updatedArray = [...targetAudience];
-      updatedArray.splice(index, 1);
-      setTargetAudience(updatedArray);
+      unregister(`targetAudience.${index}`);
+      setTargetAudience(prev => prev.filter((_, i) => i !== index));
     }
     if (field === "requirements") {
-      const updatedArray = [...requirements];
-      updatedArray.splice(index, 1);
-      setRequirements(updatedArray);
+      unregister(`requirements.${index}`);
+      setRequirements(prev => prev.filter((_, i) => i !== index));
     }
   };
 
   const handleArrayInputChange = (field: string, index: number, value: string) => {
+    if (field === "whyThisCourse") {
+      const updatedArray = [...whyThisCourse];
+      updatedArray[index] = value;
+      setWhyThisCourse(updatedArray);
+    }
     if (field === "whatYouTeach") {
       const updatedArray = [...whatYouTeach];
       updatedArray[index] = value;
@@ -237,7 +282,25 @@ function Step2({
 
           {/* Course Descriptions */}
           <div className='p-6 border-b border-gray-200'>
-            <h4 className='font-semibold text-gray-900 mb-4'>Course Descriptions</h4>
+            <h4 className='font-semibold text-gray-900 mb-4'>Course Descriptions & Objectives</h4>
+            {/* Objectives */}
+            <div className=''>
+              <label className='block text-xs font-medium text-gray-700 mb-2'>
+                Course Objectives
+              </label>
+              <textarea
+                {...register("objectives")}
+                defaultValue={courseDescriptionParsed.objectives || ""}
+                placeholder='Enter you course Objectives: This Course help you to skillUp in the Javascript language'
+                rows={2}
+                maxLength={100}
+                className={`w-full px-4 py-1.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-orange-light focus:border-transparent placeholder:text-sm resize-none ${errors.objectives ? "border-red-200 bg-red-50" : "border-gray-200"}`}
+              />
+              {errors.objectives && (
+                <span className='text-xs! text-red-500 mt-1'>{errors.objectives.message}</span>
+              )}
+            </div>
+            {/* Description */}
             <div className=''>
               <label className='block text-xs font-medium text-gray-700 mb-2'>Description</label>
               <textarea
@@ -251,6 +314,60 @@ function Step2({
               />
               {errors.description && (
                 <span className='text-xs! text-red-500 mt-1'>{errors.description.message}</span>
+              )}
+            </div>
+          </div>
+
+          {/* Why This Course? */}
+          <div className='p-6 border-b border-gray-200'>
+            <div className='flex items-center justify-between mb-4'>
+              <h4 className='font-semibold text-gray-900'>
+                Why This Course? ({whyThisCourse.length}/5)
+              </h4>
+              <button
+                type='button'
+                onClick={() => addNewItem("whyThisCourse")}
+                className='flex items-center gap-1 text-orange-500 font-medium text-sm hover:text-orange transition-colors cursor-pointer'
+              >
+                <Plus size={16} />
+                Add new
+              </button>
+            </div>
+            <div className='space-y-4'>
+              {whyThisCourse?.map((item, index) => (
+                <div key={index}>
+                  <div className='flex items-center justify-between mb-1'>
+                    <label className='block text-xs text-gray-600'>0{index + 1}</label>
+                    <span
+                      onClick={() => deleteItem("whyThisCourse", index)}
+                      className='p-2 rounded-full hover:bg-gray-50 cursor-pointer'
+                    >
+                      <Trash className='w-4 h-4' />
+                    </span>
+                  </div>
+                  <div className='relative'>
+                    <input
+                      {...register(`whyThisCourse.${index}`)}
+                      type='text'
+                      placeholder='Why This Course...'
+                      value={item}
+                      onChange={e => handleArrayInputChange("whyThisCourse", index, e.target.value)}
+                      maxLength={120}
+                      className={`w-full px-4 py-1.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-orange-light focus:border-transparent placeholder:text-sm resize-none ${errors.whatYouTeach?.[index] ? "border-red-200 bg-red-50" : "border-gray-200"}`}
+                    />
+                    {errors.whyThisCourse?.[index] && (
+                      <p className='text-sm text-red-600'>{errors.whyThisCourse[index].message}</p>
+                    )}
+                    <span
+                      className={`absolute right-4 ${errors.whyThisCourse?.[index] ? "top-[15%] bg-red-50" : "top-1/2 -translate-y-1/2 bg-white"} text-xs text-gray-400 pl-2`}
+                    >
+                      {item.length}/120
+                    </span>
+                  </div>
+                </div>
+              ))}
+              {errors.whyThisCourse?.message && (
+                <p className='text-sm text-red-600'>{errors.whyThisCourse.message}</p>
               )}
             </div>
           </div>
@@ -287,7 +404,7 @@ function Step2({
                       {...register(`whatYouTeach.${index}`)}
                       type='text'
                       placeholder='What you will teach in this course...'
-                      defaultValue={item}
+                      value={item}
                       onChange={e => handleArrayInputChange("whatYouTeach", index, e.target.value)}
                       maxLength={120}
                       className={`w-full px-4 py-1.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-orange-light focus:border-transparent placeholder:text-sm resize-none ${errors.whatYouTeach?.[index] ? "border-red-200 bg-red-50" : "border-gray-200"}`}
@@ -433,4 +550,4 @@ function Step2({
   );
 }
 
-export default Step2;
+export default AdvanceInformation;

@@ -1,6 +1,20 @@
-import { ChevronDown, ChevronUp, Menu, Pencil, Plus, Trash, Trash2, Upload } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronUp,
+  CloudUpload,
+  Loader,
+  Menu,
+  Pencil,
+  Plus,
+  Trash,
+  Trash2,
+  Upload,
+} from "lucide-react";
+import { useSession } from "next-auth/react";
 import { type ChangeEvent, useState } from "react";
 import { useForm } from "react-hook-form";
+import * as tus from "tus-js-client";
+import { apiClient } from "../../../../lib/api/client.ts";
 import CourseFooter from "./CourseFooter.tsx";
 import CourseModal from "./CourseModal.tsx";
 import StepHeader from "./StepHeader.tsx";
@@ -14,11 +28,11 @@ type ExtendedCourseLesson = CourseLesson & {
 type ExtendedCourseModule = CourseModule & {
   lessons: ExtendedCourseLesson[];
 };
-export default function Step3({
+export default function CourseCurriculum({
   currentStep,
   setCurrentStep,
-  courseData: _courseData,
-  setCourseData: _setCourseData,
+  courseData,
+  setCourseData,
 }: {
   currentStep: number;
   setCurrentStep: (step: number) => void;
@@ -34,6 +48,10 @@ export default function Step3({
     sectionId: undefined,
     lectureId: undefined,
   });
+  const [uploadError, setUploadError] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+  const [uploadPercentage, setUploadPercentage] = useState<string>("");
+  const { data: sessionData } = useSession();
 
   const [sections, setSections] = useState<ExtendedCourseModule[]>([
     {
@@ -59,46 +77,55 @@ export default function Step3({
 
   const {
     register,
+    unregister,
     handleSubmit,
     setValue,
     formState: { errors, isSubmitting },
   } = useForm();
 
   const addSection = () => {
-    setSections([
-      ...sections,
-      {
-        position: sections.length + 1,
-        title: `Module ${sections.length + 1}`,
-        lessons: [
-          {
-            position: 1,
-            title: "Lecture 1",
-            description: "",
-            notes: "",
-            type: null,
-            contentUrl: "",
-            files: [] as string[],
-            duration: null,
-            expanded: false,
-            lessonTypeSelection: true,
-          },
-        ],
-      },
-    ]);
+    setCourseData(prev => ({
+      ...prev,
+      modules: [
+        ...prev.modules,
+        {
+          position:
+            prev.modules.length > 0 ? Math.max(...prev.modules.map(m => m.position)) + 1 : 1,
+          title: `Module ${prev.modules.length + 1}`,
+          lessons: [
+            {
+              position: 1,
+              title: "Lecture 1",
+              description: "",
+              notes: "",
+              type: null,
+              contentUrl: "",
+              files: [] as string[],
+              duration: null,
+              expanded: false,
+              lessonTypeSelection: true,
+            },
+          ],
+        },
+      ],
+    }));
   };
 
   const addLesson = (moduleId: number) => {
-    setSections(
-      sections.map(section => {
-        if (section.position === moduleId) {
+    setCourseData(prev => ({
+      ...prev,
+      modules: prev.modules.map(module => {
+        if (module.position === moduleId) {
           return {
-            ...section,
+            ...module,
             lessons: [
-              ...section.lessons,
+              ...module.lessons,
               {
-                position: section.lessons.length + 1,
-                title: `Lesson ${section.lessons.length + 1}`,
+                position:
+                  module.lessons.length > 0
+                    ? Math.max(...module.lessons.map(l => l.position)) + 1
+                    : 1,
+                title: `Lesson ${module.lessons.length + 1}`,
                 description: "",
                 notes: "",
                 type: null,
@@ -111,9 +138,9 @@ export default function Step3({
             ],
           };
         }
-        return section;
-      })
-    );
+        return module;
+      }),
+    }));
   };
 
   const toggleLectureAndType = (
@@ -122,12 +149,13 @@ export default function Step3({
     field: "expanded" | "lessonTypeSelection",
     lectureType?: "VIDEO" | "ARTICLE" | "QUIZ"
   ) => {
-    setSections(
-      sections.map(section => {
-        if (section.position === sectionId) {
+    setCourseData(prev => ({
+      ...prev,
+      modules: prev.modules.map(module => {
+        if (module.position === sectionId) {
           return {
-            ...section,
-            lessons: section.lessons.map((lecture: ExtendedCourseLesson) => {
+            ...module,
+            lessons: module.lessons.map(lecture => {
               if (lecture.position === lectureId) {
                 if (lectureType) {
                   if (lectureType === "QUIZ") {
@@ -136,8 +164,8 @@ export default function Step3({
                       type: lectureType,
                       [field]: !lecture[field as keyof ExtendedCourseLesson],
                       quiz: {
-                        title: `Quiz Title`,
-                        description: "Write your quiz description here",
+                        title: "",
+                        description: "",
                         duration: 0,
                         passingScore: 0,
                         attemptsAllowed: 1,
@@ -160,9 +188,9 @@ export default function Step3({
             }),
           };
         }
-        return section;
-      })
-    );
+        return module;
+      }),
+    }));
   };
 
   const deleteSection = (moduleId: number) => {
@@ -171,6 +199,10 @@ export default function Step3({
     );
     if (confirmPrompt) {
       setSections(sections.filter(section => section.position !== moduleId));
+      setCourseData(prev => ({
+        ...prev,
+        modules: prev.modules.filter(module => module.position !== moduleId),
+      }));
     }
   };
 
@@ -180,12 +212,34 @@ export default function Step3({
     type: string,
     value: string
   ) => {
-    setSections(
-      sections.map(section => {
-        if (section.position === sectionId) {
+    // setSections(
+    //   sections.map(section => {
+    //     if (section.position === sectionId) {
+    //       return {
+    //         ...section,
+    //         lessons: section.lessons.map(lesson => {
+    //           if (lesson.position === lectureId) {
+    //             if (type === "notes") {
+    //               return { ...lesson, notes: value };
+    //             }
+    //             if (type === "description") {
+    //               return { ...lesson, description: value };
+    //             }
+    //           }
+    //           return lesson;
+    //         }),
+    //       };
+    //     }
+    //     return section;
+    //   })
+    // );
+    setCourseData(prev => ({
+      ...prev,
+      modules: prev.modules.map(module => {
+        if (module.position === sectionId) {
           return {
-            ...section,
-            lessons: section.lessons.map(lesson => {
+            ...module,
+            lessons: module.lessons.map(lesson => {
               if (lesson.position === lectureId) {
                 if (type === "notes") {
                   return { ...lesson, notes: value };
@@ -198,9 +252,92 @@ export default function Step3({
             }),
           };
         }
-        return section;
-      })
-    );
+        return module;
+      }),
+    }));
+  };
+
+  const handleQuestionInputChange = (
+    moduleId: number,
+    lessonId: number,
+    questionId: number,
+    field: "text" | "points" | "title",
+    value: string
+  ) => {
+    setCourseData(prev => ({
+      ...prev,
+      modules: prev.modules.map(module => {
+        if (module.position === moduleId) {
+          return {
+            ...module,
+            lessons: module.lessons.map(lesson => {
+              if (lesson.position === lessonId) {
+                return {
+                  ...lesson,
+                  quiz: lesson.quiz
+                    ? {
+                        ...lesson.quiz,
+                        questions: lesson.quiz.questions.map(question => {
+                          if (question.position === questionId) {
+                            if (field === "text") {
+                              return {
+                                ...question,
+                                text: value,
+                              };
+                            }
+                            if (field === "points") {
+                              return {
+                                ...question,
+                                points: Number(value),
+                              };
+                            }
+                          }
+                          return question;
+                        }),
+                      }
+                    : lesson.quiz,
+                };
+              }
+              return lesson;
+            }),
+          };
+        }
+        return module;
+      }),
+    }));
+  };
+
+  const handleQuizInputChange = (
+    moduleId: number,
+    lessonId: number,
+    field: "title" | "description" | "duration" | "passingScore" | "attemptsAllowed",
+    value: string | number
+  ) => {
+    setCourseData(prev => ({
+      ...prev,
+      modules: prev.modules.map(module => {
+        if (module.position === moduleId) {
+          return {
+            ...module,
+            lessons: module.lessons.map(lesson => {
+              if (lesson.position === lessonId) {
+                return {
+                  ...lesson,
+                  quiz: lesson.quiz
+                    ? {
+                        ...lesson.quiz,
+                        [field]: value,
+                      }
+                    : lesson.quiz,
+                };
+              }
+              return lesson;
+            }),
+          };
+        }
+        return module;
+      }),
+    }));
   };
 
   const deleteLecture = (moduleId: number, lessonId: number) => {
@@ -208,20 +345,116 @@ export default function Step3({
     if (!confirmPrompt) {
       return;
     }
-    setSections(
-      sections.map(section => {
-        if (section.position === moduleId) {
+    // setSections(
+    //   sections.map(section => {
+    //     if (section.position === moduleId) {
+    //       return {
+    //         ...section,
+    //         lessons: section.lessons.filter(lesson => lesson.position !== lessonId),
+    //       };
+    //     }
+    //     return section;
+    //   })
+    // );
+    setCourseData(prev => ({
+      ...prev,
+      modules: prev.modules.map(module => {
+        if (module.position === moduleId) {
           return {
-            ...section,
-            lessons: section.lessons.filter(lesson => lesson.position !== lessonId),
+            ...module,
+            lessons: module.lessons.filter(lesson => lesson.position !== lessonId),
           };
         }
-        return section;
-      })
-    );
+        return module;
+      }),
+    }));
   };
 
-  const handleFileSelect = (
+  const uploadFileToBunny = async (file: File): Promise<{ name: string; url: string }> => {
+    setLoading(true);
+    setUploadError("");
+    setUploadPercentage("");
+    if (!sessionData?.user?.id) {
+      setUploadError("User not authenticated.");
+      setUploadPercentage("");
+      setLoading(false);
+      return { name: "", url: "" };
+    }
+
+    try {
+      const backendResponse = await apiClient.post<{
+        videoId: string;
+        token: string;
+        expires: number;
+        libraryId: string;
+        collectionId: string;
+      }>(`/course/bunny-signature?fileName=${file.name}&collectionName=${sessionData?.user?.id}`);
+
+      if (!backendResponse.success || !backendResponse.data) {
+        return { name: "", url: "" };
+      }
+
+      if (backendResponse.success && backendResponse.data) {
+        const { videoId, token, expires, libraryId, collectionId } = backendResponse.data;
+        return await new Promise((resolve, reject) => {
+          const upload = new tus.Upload(file, {
+            endpoint: "https://video.bunnycdn.com/tusupload",
+            retryDelays: [0, 3000, 5000, 10000, 20000, 60000, 60000],
+            headers: {
+              AuthorizationSignature: token,
+              AuthorizationExpire: expires.toString(),
+              VideoId: videoId,
+              LibraryId: libraryId,
+            },
+            metadata: {
+              filetype: file.type,
+              title: file.name,
+              collection: collectionId,
+            },
+            onError: function (error: Error) {
+              setUploadError("Failed to upload video. " + error.message);
+              setLoading(false);
+              setUploadPercentage("");
+              reject(error);
+            },
+            onProgress: function (bytesUploaded, bytesTotal) {
+              setUploadError("");
+              const percentage = ((bytesUploaded / bytesTotal) * 100).toFixed(2);
+              setUploadPercentage(`${percentage}%`);
+              setLoading(false);
+            },
+            onSuccess: () => {
+              setLoading(false);
+              setUploadError("");
+              setUploadPercentage("");
+              const videoUrl = `https://video.bunnycdn.com/library/${libraryId}/videos/${videoId}`;
+              resolve({ name: file.name, url: videoUrl });
+            },
+          });
+
+          upload.findPreviousUploads().then((previousUploads: tus.PreviousUpload[]) => {
+            if (previousUploads.length > 0) {
+              const previousUpload = previousUploads[0];
+              if (previousUpload) {
+                upload.resumeFromPreviousUpload(previousUpload);
+              }
+            }
+            upload.start();
+          });
+        });
+      }
+
+      return { name: "", url: "" };
+    } catch (error: unknown) {
+      setUploadError(error instanceof Error ? error.message : "An unknown error occurred.");
+      return { name: "", url: "" };
+    } finally {
+      setLoading(false);
+      setUploadPercentage("");
+    }
+  };
+
+  const handleFileSelect = async (
     e: ChangeEvent<HTMLInputElement>,
     sectionId: number,
     lectureId: number
@@ -234,33 +467,56 @@ export default function Step3({
         const isPDF = file.type.startsWith("application/pdf");
 
         if (isVideo) {
-          setSections(sections =>
-            sections.map(section => {
-              if (section.position === sectionId) {
-                return {
-                  ...section,
-                  lessons: section.lessons.map(lesson => {
-                    if (lesson.position === lectureId) {
-                      return { ...lesson, contentUrl: file.name };
-                    }
-                    return lesson;
-                  }),
-                };
-              }
-              return section;
-            })
-          );
+          try {
+            const uploadResult = await uploadFileToBunny(file);
+            setCourseData(prev => ({
+              ...prev,
+              modules: prev.modules.map(module => {
+                if (module.position === sectionId) {
+                  return {
+                    ...module,
+                    lessons: module.lessons.map(lesson => {
+                      if (lesson.position === lectureId) {
+                        return { ...lesson, contentUrl: uploadResult.url };
+                      }
+                      return lesson;
+                    }),
+                  };
+                }
+                return module;
+              }),
+            }));
+          } catch (error) {
+            console.error("Error uploading file:", error);
+          }
           return;
         }
 
         if (isPDF) {
           const fileNames = Array.from(e.target.files ?? []).map(f => f.name);
-          setSections(sections =>
-            sections.map(section => {
-              if (section.position === sectionId) {
+          // setSections(sections =>
+          //   sections.map(section => {
+          //     if (section.position === sectionId) {
+          //       return {
+          //         ...section,
+          //         lessons: section.lessons.map(lesson => {
+          //           if (lesson.position === lectureId) {
+          //             return { ...lesson, files: fileNames };
+          //           }
+          //           return lesson;
+          //         }),
+          //       };
+          //     }
+          //     return section;
+          //   })
+          // );
+          setCourseData(prev => ({
+            ...prev,
+            modules: prev.modules.map(module => {
+              if (module.position === sectionId) {
                 return {
-                  ...section,
-                  lessons: section.lessons.map(lesson => {
+                  ...module,
+                  lessons: module.lessons.map(lesson => {
                     if (lesson.position === lectureId) {
                       return { ...lesson, files: fileNames };
                     }
@@ -268,9 +524,9 @@ export default function Step3({
                   }),
                 };
               }
-              return section;
-            })
-          );
+              return module;
+            }),
+          }));
           return;
         }
       }
@@ -282,12 +538,13 @@ export default function Step3({
     lessonId: number,
     quizType: "MULTIPLE_CHOICE" | "TRUE_FALSE" | "SINGLE_CHOICE"
   ) => {
-    setSections(
-      sections.map(section => {
-        if (section.position === moduleId) {
+    setCourseData(prev => ({
+      ...prev,
+      modules: prev.modules.map(module => {
+        if (module.position === moduleId) {
           return {
-            ...section,
-            lessons: section.lessons.map(lesson => {
+            ...module,
+            lessons: module.lessons.map(lesson => {
               if (lesson.position === lessonId) {
                 if (lesson.quiz) {
                   return {
@@ -297,7 +554,10 @@ export default function Step3({
                       questions: [
                         ...lesson.quiz.questions,
                         {
-                          position: lesson.quiz.questions.length + 1,
+                          position:
+                            lesson.quiz.questions.length > 0
+                              ? Math.max(...lesson.quiz.questions.map(q => q.position)) + 1
+                              : 1,
                           text: `Question ${lesson.quiz.questions.length + 1}`,
                           type: quizType,
                           points: 1,
@@ -347,9 +607,9 @@ export default function Step3({
             }),
           };
         }
-        return section;
-      })
-    );
+        return module;
+      }),
+    }));
     setShowAddQuestions(false);
   };
 
@@ -360,12 +620,53 @@ export default function Step3({
     optionId: number,
     value: string
   ) => {
-    setSections(
-      sections.map(section => {
-        if (section.position === moduleId) {
+    // setSections(
+    //   sections.map(section => {
+    //     if (section.position === moduleId) {
+    //       return {
+    //         ...section,
+    //         lessons: section.lessons.map(lesson => {
+    //           if (lesson.position === lessonId) {
+    //             if (lesson.quiz) {
+    //               return {
+    //                 ...lesson,
+    //                 quiz: {
+    //                   ...lesson.quiz,
+    //                   questions: lesson.quiz?.questions.map(question => {
+    //                     if (question.position === questionId) {
+    //                       return {
+    //                         ...question,
+    //                         options: question.options.map(option => {
+    //                           if (option.position === optionId) {
+    //                             return {
+    //                               ...option,
+    //                               text: value,
+    //                             };
+    //                           }
+    //                           return option;
+    //                         }),
+    //                       };
+    //                     }
+    //                     return question;
+    //                   }),
+    //                 },
+    //               };
+    //             }
+    //           }
+    //           return lesson;
+    //         }),
+    //       };
+    //     }
+    //     return section;
+    //   })
+    // );
+    setCourseData(prev => ({
+      ...prev,
+      modules: prev.modules.map(module => {
+        if (module.position === moduleId) {
           return {
-            ...section,
-            lessons: section.lessons.map(lesson => {
+            ...module,
+            lessons: module.lessons.map(lesson => {
               if (lesson.position === lessonId) {
                 if (lesson.quiz) {
                   return {
@@ -397,9 +698,9 @@ export default function Step3({
             }),
           };
         }
-        return section;
-      })
-    );
+        return module;
+      }),
+    }));
   };
 
   const updateQuizOptionCorrectAnswere = (
@@ -473,6 +774,72 @@ export default function Step3({
         return section;
       })
     );
+    setCourseData(prev => ({
+      ...prev,
+      modules: prev.modules.map(module => {
+        if (module.position === moduleId) {
+          return {
+            ...module,
+            lessons: module.lessons.map(lesson => {
+              if (lesson.position === lessonId) {
+                if (lesson.quiz) {
+                  return {
+                    ...lesson,
+                    quiz: {
+                      ...lesson.quiz,
+                      questions: lesson.quiz?.questions.map(question => {
+                        if (question.position === questionId) {
+                          return {
+                            ...question,
+                            options: question.options.map(option => {
+                              if (option.position === optionId) {
+                                if (option.isCorrect) {
+                                  return { ...option, isCorrect: false };
+                                } else {
+                                  if (question.type === "MULTIPLE_CHOICE") {
+                                    if (question.options.filter(o => o.isCorrect).length >= 3) {
+                                      alert(
+                                        "You can select maximum three correct answer for multiple choice questions."
+                                      );
+                                    } else {
+                                      return { ...option, isCorrect: true };
+                                    }
+                                  } else if (question.type === "SINGLE_CHOICE") {
+                                    if (question.options.filter(o => o.isCorrect).length >= 1) {
+                                      alert(
+                                        "You can only select one correct answer for single choice questions."
+                                      );
+                                    } else {
+                                      return { ...option, isCorrect: true };
+                                    }
+                                  } else {
+                                    if (question.options.filter(o => o.isCorrect).length >= 1) {
+                                      alert(
+                                        "You can only select one correct answer for true false questions."
+                                      );
+                                    } else {
+                                      return { ...option, isCorrect: true };
+                                    }
+                                  }
+                                }
+                              }
+                              return option;
+                            }),
+                          };
+                        }
+                        return question;
+                      }),
+                    },
+                  };
+                }
+              }
+              return lesson;
+            }),
+          };
+        }
+        return module;
+      }),
+    }));
   };
 
   const deleteLectureFile = (
@@ -481,15 +848,44 @@ export default function Step3({
     fileName?: string,
     type?: string
   ) => {
-    setSections(
-      sections.map(section => {
-        if (section.position === sectionId) {
+    // setSections(
+    //   sections.map(section => {
+    //     if (section.position === sectionId) {
+    //       return {
+    //         ...section,
+    //         lessons: section.lessons.map(lesson => {
+    //           if (lesson.position === lectureId) {
+    //             if (type === "video") {
+    //               return { ...lesson, video: "" };
+    //             }
+    //             if (type === "description") {
+    //               return { ...lesson, description: "" };
+    //             }
+    //             if (type === "notes") {
+    //               return { ...lesson, notes: "" };
+    //             }
+    //             return {
+    //               ...lesson,
+    //               files: lesson.files && lesson.files.filter(file => file !== fileName),
+    //             };
+    //           }
+    //           return lesson;
+    //         }),
+    //       };
+    //     }
+    //     return section;
+    //   })
+    // );
+    setCourseData(prev => ({
+      ...prev,
+      modules: prev.modules.map(module => {
+        if (module.position === sectionId) {
           return {
-            ...section,
-            lessons: section.lessons.map(lesson => {
+            ...module,
+            lessons: module.lessons.map(lesson => {
               if (lesson.position === lectureId) {
                 if (type === "video") {
-                  return { ...lesson, video: "" };
+                  return { ...lesson, contentUrl: "" };
                 }
                 if (type === "description") {
                   return { ...lesson, description: "" };
@@ -506,18 +902,44 @@ export default function Step3({
             }),
           };
         }
-        return section;
-      })
-    );
+        return module;
+      }),
+    }));
   };
 
   const handleDeleteQuiz = (moduleId: number, lessonId: number, questionId: number) => {
-    setSections(
-      sections.map(section => {
-        if (section.position === moduleId) {
+    unregister(`section_${moduleId}_lecture_${lessonId}_quiz_question_${questionId}`);
+    // setSections(
+    //   sections.map(section => {
+    //     if (section.position === moduleId) {
+    //       return {
+    //         ...section,
+    //         lessons: section.lessons.map(lesson => {
+    //           if (lesson.position === lessonId) {
+    //             if (lesson.quiz) {
+    //               return {
+    //                 ...lesson,
+    //                 quiz: {
+    //                   ...lesson.quiz,
+    //                   questions: lesson.quiz?.questions.filter(q => q.position !== questionId),
+    //                 },
+    //               };
+    //             }
+    //           }
+    //           return lesson;
+    //         }),
+    //       };
+    //     }
+    //     return section;
+    //   })
+    // );
+    setCourseData(prev => ({
+      ...prev,
+      modules: prev.modules.map(module => {
+        if (module.position === moduleId) {
           return {
-            ...section,
-            lessons: section.lessons.map(lesson => {
+            ...module,
+            lessons: module.lessons.map(lesson => {
               if (lesson.position === lessonId) {
                 if (lesson.quiz) {
                   return {
@@ -533,9 +955,9 @@ export default function Step3({
             }),
           };
         }
-        return section;
-      })
-    );
+        return module;
+      }),
+    }));
   };
 
   const handlePrevious = () => {
@@ -544,8 +966,7 @@ export default function Step3({
     }
   };
 
-  const onSubmit = (_data: unknown) => {
-    // Proceed to the next step or handle form submission
+  const onSubmitHandler = (_data: unknown) => {
     setCurrentStep(currentStep + 1);
   };
 
@@ -558,6 +979,8 @@ export default function Step3({
         setOpeModal={setOpeModal}
         sectionId={openModal.sectionId}
         lectureId={openModal.lectureId}
+        courseData={courseData}
+        setCourseData={setCourseData}
       />
     );
   };
@@ -568,32 +991,36 @@ export default function Step3({
       <StepHeader headingText='Course Curriculum' />
       {/* Form Content */}
       <form
-        onSubmit={handleSubmit(onSubmit)}
+        onSubmit={handleSubmit(onSubmitHandler)}
         className='p-6'
       >
         {/* Sections */}
         <div className='space-y-4'>
-          {sections.map((section, sectionIndex) => (
+          {courseData.modules.map((module, moduleIndex) => (
             <div
-              key={section.position}
+              key={module.position}
               className='bg-gray-50 rounded p-4'
             >
               {/* Section Header */}
               <div className='flex items-center justify-between pb-4'>
-                <div className='flex items-center gap-3'>
+                <div className='w-[90%] flex items-center gap-3 overflow-hidden'>
                   <Menu
                     size={16}
                     className='text-gray-500'
                   />
-                  <span className='text-sm font-medium text-gray-800'>
-                    Module 0{sectionIndex + 1} :
+                  <span className='text-sm font-medium text-gray-800 whitespace-nowrap'>
+                    Module 0{moduleIndex + 1} :
                   </span>
-                  <span className='text-gray-800 text-sm'>{section.title}</span>
+                  <span
+                    className={`${module.title.length > 5 ? "text-gray-800" : "text-red-500"} text-sm whitespace-break-spaces`}
+                  >
+                    {module.title}
+                  </span>
                 </div>
-                <div className='flex items-center gap-2'>
+                <div className='w-[10%] flex items-center gap-2'>
                   <button
                     type='button'
-                    onClick={() => addLesson(section.position)}
+                    onClick={() => addLesson(module.position)}
                     className='p-1.5 hover:bg-gray-200 rounded transition-colors'
                   >
                     <Plus
@@ -603,9 +1030,7 @@ export default function Step3({
                   </button>
                   <button
                     type='button'
-                    onClick={() =>
-                      setOpeModal({ type: "sectionName", sectionId: section.position })
-                    }
+                    onClick={() => setOpeModal({ type: "sectionName", sectionId: module.position })}
                     className='p-1.5 hover:bg-gray-200 rounded transition-colors'
                   >
                     <Pencil
@@ -615,7 +1040,7 @@ export default function Step3({
                   </button>
                   <button
                     type='button'
-                    onClick={() => deleteSection(section.position)}
+                    onClick={() => deleteSection(module.position)}
                     className='p-1.5 hover:bg-gray-200 rounded transition-colors'
                   >
                     <Trash2
@@ -628,21 +1053,25 @@ export default function Step3({
 
               {/* Lectures */}
               <div className='flex flex-col gap-4'>
-                {section.lessons.map((lesson: ExtendedCourseLesson) => (
-                  <div key={lesson.position}>
+                {module.lessons.map((lesson, index) => (
+                  <div key={index}>
                     <div className='flex items-center justify-between px-4 py-2 bg-white relative'>
-                      <div className='flex items-center gap-3'>
+                      <div className='flex items-center gap-3 overflow-hidden'>
                         <Menu
                           size={16}
                           className='text-gray-500'
                         />
-                        <span className='text-gray-800 text-sm'>{lesson.title}</span>
+                        <span
+                          className={`${lesson.title.length > 5 ? "text-gray-800" : "text-red-500"} text-sm whitespace-break-spaces`}
+                        >
+                          {lesson.title}
+                        </span>
                       </div>
                       <div className='flex items-center gap-3'>
                         <button
                           type='button'
                           onClick={() =>
-                            toggleLectureAndType(section.position, lesson.position, "expanded")
+                            toggleLectureAndType(module.position, lesson.position, "expanded")
                           }
                           className='flex items-center gap-2 px-2 py-1.5 bg-orange-50 text-orange-500 rounded text-sm hover:bg-orange-100 transition-colors'
                         >
@@ -654,7 +1083,7 @@ export default function Step3({
                           onClick={() =>
                             setOpeModal({
                               type: "lectureName",
-                              sectionId: section.position,
+                              sectionId: module.position,
                               lectureId: lesson.position,
                             })
                           }
@@ -667,7 +1096,7 @@ export default function Step3({
                         </button>
                         <button
                           type='button'
-                          onClick={() => deleteLecture(section.position, lesson.position)}
+                          onClick={() => deleteLecture(module.position, lesson.position)}
                           className='p-1.5 hover:bg-gray-100 rounded transition-colors'
                         >
                           <Trash2
@@ -679,67 +1108,148 @@ export default function Step3({
                     </div>
                     <input
                       type='hidden'
-                      {...register(`section_${section.position}_lecture_${lesson.position}_type`, {
-                        required: `Please select a content type for Module ${section.position} lesson ${lesson.position}.`,
+                      {...register(`section_${module.position}_lecture_${lesson.position}_type`, {
+                        required: `Please select a content type for Module ${module.position} lesson ${lesson.position}.`,
                       })}
                       value={lesson.type || ""}
                     />
                     {lesson.type === null &&
-                      errors[`section_${section.position}_lecture_${lesson.position}_type`] && (
+                      errors[`section_${module.position}_lecture_${lesson.position}_type`] && (
                         <p className='text-red-500 text-sm mt-1'>
                           {
-                            errors[`section_${section.position}_lecture_${lesson.position}_type`]
+                            errors[`section_${module.position}_lecture_${lesson.position}_type`]
                               ?.message as string
                           }
                         </p>
                       )}
-                    <input
-                      type='hidden'
-                      {...register(
-                        `section_${section.position}_lecture_${lesson.position}_addQuiz_type`,
-                        {
-                          required: `Please Add a Quiz for Module ${section.position} lesson ${lesson.position}.`,
-                        }
-                      )}
-                    />
-                    {lesson.quiz &&
-                      !showAddQuestions &&
-                      lesson.quiz?.questions.length === 0 &&
-                      errors[
-                        `section_${section.position}_lecture_${lesson.position}_addQuiz_type`
-                      ] && (
-                        <p className='text-red-500 text-sm mt-1'>
-                          {
-                            errors[
-                              `section_${section.position}_lecture_${lesson.position}_addQuiz_type`
-                            ]?.message as string
-                          }
-                        </p>
-                      )}
+                    {lesson.type === "QUIZ" && (
+                      <>
+                        <input
+                          type='hidden'
+                          {...register(
+                            `section_${module.position}_lecture_${lesson.position}_addQuiz_type`,
+                            {
+                              required: `Please Add a Quiz for Module ${module.position} lesson ${lesson.position}.`,
+                            }
+                          )}
+                          value={lesson.quiz ? "added" : ""}
+                        />
+                        {lesson.quiz &&
+                          !showAddQuestions &&
+                          lesson.quiz?.questions.length === 0 &&
+                          errors[
+                            `section_${module.position}_lecture_${lesson.position}_addQuiz_type`
+                          ] && (
+                            <p className='text-red-500 text-sm mt-1'>
+                              {
+                                errors[
+                                  `section_${module.position}_lecture_${lesson.position}_addQuiz_type`
+                                ]?.message as string
+                              }
+                            </p>
+                          )}
 
-                    <input
-                      type='hidden'
-                      {...register(
-                        `section_${section.position}_lecture_${lesson.position}_quiz_type`,
-                        {
-                          required: `Please select a Quiz type for Module ${section.position} lesson ${lesson.position}.`,
-                        }
-                      )}
-                    />
-                    {lesson.quiz &&
-                      lesson.quiz?.questions.length <= 0 &&
-                      showAddQuestions &&
-                      errors[
-                        `section_${section.position}_lecture_${lesson.position}_quiz_type`
-                      ] && (
-                        <p className='text-red-500 text-sm mt-1'>
-                          {
-                            errors[
-                              `section_${section.position}_lecture_${lesson.position}_quiz_type`
-                            ]?.message as string
-                          }
-                        </p>
-                      )}
+                        <input
+                          type='hidden'
+                          {...register(
+                            `section_${module.position}_lecture_${lesson.position}_quiz_type`,
+                            {
+                              required: `Please select a Quiz type for Module ${module.position} lesson ${lesson.position}.`,
+                            }
+                          )}
+                          value={lesson.quiz && lesson.quiz.questions.length > 0 ? "added" : ""}
+                        />
+                        {lesson.quiz &&
+                          lesson.quiz?.questions.length <= 0 &&
+                          showAddQuestions &&
+                          errors[
+                            `section_${module.position}_lecture_${lesson.position}_quiz_type`
+                          ] && (
+                            <p className='text-red-500 text-sm mt-1'>
+                              {
+                                errors[
+                                  `section_${module.position}_lecture_${lesson.position}_quiz_type`
+                                ]?.message as string
+                              }
+                            </p>
+                          )}
+                      </>
+                    )}
+                    {lesson.type === "QUIZ" && !lesson.expanded && (
+                      <>
+                        <input
+                          type='hidden'
+                          {...register(
+                            `section_${module.position}_lecture_${lesson.position}_quiz_title`,
+                            {
+                              required: `Please Add Quiz title for Module ${module.position} lesson ${lesson.position}.`,
+                            }
+                          )}
+                          value={lesson.quiz && lesson.quiz.title ? "added" : ""}
+                        />
+                        {lesson.quiz &&
+                          lesson.quiz?.questions.length <= 0 &&
+                          errors[
+                            `section_${module.position}_lecture_${lesson.position}_quiz_title`
+                          ] && (
+                            <p className='text-red-500 text-sm mt-1'>
+                              {
+                                errors[
+                                  `section_${module.position}_lecture_${lesson.position}_quiz_title`
+                                ]?.message as string
+                              }
+                            </p>
+                          )}
+
+                        <input
+                          type='hidden'
+                          {...register(
+                            `section_${module.position}_lecture_${lesson.position}_quiz_description`,
+                            {
+                              required: `Please Add Quiz description for Module ${module.position} lesson ${lesson.position}.`,
+                            }
+                          )}
+                          value={lesson.quiz && lesson.quiz.description ? "added" : ""}
+                        />
+                        {lesson.quiz &&
+                          lesson.quiz?.questions.length <= 0 &&
+                          errors[
+                            `section_${module.position}_lecture_${lesson.position}_quiz_description`
+                          ] && (
+                            <p className='text-red-500 text-sm mt-1'>
+                              {
+                                errors[
+                                  `section_${module.position}_lecture_${lesson.position}_quiz_description`
+                                ]?.message as string
+                              }
+                            </p>
+                          )}
+
+                        <input
+                          type='hidden'
+                          {...register(
+                            `section_${module.position}_lecture_${lesson.position}_quiz_score`,
+                            {
+                              required: `Please Add Quiz passing score for Module ${module.position} lesson ${lesson.position}.`,
+                            }
+                          )}
+                          value={lesson.quiz && lesson.quiz.passingScore ? "added" : ""}
+                        />
+                        {lesson.quiz &&
+                          lesson.quiz?.questions.length <= 0 &&
+                          errors[
+                            `section_${module.position}_lecture_${lesson.position}_quiz_score`
+                          ] && (
+                            <p className='text-red-500 text-sm mt-1'>
+                              {
+                                errors[
+                                  `section_${module.position}_lecture_${lesson.position}_quiz_score`
+                                ]?.message as string
+                              }
+                            </p>
+                          )}
+                      </>
+                    )}
                     {/* Expanded Content */}
                     {lesson.expanded && (
                       <div className='h-auto bg-white p-4 pt-0'>
@@ -754,13 +1264,13 @@ export default function Step3({
                                 type='button'
                                 onClick={() => {
                                   toggleLectureAndType(
-                                    section.position,
+                                    module.position,
                                     lesson.position,
                                     "lessonTypeSelection",
                                     "VIDEO"
                                   );
                                   setValue(
-                                    `section_${section.position}_lecture_${lesson.position}_type`,
+                                    `section_${module.position}_lecture_${lesson.position}_type`,
                                     "VIDEO"
                                   );
                                 }}
@@ -772,13 +1282,13 @@ export default function Step3({
                                 type='button'
                                 onClick={() => {
                                   toggleLectureAndType(
-                                    section.position,
+                                    module.position,
                                     lesson.position,
                                     "lessonTypeSelection",
                                     "ARTICLE"
                                   );
                                   setValue(
-                                    `section_${section.position}_lecture_${lesson.position}_type`,
+                                    `section_${module.position}_lecture_${lesson.position}_type`,
                                     "ARTICLE"
                                   );
                                 }}
@@ -790,13 +1300,13 @@ export default function Step3({
                                 type='button'
                                 onClick={() => {
                                   toggleLectureAndType(
-                                    section.position,
+                                    module.position,
                                     lesson.position,
                                     "lessonTypeSelection",
                                     "QUIZ"
                                   );
                                   setValue(
-                                    `section_${section.position}_lecture_${lesson.position}_type`,
+                                    `section_${module.position}_lecture_${lesson.position}_type`,
                                     "QUIZ"
                                   );
                                 }}
@@ -820,7 +1330,7 @@ export default function Step3({
                                     <span
                                       onClick={() =>
                                         deleteLectureFile(
-                                          section.position,
+                                          module.position,
                                           lesson.position,
                                           undefined,
                                           "video"
@@ -837,31 +1347,50 @@ export default function Step3({
                                   <div
                                     className={`w-full rounded border border-dashed border-gray-200 p-3 flex items-center justify-center hover:bg-gray-100/40 transition-colors ${
                                       errors[
-                                        `section_${section.position}_lecture_${lesson.position}_video`
+                                        `section_${module.position}_lecture_${lesson.position}_video`
                                       ] && "bg-red-50"
                                     }`}
                                   >
-                                    <label
-                                      htmlFor='lessonVideo'
-                                      className={`flex items-center justify-center gap-2 text-sm w-full cursor-pointer`}
-                                    >
-                                      <Upload className='w-3 h-3' /> Add Video
-                                    </label>
-                                    <input
-                                      {...register(
-                                        `section_${section.position}_lecture_${lesson.position}_video`,
-                                        {
-                                          required: "Video is required for this lesson",
-                                        }
-                                      )}
-                                      onChange={e =>
-                                        handleFileSelect(e, section.position, lesson.position)
-                                      }
-                                      id='lessonVideo'
-                                      type='file'
-                                      accept='.mp4,.mov'
-                                      className='hidden'
-                                    />
+                                    {loading ? (
+                                      <Loader className='w-4 h-4 animate-spin mx-auto my-auto' />
+                                    ) : (
+                                      <>
+                                        {uploadPercentage ? (
+                                          <span className='flex items-center gap-2 text-sm'>
+                                            <CloudUpload className='animate-pulse mr-2 w-4 h-4' />{" "}
+                                            {uploadPercentage}
+                                          </span>
+                                        ) : (
+                                          <>
+                                            <label
+                                              htmlFor='lessonVideo'
+                                              className={`flex items-center justify-center gap-2 text-sm w-full cursor-pointer`}
+                                            >
+                                              <Upload className='w-3 h-3' /> Add Video
+                                            </label>
+                                            <input
+                                              {...register(
+                                                `section_${module.position}_lecture_${lesson.position}_video`,
+                                                {
+                                                  required: "Video is required for this lesson",
+                                                }
+                                              )}
+                                              onChange={e =>
+                                                handleFileSelect(
+                                                  e,
+                                                  module.position,
+                                                  lesson.position
+                                                )
+                                              }
+                                              id='lessonVideo'
+                                              type='file'
+                                              accept='.mp4,.mov'
+                                              className='hidden'
+                                            />
+                                          </>
+                                        )}
+                                      </>
+                                    )}
                                   </div>
                                 </>
                               )}
@@ -879,7 +1408,7 @@ export default function Step3({
                                         <span
                                           onClick={() =>
                                             deleteLectureFile(
-                                              section.position,
+                                              module.position,
                                               lesson.position,
                                               fileName
                                             )
@@ -903,7 +1432,7 @@ export default function Step3({
                                     </label>
                                     <input
                                       onChange={e =>
-                                        handleFileSelect(e, section.position, lesson.position)
+                                        handleFileSelect(e, module.position, lesson.position)
                                       }
                                       id='lessonfile'
                                       multiple={true}
@@ -916,27 +1445,38 @@ export default function Step3({
                               )}
                             </div>
                             {errors[
-                              `section_${section.position}_lecture_${lesson.position}_video`
+                              `section_${module.position}_lecture_${lesson.position}_video`
                             ] && (
                               <p className='text-red-500 text-sm mt-1'>
                                 {
                                   errors[
-                                    `section_${section.position}_lecture_${lesson.position}_video`
+                                    `section_${module.position}_lecture_${lesson.position}_video`
                                   ]?.message as string
                                 }
                               </p>
                             )}
+                            {
+                              uploadError && (
+                                <p className='text-red-500 text-sm mt-1'>
+                                  {uploadError}
+                                </p>
+                              )
+                            }
                             {/* Notes for Lesson */}
                             <div>
                               <span className='text-sm text-gray-600 mb-1'>Lecture Note:</span>
                               <textarea
                                 {...register(
-                                  `section_${section.position}_lecture_${lesson.position}_notes`,
+                                  `section_${module.position}_lecture_${lesson.position}_notes`,
                                   {
                                     required: "Lecture notes are required",
                                     maxLength: {
                                       value: 1000,
                                       message: "Lecture notes cannot exceed 1000 characters",
+                                    },
+                                    minLength: {
+                                      value: 20,
+                                      message: "Lecture notes must be greater than 20 characters",
                                     },
                                     pattern: {
                                       value: /^[a-zA-Z0-9\s.,!?'"()-]*$/,
@@ -946,7 +1486,7 @@ export default function Step3({
                                 )}
                                 onChange={e =>
                                   handleTextValueChange(
-                                    section.position,
+                                    module.position,
                                     lesson.position,
                                     "notes",
                                     e.target.value
@@ -955,7 +1495,7 @@ export default function Step3({
                                 defaultValue={lesson.notes}
                                 className={`w-full p-2 border border-dashed border-gray-200 rounded resize-none focus:outline-none focus:border-orange ${
                                   errors[
-                                    `section_${section.position}_lecture_${lesson.position}_notes`
+                                    `section_${module.position}_lecture_${lesson.position}_notes`
                                   ] && "border-red-400 bg-red-50"
                                 }`}
                                 placeholder='Add lecture notes here...'
@@ -963,12 +1503,12 @@ export default function Step3({
                                 maxLength={1000}
                               ></textarea>
                               {errors[
-                                `section_${section.position}_lecture_${lesson.position}_notes`
+                                `section_${module.position}_lecture_${lesson.position}_notes`
                               ] && (
                                 <p className='text-red-500 text-sm mt-1'>
                                   {
                                     errors[
-                                      `section_${section.position}_lecture_${lesson.position}_notes`
+                                      `section_${module.position}_lecture_${lesson.position}_notes`
                                     ]?.message as string
                                   }
                                 </p>
@@ -981,9 +1521,14 @@ export default function Step3({
                               </span>
                               <textarea
                                 {...register(
-                                  `section_${section.position}_lecture_${lesson.position}_description`,
+                                  `section_${module.position}_lecture_${lesson.position}_description`,
                                   {
                                     required: "Lecture description is required",
+                                    minLength: {
+                                      value: 20,
+                                      message:
+                                        "Lecture description must be greater than 20 characters",
+                                    },
                                     maxLength: {
                                       value: 1000,
                                       message: "Lecture description cannot exceed 1000 characters",
@@ -996,7 +1541,7 @@ export default function Step3({
                                 )}
                                 onChange={e =>
                                   handleTextValueChange(
-                                    section.position,
+                                    module.position,
                                     lesson.position,
                                     "description",
                                     e.target.value
@@ -1005,7 +1550,7 @@ export default function Step3({
                                 defaultValue={lesson.description}
                                 className={`w-full p-2 border border-dashed border-gray-200 rounded resize-none focus:outline-none focus:border-orange ${
                                   errors[
-                                    `section_${section.position}_lecture_${lesson.position}_description`
+                                    `section_${module.position}_lecture_${lesson.position}_description`
                                   ] && "border-red-400 bg-red-50"
                                 }`}
                                 placeholder='Add lecture Description here...'
@@ -1013,12 +1558,12 @@ export default function Step3({
                                 maxLength={1000}
                               ></textarea>
                               {errors[
-                                `section_${section.position}_lecture_${lesson.position}_description`
+                                `section_${module.position}_lecture_${lesson.position}_description`
                               ] && (
                                 <p className='text-red-500 text-sm mt-1'>
                                   {
                                     errors[
-                                      `section_${section.position}_lecture_${lesson.position}_description`
+                                      `section_${module.position}_lecture_${lesson.position}_description`
                                     ]?.message as string
                                   }
                                 </p>
@@ -1041,7 +1586,7 @@ export default function Step3({
                                       <span
                                         onClick={() =>
                                           deleteLectureFile(
-                                            section.position,
+                                            module.position,
                                             lesson.position,
                                             fileName
                                           )
@@ -1065,7 +1610,7 @@ export default function Step3({
                                   </label>
                                   <input
                                     onChange={e =>
-                                      handleFileSelect(e, section.position, lesson.position)
+                                      handleFileSelect(e, module.position, lesson.position)
                                     }
                                     id='lessonfile'
                                     multiple={true}
@@ -1081,7 +1626,7 @@ export default function Step3({
                               <textarea
                                 onChange={e =>
                                   handleTextValueChange(
-                                    section.position,
+                                    module.position,
                                     lesson.position,
                                     "description",
                                     e.target.value
@@ -1089,6 +1634,7 @@ export default function Step3({
                                 }
                                 className='w-full p-2 border border-dashed border-gray-200 rounded resize-none focus:outline-none focus:border-orange'
                                 placeholder='Add article content here...'
+                                defaultValue={lesson.description}
                                 rows={8}
                               ></textarea>
                             </div>
@@ -1096,6 +1642,212 @@ export default function Step3({
                         )}
                         {lesson.type === "QUIZ" && (
                           <div className='bg-gray-100/40 w-full p-4 rounded flex flex-col gap-3'>
+                            <div>
+                              {/* Quiz Title */}
+                              <div>
+                                <span className='text-sm text-gray-600 mb-1'>Quiz Title :</span>
+                                <input
+                                  type='text'
+                                  {...register(
+                                    `section_${module.position}_lecture_${lesson.position}_quiz_title`,
+                                    {
+                                      required: "Quiz title is required for this lesson",
+                                      minLength: {
+                                        value: 20,
+                                        message: "Quiz title must be greater than 20 characters",
+                                      },
+                                      maxLength: {
+                                        value: 100,
+                                        message: "Quiz title cannot exceed 100 characters",
+                                      },
+                                      pattern: {
+                                        value: /^[a-zA-Z0-9\s.,!?'"()-]*$/,
+                                        message: "Quiz title contain invalid characters",
+                                      },
+                                    }
+                                  )}
+                                  maxLength={100}
+                                  onChange={e =>
+                                    handleQuizInputChange(
+                                      module.position,
+                                      lesson.position,
+                                      "title",
+                                      e.target.value
+                                    )
+                                  }
+                                  value={lesson.quiz?.title || ""}
+                                  placeholder='Enter quiz title...'
+                                  className={`w-full px-2 py-2 border border-gray-200 focus:outline-none focus:border-orange text-sm appearance-none rounded ${
+                                    errors[
+                                      `section_${module.position}_lecture_${lesson.position}_quiz_title`
+                                    ] && "border-red-400 bg-red-50"
+                                  }`}
+                                ></input>
+                                {errors[
+                                  `section_${module.position}_lecture_${lesson.position}_quiz_title`
+                                ] && (
+                                  <p className='text-red-500 text-sm mt-1'>
+                                    {
+                                      errors[
+                                        `section_${module.position}_lecture_${lesson.position}_quiz_title`
+                                      ]?.message as string
+                                    }
+                                  </p>
+                                )}
+                              </div>
+
+                              {/* Quiz Description */}
+                              <div>
+                                <span className='text-sm text-gray-600 mb-1'>
+                                  Quiz Description :
+                                </span>
+                                <textarea
+                                  {...register(
+                                    `section_${module.position}_lecture_${lesson.position}_quiz_description`,
+                                    {
+                                      required: "Quiz Description is required for this lesson",
+                                      minLength: {
+                                        value: 20,
+                                        message: "Quiz description must be at least 20 characters",
+                                      },
+                                      maxLength: {
+                                        value: 1000,
+                                        message: "Quiz description cannot exceed 1000 characters",
+                                      },
+                                      pattern: {
+                                        value: /^[a-zA-Z0-9\s.,!?'"()-]*$/,
+                                        message: "Quiz description contain invalid characters",
+                                      },
+                                    }
+                                  )}
+                                  maxLength={1000}
+                                  rows={3}
+                                  onChange={e =>
+                                    handleQuizInputChange(
+                                      module.position,
+                                      lesson.position,
+                                      "description",
+                                      e.target.value
+                                    )
+                                  }
+                                  value={lesson.quiz?.description || ""}
+                                  placeholder='Enter quiz description...'
+                                  className={`w-full px-2 py-2 border border-gray-200 focus:outline-none focus:border-orange text-sm appearance-none rounded resize-none ${
+                                    errors[
+                                      `section_${module.position}_lecture_${lesson.position}_quiz_description`
+                                    ] && "border-red-400 bg-red-50"
+                                  }`}
+                                ></textarea>
+                                {errors[
+                                  `section_${module.position}_lecture_${lesson.position}_quiz_description`
+                                ] && (
+                                  <p className='text-red-500 text-sm mt-1'>
+                                    {
+                                      errors[
+                                        `section_${module.position}_lecture_${lesson.position}_quiz_description`
+                                      ]?.message as string
+                                    }
+                                  </p>
+                                )}
+                              </div>
+
+                              <div className='flex items-baseline gap-3'>
+                                {/* Quiz Duration */}
+                                <div className='w-full'>
+                                  <span className='text-sm text-gray-600 mb-1'>
+                                    Quiz Duration (in minutes) :
+                                  </span>
+                                  <input
+                                    {...register(
+                                      `section_${module.position}_lecture_${lesson.position}_quiz_duration`,
+                                      {
+                                        maxLength: {
+                                          value: 60,
+                                          message: "Quiz duration cannot exceed 60 minutes",
+                                        },
+                                      }
+                                    )}
+                                    type='number'
+                                    min={1}
+                                    max={60}
+                                    onChange={e =>
+                                      handleQuizInputChange(
+                                        module.position,
+                                        lesson.position,
+                                        "duration",
+                                        Number(e.target.value)
+                                      )
+                                    }
+                                    value={lesson.quiz?.duration || ""}
+                                    placeholder='Enter quiz duration in minutes...'
+                                    className={`w-full px-2 py-2 border border-gray-200 focus:outline-none focus:border-orange text-sm appearance-none rounded ${
+                                      errors[
+                                        `section_${module.position}_lecture_${lesson.position}_quiz_duration`
+                                      ] && "border-red-400 bg-red-50"
+                                    }`}
+                                  ></input>
+                                  {errors[
+                                    `section_${module.position}_lecture_${lesson.position}_quiz_duration`
+                                  ] && (
+                                    <p className='text-red-500 text-sm mt-1'>
+                                      {
+                                        errors[
+                                          `section_${module.position}_lecture_${lesson.position}_quiz_duration`
+                                        ]?.message as string
+                                      }
+                                    </p>
+                                  )}
+                                </div>
+
+                                {/* Quiz passing score */}
+                                <div className='w-full'>
+                                  <span className='text-sm text-gray-600 mb-1'>
+                                    Quiz Passing Score (% ) :
+                                  </span>
+                                  <input
+                                    {...register(
+                                      `section_${module.position}_lecture_${lesson.position}_quiz_score`,
+                                      {
+                                        required: "Quiz passing score is required for this lesson",
+                                        maxLength: {
+                                          value: 100,
+                                          message: "Quiz passing score cannot exceed 100 percent",
+                                        },
+                                      }
+                                    )}
+                                    type='number'
+                                    min={1}
+                                    max={100}
+                                    onChange={e =>
+                                      handleQuizInputChange(
+                                        module.position,
+                                        lesson.position,
+                                        "passingScore",
+                                        Number(e.target.value)
+                                      )
+                                    }
+                                    value={lesson.quiz?.passingScore || ""}
+                                    placeholder='Enter quiz passing score in percentage...'
+                                    className={`w-full px-2 py-2 border border-gray-200 focus:outline-none focus:border-orange text-sm appearance-none rounded ${
+                                      errors[
+                                        `section_${module.position}_lecture_${lesson.position}_quiz_score`
+                                      ] && "border-red-400 bg-red-50"
+                                    }`}
+                                  ></input>
+                                  {errors[
+                                    `section_${module.position}_lecture_${lesson.position}_quiz_score`
+                                  ] && (
+                                    <p className='text-red-500 text-sm mt-1'>
+                                      {
+                                        errors[
+                                          `section_${module.position}_lecture_${lesson.position}_quiz_score`
+                                        ]?.message as string
+                                      }
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
                             {/* Add Quiz */}
                             <div>
                               <span className='text-sm text-gray-600 mb-1'>Add a Quiz :</span>
@@ -1105,7 +1857,7 @@ export default function Step3({
                                   onClick={() => {
                                     setShowAddQuestions(true);
                                     setValue(
-                                      `section_${section.position}_lecture_${lesson.position}_addQuiz_type`,
+                                      `section_${module.position}_lecture_${lesson.position}_addQuiz_type`,
                                       "ADD_QUIZ"
                                     );
                                   }}
@@ -1128,12 +1880,12 @@ export default function Step3({
                                       type='button'
                                       onClick={() => {
                                         addQuizQuestion(
-                                          section.position,
+                                          module.position,
                                           lesson.position,
                                           "MULTIPLE_CHOICE"
                                         );
                                         setValue(
-                                          `section_${section.position}_lecture_${lesson.position}_quiz_type`,
+                                          `section_${module.position}_lecture_${lesson.position}_quiz_type`,
                                           "MULTIPLE_CHOICE"
                                         );
                                       }}
@@ -1145,12 +1897,12 @@ export default function Step3({
                                       type='button'
                                       onClick={() => {
                                         addQuizQuestion(
-                                          section.position,
+                                          module.position,
                                           lesson.position,
                                           "SINGLE_CHOICE"
                                         );
                                         setValue(
-                                          `section_${section.position}_lecture_${lesson.position}_quiz_type`,
+                                          `section_${module.position}_lecture_${lesson.position}_quiz_type`,
                                           "SINGLE_CHOICE"
                                         );
                                       }}
@@ -1162,12 +1914,12 @@ export default function Step3({
                                       type='button'
                                       onClick={() => {
                                         addQuizQuestion(
-                                          section.position,
+                                          module.position,
                                           lesson.position,
                                           "TRUE_FALSE"
                                         );
                                         setValue(
-                                          `section_${section.position}_lecture_${lesson.position}_quiz_type`,
+                                          `section_${module.position}_lecture_${lesson.position}_quiz_type`,
                                           "TRUE_FALSE"
                                         );
                                       }}
@@ -1182,19 +1934,19 @@ export default function Step3({
 
                             {lesson.quiz?.questions &&
                               lesson.quiz.questions.length > 0 &&
-                              lesson.quiz.questions.map(question => (
+                              lesson.quiz.questions.map((question, index) => (
                                 <div
-                                  key={question.position}
+                                  key={index}
                                   className='bg-white p-3 group'
                                 >
                                   <div className='flex items-center justify-between mb-2'>
                                     <span className='text-sm text-gray-600'>
-                                      {`Question ${question.position} : ${question.type}`}
+                                      {`Question ${index + 1} : ${question.type}`}
                                     </span>
                                     <Trash
                                       onClick={() =>
                                         handleDeleteQuiz(
-                                          section.position,
+                                          module.position,
                                           lesson.position,
                                           question.position
                                         )
@@ -1212,30 +1964,68 @@ export default function Step3({
                                         type='number'
                                         min={1}
                                         max={10}
+                                        onChange={e =>
+                                          handleQuestionInputChange(
+                                            module.position,
+                                            lesson.position,
+                                            question.position,
+                                            "points",
+                                            e.target.value
+                                          )
+                                        }
                                         defaultValue={question.points}
+                                        placeholder='Enter a number upto 10'
                                         className='w-full px-2 py-1.5 border border-gray-200 focus:outline-none focus:border-orange text-sm appearance-none rounded'
                                       ></input>
                                     </div>
                                     {/* Quiz Qustion */}
                                     <textarea
                                       {...register(
-                                        `section_${section.position}_lecture_${lesson.position}_quiz_question_${question.position}`,
+                                        `section_${module.position}_lecture_${lesson.position}_quiz_question_${question.position}_text`,
                                         {
                                           required: "Must be add question title",
+                                          minLength: {
+                                            value: 10,
+                                            message:
+                                              "Question title must be at least 10 characters",
+                                          },
+                                          maxLength: {
+                                            value: 200,
+                                            message: "Question title cannot exceed 200 characters",
+                                          },
+                                          pattern: {
+                                            value: /^[a-zA-Z0-9\s.,!?'+"()-]*$/,
+                                            message: "Question title contain invalid characters",
+                                          },
                                         }
                                       )}
+                                      onChange={e =>
+                                        handleQuestionInputChange(
+                                          module.position,
+                                          lesson.position,
+                                          question.position,
+                                          "text",
+                                          e.target.value
+                                        )
+                                      }
                                       placeholder='Enter your qustion title...'
+                                      value={question.text}
                                       rows={3}
                                       className='w-full px-2 py-1.5 border border-gray-200 focus:outline-none focus:border-orange text-sm col-span-4 resize-none rounded'
                                     ></textarea>
                                     <input
                                       type='hidden'
                                       {...register(
-                                        `section_${section.position}_lecture_${lesson.position}_${question.position}_type`,
+                                        `section_${module.position}_lecture_${lesson.position}_${question.position}_type`,
                                         {
-                                          required: `Please Choose a option for correct answere for ${section.position} lesson ${lesson.position} Qustion ${question.position}.`,
+                                          required: `Please Choose a option for correct answere for lesson ${lesson.position} Qustion ${question.position}.`,
                                         }
                                       )}
+                                      value={
+                                        question.options.findIndex(o => o.isCorrect) > -1
+                                          ? "valid"
+                                          : ""
+                                      }
                                     />
                                     {/* Quiz Options */}
                                     {question.type === "MULTIPLE_CHOICE" ||
@@ -1246,13 +2036,13 @@ export default function Step3({
                                           <span
                                             onClick={() => {
                                               updateQuizOptionCorrectAnswere(
-                                                section.position,
+                                                module.position,
                                                 lesson.position,
                                                 question.position,
                                                 1
                                               );
                                               setValue(
-                                                `section_${section.position}_lecture_${lesson.position}_${question.position}_type`,
+                                                `section_${module.position}_lecture_${lesson.position}_${question.position}_type`,
                                                 1
                                               );
                                             }}
@@ -1260,18 +2050,30 @@ export default function Step3({
                                           ></span>
                                           <input
                                             {...register(
-                                              `section_${section.position}_lecture_${lesson.position}_quiz_option_${question.position}_option_1`,
+                                              `section_${module.position}_lecture_${lesson.position}_quiz_option_${question.position}_option_1`,
                                               {
-                                                required: `${`section_${section.position}_lecture_${lesson.position}_quiz_option_${question.position}_option_1`} must be add option`,
+                                                required: `${`section_${module.position}_lecture_${lesson.position}_quiz_option_${question.position}_option_1`} must be add option`,
+                                                minLength: {
+                                                  value: 1,
+                                                  message:
+                                                    "Option text must be at least 1 character",
+                                                },
+                                                maxLength: {
+                                                  value: 50,
+                                                  message:
+                                                    "Option text cannot exceed 50 characters",
+                                                },
+                                                pattern: {
+                                                  value: /^[a-zA-Z0-9\s.,!?'"()-]*$/,
+                                                  message: "Option text contain invalid characters",
+                                                },
                                               }
                                             )}
                                             type='text'
-                                            defaultValue={
-                                              question.options && question.options[0]?.text
-                                            }
+                                            value={question.options && question.options[0]?.text}
                                             onChange={e =>
                                               addQuizOption(
-                                                section.position,
+                                                module.position,
                                                 lesson.position,
                                                 question.position,
                                                 1,
@@ -1287,13 +2089,13 @@ export default function Step3({
                                           <span
                                             onClick={() => {
                                               updateQuizOptionCorrectAnswere(
-                                                section.position,
+                                                module.position,
                                                 lesson.position,
                                                 question.position,
                                                 2
                                               );
                                               setValue(
-                                                `section_${section.position}_lecture_${lesson.position}_${question.position}_type`,
+                                                `section_${module.position}_lecture_${lesson.position}_${question.position}_type`,
                                                 2
                                               );
                                             }}
@@ -1301,18 +2103,30 @@ export default function Step3({
                                           ></span>
                                           <input
                                             {...register(
-                                              `section_${section.position}_lecture_${lesson.position}_quiz_option_${question.position}_option_2`,
+                                              `section_${module.position}_lecture_${lesson.position}_quiz_option_${question.position}_option_2`,
                                               {
-                                                required: `${`section_${section.position}_lecture_${lesson.position}_quiz_option_${question.position}_option_2`} must be add option`,
+                                                required: `${`section_${module.position}_lecture_${lesson.position}_quiz_option_${question.position}_option_2`} must be add option`,
+                                                minLength: {
+                                                  value: 1,
+                                                  message:
+                                                    "Option text must be at least 1 character",
+                                                },
+                                                maxLength: {
+                                                  value: 50,
+                                                  message:
+                                                    "Option text cannot exceed 50 characters",
+                                                },
+                                                pattern: {
+                                                  value: /^[a-zA-Z0-9\s.,!?'"()-]*$/,
+                                                  message: "Option text contain invalid characters",
+                                                },
                                               }
                                             )}
                                             type='text'
-                                            defaultValue={
-                                              question.options && question.options[1]?.text
-                                            }
+                                            value={question.options && question.options[1]?.text}
                                             onChange={e =>
                                               addQuizOption(
-                                                section.position,
+                                                module.position,
                                                 lesson.position,
                                                 question.position,
                                                 2,
@@ -1328,13 +2142,13 @@ export default function Step3({
                                           <span
                                             onClick={() => {
                                               updateQuizOptionCorrectAnswere(
-                                                section.position,
+                                                module.position,
                                                 lesson.position,
                                                 question.position,
                                                 3
                                               );
                                               setValue(
-                                                `section_${section.position}_lecture_${lesson.position}_${question.position}_type`,
+                                                `section_${module.position}_lecture_${lesson.position}_${question.position}_type`,
                                                 3
                                               );
                                             }}
@@ -1342,18 +2156,30 @@ export default function Step3({
                                           ></span>
                                           <input
                                             {...register(
-                                              `section_${section.position}_lecture_${lesson.position}_quiz_option_${question.position}_option_3`,
+                                              `section_${module.position}_lecture_${lesson.position}_quiz_option_${question.position}_option_3`,
                                               {
-                                                required: `${`section_${section.position}_lecture_${lesson.position}_quiz_option_${question.position}_option_3`} must be add option`,
+                                                required: `${`section_${module.position}_lecture_${lesson.position}_quiz_option_${question.position}_option_3`} must be add option`,
+                                                minLength: {
+                                                  value: 1,
+                                                  message:
+                                                    "Option text must be at least 1 character",
+                                                },
+                                                maxLength: {
+                                                  value: 50,
+                                                  message:
+                                                    "Option text cannot exceed 50 characters",
+                                                },
+                                                pattern: {
+                                                  value: /^[a-zA-Z0-9\s.,!?'"()-]*$/,
+                                                  message: "Option text contain invalid characters",
+                                                },
                                               }
                                             )}
                                             type='text'
-                                            defaultValue={
-                                              question.options && question.options[2]?.text
-                                            }
+                                            value={question.options && question.options[2]?.text}
                                             onChange={e =>
                                               addQuizOption(
-                                                section.position,
+                                                module.position,
                                                 lesson.position,
                                                 question.position,
                                                 3,
@@ -1369,13 +2195,13 @@ export default function Step3({
                                           <span
                                             onClick={() => {
                                               updateQuizOptionCorrectAnswere(
-                                                section.position,
+                                                module.position,
                                                 lesson.position,
                                                 question.position,
                                                 4
                                               );
                                               setValue(
-                                                `section_${section.position}_lecture_${lesson.position}_${question.position}_type`,
+                                                `section_${module.position}_lecture_${lesson.position}_${question.position}_type`,
                                                 4
                                               );
                                             }}
@@ -1383,18 +2209,30 @@ export default function Step3({
                                           ></span>
                                           <input
                                             {...register(
-                                              `section_${section.position}_lecture_${lesson.position}_quiz_option_${question.position}_option_4`,
+                                              `section_${module.position}_lecture_${lesson.position}_quiz_option_${question.position}_option_4`,
                                               {
-                                                required: `${`section_${section.position}_lecture_${lesson.position}_quiz_option_${question.position}_option_4`} must be add option`,
+                                                required: `${`section_${module.position}_lecture_${lesson.position}_quiz_option_${question.position}_option_4`} must be add option`,
+                                                minLength: {
+                                                  value: 1,
+                                                  message:
+                                                    "Option text must be at least 1 character",
+                                                },
+                                                maxLength: {
+                                                  value: 50,
+                                                  message:
+                                                    "Option text cannot exceed 50 characters",
+                                                },
+                                                pattern: {
+                                                  value: /^[a-zA-Z0-9\s.,!?'"()-]*$/,
+                                                  message: "Option text contain invalid characters",
+                                                },
                                               }
                                             )}
                                             type='text'
-                                            defaultValue={
-                                              question.options && question.options[3]?.text
-                                            }
+                                            value={question.options && question.options[3]?.text}
                                             onChange={e =>
                                               addQuizOption(
-                                                section.position,
+                                                module.position,
                                                 lesson.position,
                                                 question.position,
                                                 4,
@@ -1413,13 +2251,13 @@ export default function Step3({
                                           <span
                                             onClick={() => {
                                               updateQuizOptionCorrectAnswere(
-                                                section.position,
+                                                module.position,
                                                 lesson.position,
                                                 question.position,
                                                 1
                                               );
                                               setValue(
-                                                `section_${section.position}_lecture_${lesson.position}_${question.position}_type`,
+                                                `section_${module.position}_lecture_${lesson.position}_${question.position}_type`,
                                                 1
                                               );
                                             }}
@@ -1436,13 +2274,13 @@ export default function Step3({
                                           <span
                                             onClick={() => {
                                               updateQuizOptionCorrectAnswere(
-                                                section.position,
+                                                module.position,
                                                 lesson.position,
                                                 question.position,
                                                 2
                                               );
                                               setValue(
-                                                `section_${section.position}_lecture_${lesson.position}_${question.position}_type`,
+                                                `section_${module.position}_lecture_${lesson.position}_${question.position}_type`,
                                                 2
                                               );
                                             }}
@@ -1460,12 +2298,12 @@ export default function Step3({
                                     {question.options.filter(o => o.text.length > 0).length >=
                                       (question.type === "TRUE_FALSE" ? 2 : 4) &&
                                       errors[
-                                        `section_${section.position}_lecture_${lesson.position}_${question.position}_type`
+                                        `section_${module.position}_lecture_${lesson.position}_${question.position}_type`
                                       ] && (
                                         <p className='text-red-500 text-sm mt-1 col-span-4'>
                                           {
                                             errors[
-                                              `section_${section.position}_lecture_${lesson.position}_${question.position}_type`
+                                              `section_${module.position}_lecture_${lesson.position}_${question.position}_type`
                                             ]?.message as string
                                           }
                                         </p>
@@ -1494,7 +2332,7 @@ export default function Step3({
         </button>
 
         {/* Footer Actions */}
-        <div className='p-6'>
+        <div className='py-6'>
           <CourseFooter
             handlePrevious={handlePrevious}
             isSubmitting={isSubmitting}

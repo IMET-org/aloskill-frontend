@@ -1,11 +1,12 @@
 "use client";
 
-import { FileText, Globe, Layers, PlaySquare } from "lucide-react";
-import React, { useState } from "react";
-import Step1 from "./Step1.tsx";
-import Step2 from "./Step2.tsx";
-import Step3 from "./Step3.tsx";
-import Step4 from "./Step4.tsx";
+import { FileText, Globe, Layers, LucidePlaySquare } from "lucide-react";
+import React, { useCallback, useEffect, useState } from "react";
+import { apiClient } from "../../../../lib/api/client.ts";
+import AdvanceInformation from "./AdvanceInformation.tsx";
+import BasicInformaton from "./BasicInformaton.tsx";
+import CourseCurriculum from "./CourseCurriculum.tsx";
+import FinalStep from "./FinalStep.tsx";
 
 type Quiz = {
   title: string;
@@ -27,20 +28,23 @@ type Quiz = {
 };
 
 export type CourseLesson = {
-  position: number;
   title: string;
-  description: string;
+  position: number;
   notes?: string;
+  description: string;
   type: "VIDEO" | "ARTICLE" | "QUIZ" | null;
   contentUrl?: string | null;
   files?: string[];
   duration?: number | null;
   quiz?: Quiz;
+  expanded: boolean;
+  lessonTypeSelection: boolean;
 };
 
 type CourseInstructor = {
   instructorId: string;
-  role: 'PRIMARY' | 'CO_INSTRUCTOR';
+  displayName: string;
+  role: "PRIMARY" | "CO_INSTRUCTOR";
 };
 
 export type CourseModule = {
@@ -52,25 +56,47 @@ export type CourseModule = {
 export type CreateCourseData = {
   title: string;
   slug: string;
-  categoryId: string;
+  allCategory: Categories;
+  category: string;
+  subCategory: string;
+  tags: string[];
   description: string;
+  welcomeMessage?: string;
+  congratulationsMessage?: string;
   originalPrice: number;
   discountPercent?: number;
   discountPrice?: number | null;
   discountEndDate?: Date | null;
-  language: 'ENGLISH' | 'BANGLA';
-  level: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | 'EXPERT';
+  language: "ENGLISH" | "BANGLA";
+  level: "BEGINNER" | "INTERMEDIATE" | "ADVANCED" | "EXPERT";
   thumbnailUrl?: string | null;
   modules: CourseModule[];
   courseInstructors?: CourseInstructor[];
+  status: "DRAFT" | "PUBLISHED";
 };
 
+type Categories = {
+  id: string;
+  name: string;
+  parentId: string | null;
+  children: {
+    id: string;
+    name: string;
+  }[];
+}[];
+
 export default function CourseCreationForm() {
+  const [loading, setLoading] = useState<boolean>(false);
+  const [categoryError, setCategoryError] = useState<string>("");
   const [currentStep, setCurrentStep] = useState(1);
+  const [category, setCategory] = useState<Categories>([]);
   const [courseData, setCourseData] = useState<CreateCourseData>({
     title: "",
     slug: "",
-    categoryId: "",
+    tags: [],
+    allCategory: category,
+    category: "",
+    subCategory: "",
     description: "",
     originalPrice: 0,
     discountPercent: 0,
@@ -78,14 +104,60 @@ export default function CourseCreationForm() {
     discountEndDate: null,
     language: "ENGLISH",
     level: "BEGINNER",
-    modules: [],
+    status: "DRAFT",
+    modules: [
+      {
+        position: 1,
+        title: "Module 1",
+        lessons: [
+          {
+            position: 1,
+            title: "Lesson 1",
+            description: "",
+            notes: "",
+            type: null,
+            contentUrl: "",
+            files: [] as string[],
+            duration: null,
+            expanded: false,
+            lessonTypeSelection: true,
+          },
+        ],
+      },
+    ],
   });
 
+  const handleGetCategories = useCallback(async () => {
+    setLoading(true);
+    setCategoryError("");
+    try {
+      const response = await apiClient.get<Categories>("/course/category");
+      if (response.success && response.data) {
+        setCategory(response.data);
+        setCourseData(prev => ({ ...prev, allCategory: response.data as Categories }));
+        return;
+      } else {
+        throw new Error("Failed to fetch categories");
+      }
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      setCategoryError("Failed to load categories. Please try again.");
+      setLoading(false);
+      return undefined;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    handleGetCategories();
+  }, [handleGetCategories]);
+
   const steps = [
-    { id: 1, name: "Basic Information", icon: Layers, progress: "7/12" },
-    { id: 2, name: "Advance Information", icon: FileText, progress: null },
-    { id: 3, name: "Curriculum", icon: PlaySquare, progress: null },
-    { id: 4, name: "Publish Course", icon: Globe, progress: null },
+    { id: 1, name: "Basic Information", icon: Layers },
+    { id: 2, name: "Advance Information", icon: FileText },
+    { id: 3, name: "Curriculum", icon: LucidePlaySquare },
+    { id: 4, name: "Publish Course", icon: Globe },
   ];
 
   return (
@@ -112,11 +184,6 @@ export default function CourseCreationForm() {
                 >
                   <Icon size={18} />
                   <span className='font-medium text-sm'>{step.name}</span>
-                  {step.progress && isActive && (
-                    <span className='ml-2 text-xs text-orange-600 font-semibold'>
-                      {step.progress}
-                    </span>
-                  )}
                 </button>
               </React.Fragment>
             );
@@ -126,17 +193,21 @@ export default function CourseCreationForm() {
 
       {/* Form Content Step -1*/}
       <div className='w-full'>
+        {categoryError !== "" && (
+          <p className='text-red-500 text-md mb-2 font-semibold'>{categoryError}</p>
+        )}
         {currentStep === 1 && (
-          <Step1
+          <BasicInformaton
             currentStep={currentStep}
             setCurrentStep={setCurrentStep}
             courseData={courseData}
             setCourseData={setCourseData}
+            loading={loading}
           />
         )}
 
         {currentStep === 2 && (
-          <Step2
+          <AdvanceInformation
             currentStep={currentStep}
             setCurrentStep={setCurrentStep}
             courseData={courseData}
@@ -145,7 +216,7 @@ export default function CourseCreationForm() {
         )}
 
         {currentStep === 3 && (
-          <Step3
+          <CourseCurriculum
             currentStep={currentStep}
             setCurrentStep={setCurrentStep}
             courseData={courseData}
@@ -154,9 +225,11 @@ export default function CourseCreationForm() {
         )}
 
         {currentStep === 4 && (
-          <Step4
+          <FinalStep
             currentStep={currentStep}
             setCurrentStep={setCurrentStep}
+            courseData={courseData}
+            setCourseData={setCourseData}
           />
         )}
       </div>
