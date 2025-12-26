@@ -1,22 +1,17 @@
 "use client";
 
 import { X } from "lucide-react";
-import { type ChangeEvent, useState } from "react";
-import type { CourseModule } from "./page";
-
-interface Lecture {
-  id: number;
-  name: string;
-  expanded: boolean;
-}
+import { useState } from "react";
+import type { CourseModule, CreateCourseData } from "./page";
 
 const CourseModal = ({
   modalType,
   setOpeModal,
-  sections,
   setSections,
   sectionId,
   lectureId,
+  courseData,
+  setCourseData,
 }: {
   modalType: string;
   setOpeModal: React.Dispatch<
@@ -26,38 +21,11 @@ const CourseModal = ({
   setSections: React.Dispatch<React.SetStateAction<CourseModule[]>>;
   sectionId: number | undefined;
   lectureId: number | undefined;
+  courseData: CreateCourseData;
+  setCourseData: React.Dispatch<React.SetStateAction<CreateCourseData>>;
 }) => {
   const [preview, setPreview] = useState("");
   const [file, setFile] = useState<File | null>(null);
-
-  const _updateLectureField = (
-    sectionId: number | undefined,
-    lectureId: number | undefined,
-    field: keyof Lecture,
-    value: Lecture[keyof Lecture]
-  ) => {
-    setSections(prevSections =>
-      prevSections.map(section => {
-        if (section.position !== sectionId) {
-          return section;
-        }
-
-        const updatedLectures = section.lessons.map(lesson => {
-          if (lesson.position !== lectureId) {
-            return lesson;
-          }
-          return {
-            ...lesson,
-            [field]: value,
-          };
-        });
-        return {
-          ...section,
-          lectures: updatedLectures,
-        };
-      })
-    );
-  };
 
   const updateModuleNamefield = (sectionId: number | undefined, value: string) => {
     setSections(prevSections =>
@@ -71,6 +39,18 @@ const CourseModal = ({
         };
       })
     );
+    setCourseData(prev => ({
+      ...prev,
+      modules: prev.modules.map(module => {
+        if (module.position !== sectionId) {
+          return module;
+        }
+        return {
+          ...module,
+          title: value,
+        };
+      }),
+    }));
   };
 
   const updateLectureNameField = (
@@ -99,34 +79,28 @@ const CourseModal = ({
         };
       })
     );
-  };
-
-  const getVideoDuration = () => {
-    // This is a placeholder - you'd need to load the video to get actual duration
-    return "1:55";
-  };
-
-  const handleFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const file = e.target.files[0];
-
-      if (file) {
-        const isVideo = file.type.startsWith("video/");
-        const isPDF = file.type.startsWith("application/pdf");
-
-        if (isVideo || isPDF) {
-          setFile(file);
-          const previewUrl = URL.createObjectURL(file);
-          setPreview(previewUrl);
-        } else {
-          setFile(null);
-          setPreview("");
+    setCourseData(prev => ({
+      ...prev,
+      modules: prev.modules.map(module => {
+        if (module.position !== sectionId) {
+          return module;
         }
-      } else {
-        setFile(null);
-        setPreview("");
-      }
-    }
+
+        const updatedLectures = module.lessons.map(lecture => {
+          if (lecture.position !== lectureId) {
+            return lecture;
+          }
+          return {
+            ...lecture,
+            title: value,
+          };
+        });
+        return {
+          ...module,
+          lessons: updatedLectures,
+        };
+      }),
+    }));
   };
 
   const handleSubmit = () => {
@@ -149,19 +123,6 @@ const CourseModal = ({
     setPreview("");
   };
 
-  const handleReplaceFile = () => {
-    setPreview("");
-    setFile(null);
-  };
-
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return "0 Bytes";
-    const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
-  };
-
   return (
     <>
       {/* Backdrop Overlay */}
@@ -177,16 +138,6 @@ const CourseModal = ({
                     return "Edit Section Name";
                   case "lectureName":
                     return "Edit Lecture Name";
-                  case "videoUpload":
-                    return "Lecture Video";
-                  case "fileUpload":
-                    return "Upload File";
-                  case "caption":
-                    return "Add Lecture Caption";
-                  case "description":
-                    return "Add Lecture Description";
-                  case "notes":
-                    return "Add Lecture Notes";
                   default:
                     return "";
                 }
@@ -212,7 +163,8 @@ const CourseModal = ({
                       </label>
                       <input
                         type='text'
-                        defaultValue={sections[(sectionId || 0) - 1]?.title || ""}
+                        maxLength={150}
+                        defaultValue={courseData.modules.find(m => m.position === sectionId)?.title || ""}
                         onChange={e => updateModuleNamefield(sectionId, e.target.value)}
                         placeholder='Enter section name here...'
                         className='w-full px-3 py-1.5 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-orange-light focus:border-transparent placeholder:text-gray-400 placeholder:text-sm'
@@ -227,177 +179,12 @@ const CourseModal = ({
                       </label>
                       <input
                         type='text'
-                        defaultValue={
-                          sections[(sectionId || 0) - 1]?.lessons[(lectureId || 0) - 1]?.title || ""
-                        }
+                        maxLength={150}
+                        defaultValue={courseData.modules.find(m => m.position === sectionId)?.lessons.find(l => l.position === lectureId)?.title || ""}
                         onChange={e => updateLectureNameField(sectionId, lectureId, e.target.value)}
                         placeholder='Enter section name here...'
                         className='w-full px-3 py-1.5 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-orange-light focus:border-transparent placeholder:text-gray-400 placeholder:text-sm'
                       />
-                    </div>
-                  );
-                case "videoUpload":
-                  return (
-                    <>
-                      {preview ? (
-                        <div className='w-full h-20 flex items-center gap-2'>
-                          <div className='w-[28%] h-full'>
-                            <video
-                              src={preview}
-                              className='w-full aspect-video'
-                              controls={false}
-                            />
-                          </div>
-                          <div className='flex-1'>
-                            <div className='flex items-center gap-2'>
-                              <span className='text-xs'>FILE UPLOADED</span>
-                              <span className='text-gray-500 text-xs'>• {getVideoDuration()}</span>
-                              <span className='text-gray-500 text-xs'>
-                                • {formatFileSize((file && file.size) || 0)}
-                              </span>
-                            </div>
-                            <p className='text-gray-800 text-xs'>{file?.name}</p>
-                            <button
-                              onClick={handleReplaceFile}
-                              className='text-orange-500 text-xs hover:text-orange-600 transition-colors'
-                            >
-                              Replace Video
-                            </button>
-                          </div>
-                        </div>
-                      ) : (
-                        <div>
-                          <div className='w-full flex items-center'>
-                            <label
-                              htmlFor='video'
-                              className='block flex-1 px-3 py-2 border border-r-0 border-gray-200 rounded-l text-sm'
-                            >
-                              Upload video
-                            </label>
-                            <input
-                              id='video'
-                              type='file'
-                              accept='.mp4,.mov,.avi'
-                              onChange={handleFileSelect}
-                              className='hidden'
-                            />
-                            <button className='px-3 py-2 border border-l-0 border-gray-200 rounded-r text-sm bg-gray-50'>
-                              Upload File
-                            </button>
-                          </div>
-                          <p className='text-xs font-medium text-gray-600 mt-1'>
-                            Note: All files should be at least 720p and less than 4.0 GB.
-                          </p>
-                        </div>
-                      )}
-                    </>
-                  );
-                case "fileUpload":
-                  return (
-                    <>
-                      {preview ? (
-                        <div className='w-full h-20 flex flex-col items-center justify-center gap-2 border border-gray-200 rounded'>
-                          <p className='text-gray-800 text-md'>{file?.name}</p>
-                          <button
-                            onClick={handleReplaceFile}
-                            className='text-orange-500 text-xs hover:text-orange-600 transition-colors'
-                          >
-                            Replace file
-                          </button>
-                        </div>
-                      ) : (
-                        <div className='w-full h-[100px] flex items-center justify-center px-6 border border-gray-200 rounded'>
-                          <label
-                            htmlFor='file'
-                            className='block w-full text-sm text-center'
-                          >
-                            <p>Attach File</p>
-                            <p className='text-xs'>Drag and drop or browse for files</p>
-                          </label>
-                          <input
-                            id='file'
-                            type='file'
-                            accept='.pdf,.doc'
-                            onChange={handleFileSelect}
-                            className='hidden'
-                          />
-                        </div>
-                      )}
-                    </>
-                  );
-                case "caption":
-                  return (
-                    <div>
-                      <label className='block text-xs font-medium text-gray-700 mb-1'>
-                        Captions
-                      </label>
-                      <textarea
-                        rows={4}
-                        cols={50}
-                        maxLength={100}
-                        placeholder='Write Your Lecture Captions here...'
-                        className='w-full px-3 py-1.5 border border-gray-200 text-sm rounded focus:outline-none focus:ring-1 focus:ring-orange-light focus:border-transparent placeholder:text-gray-400 placeholder:text-sm resize-none'
-                      />
-                    </div>
-                  );
-                case "description":
-                  return (
-                    <div>
-                      <label className='block text-xs font-medium text-gray-700 mb-1'>
-                        Descriptions
-                      </label>
-                      <textarea
-                        rows={4}
-                        cols={50}
-                        maxLength={100}
-                        placeholder='Write Your Lecture Description here...'
-                        className='w-full px-3 py-1.5 border border-gray-200 text-sm rounded focus:outline-none focus:ring-1 focus:ring-orange-light focus:border-transparent placeholder:text-gray-400 placeholder:text-sm resize-none'
-                      />
-                    </div>
-                  );
-                case "notes":
-                  return (
-                    <div>
-                      <div>
-                        <label className='block text-xs font-medium text-gray-700 mb-1'>
-                          Notes
-                        </label>
-                        <textarea
-                          rows={4}
-                          cols={50}
-                          maxLength={100}
-                          placeholder='Write Your Lecture Notes here...'
-                          className='w-full px-3 py-1.5 border border-gray-200 text-sm rounded focus:outline-none focus:ring-1 focus:ring-orange-light focus:border-transparent placeholder:text-gray-400 placeholder:text-sm resize-none'
-                        />
-                      </div>
-                      {preview ? (
-                        <div className='w-full h-20 flex flex-col items-center justify-center gap-2 border border-gray-200 rounded'>
-                          <p className='text-gray-800 text-md'>{file?.name}</p>
-                          <button
-                            onClick={handleReplaceFile}
-                            className='text-orange-500 text-xs hover:text-orange-600 transition-colors'
-                          >
-                            Replace file
-                          </button>
-                        </div>
-                      ) : (
-                        <div className='w-full h-20 flex items-center justify-center px-6 border border-gray-200 rounded'>
-                          <label
-                            htmlFor='file'
-                            className='block w-full text-sm text-center'
-                          >
-                            <p>Upload Notes</p>
-                            <p className='text-xs'>Drag and drop or browse for files</p>
-                          </label>
-                          <input
-                            id='file'
-                            type='file'
-                            accept='.pdf,.doc'
-                            onChange={handleFileSelect}
-                            className='hidden'
-                          />
-                        </div>
-                      )}
                     </div>
                   );
                 default:
