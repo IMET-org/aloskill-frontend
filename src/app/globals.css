@@ -2,17 +2,18 @@
 
 /* =======================================================
  🧩 Root Variables
+ Notes: max-w-[1420px]
 ======================================================= */
 :root {
   /* === 🔤 Font Sizes (Fluid Responsive) === */
-  --font-size-xs: clamp(0.75rem, 0.7rem + 0.3vw, 0.875rem);
-  --font-size-sm: clamp(0.875rem, 0.8rem + 0.3vw, 1rem);
-  --font-size-base: clamp(1rem, 0.9rem + 0.5vw, 1.125rem);
+  --font-size-xs: clamp(0.5rem, 0.7rem + 0.3vw, 0.7rem);
+  --font-size-sm: clamp(0.6rem, 0.7rem + 0.3vw, 0.85rem);
+  --font-size-md: clamp(0.875rem, 0.9rem + 0.5vw, 1rem);
   --font-size-lg: clamp(1.25rem, 1rem + 0.8vw, 1.5rem);
   --font-size-xl: clamp(1.5rem, 1.2rem + 1vw, 2rem);
-  --font-size-2xl: clamp(2rem, 1.5rem + 1.5vw, 3rem);
-  /* --font-size-3xl: clamp(2.5rem, 2rem + 2vw, 4rem);
-  --font-size-4xl: clamp(3rem, 2.5rem + 2.5vw, 5rem); */
+  --font-size-2xl: clamp(1.5rem, 1.5rem + 1.5vw, 2.5rem);
+  --font-size-3xl: clamp(2.5rem, 2rem + 2vw, 4rem);
+  --font-size-4xl: clamp(3rem, 3rem + 2.5vw, 5rem);
 
   /* === 🎨 Base Colors === */
   --color-bg-light: #ffffff;
@@ -21,10 +22,18 @@
   --color-text-light: #ffffff;
 
   /* === 🍊 Accent Colors === */
-  --color-orange: #e0600e;
+  --color-orange: #da7c36;
   --color-orange-dark: #d15100;
   --color-orange-light: #fc9759;
 }
+/* 
+bg-[var(--color-orange-dark)] 
+bg-[var(--color-orange)]
+text-[var(--color-text-dark)]
+text-(--color-text-dark)
+
+*/
+
 
 /* =======================================================
  🌞 Base Theme Styles
@@ -43,8 +52,14 @@ body {
   line-height: 1.6;
   color: var(--color-text-dark);
   background-color: var(--color-bg-light);
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
+
+/* .bangla {
+  font-family: var(--font-bangla);
+} */
 
 /* =======================================================
  🧠 Typography
@@ -61,29 +76,29 @@ h6 {
   line-height: 1.2;
 }
 
-/* === Scalable Heading Sizes === */
-/* h1 {
-  font-size: var(--font-size-4xl);
+/* Utility classes */
+.text-xs {
+  font-size: var(--font-size-xs);
 }
 
-h2 {
-  font-size: var(--font-size-3xl);
-} */
-
-h1 {
-  font-size: var(--font-size-2xl);
+.text-sm {
+  font-size: var(--font-size-sm);
 }
 
-h2 {
-  font-size: var(--font-size-xl);
+.text-md {
+  font-size: var(--font-size-md);
 }
 
-h3 {
+.text-lg {
   font-size: var(--font-size-lg);
 }
 
-h4 {
-  font-size: var(--font-size-base);
+.text-xl {
+  font-size: var(--font-size-xl);
+}
+
+.text-2xl {
+  font-size: var(--font-size-2xl);
 }
 
 /* =======================================================
@@ -95,10 +110,18 @@ h4 {
   --color-orange-light: #df7633;
 
   /* === Gradient Backgrounds === */
-  --background-image-gradient-bpy: linear-gradient(135deg, #faffbd, #ffbbf8, #5b61ff);
-  --background-image-gradient-bpyg: radial-gradient(circle at 40% 20%, rgba(91, 97, 255, 0.2) 0%, rgba(255, 187, 248, 0.5) 30%, rgba(250, 255, 189, 0.3) 60%, rgba(234, 255, 255, 1) 100%);
-  --background-image-gradient-soft-hero: radial-gradient(ellipse at 50% 10%, rgba(91, 97, 255, 0.2) 0%, rgba(255, 187, 248, 0.5) 30%, rgba(250, 255, 189, 0.4) 60%, rgba(234, 255, 255, 1) 100%);
-  --background-image-gradient-blob: radial-gradient(ellipse at 40% 20%, rgba(255, 187, 248, 0.45) 0%, rgba(250, 255, 189, 0.35) 25%, rgba(187, 255, 255, 0.35) 50%, rgba(255, 229, 189, 0.35) 75%, rgba(255, 255, 255, 0.7) 100%);
+
+  --background-image-gradient-bpyg: radial-gradient(circle at 40% 20%,
+      rgba(91, 97, 255, 0.2) 0%,
+      rgba(255, 187, 248, 0.5) 30%,
+      rgba(250, 255, 189, 0.3) 60%,
+      rgba(234, 255, 255, 1) 100%);
+  --background-image-gradient-soft-hero: radial-gradient(ellipse at 50% 10%,
+      rgba(91, 97, 255, 0.2) 0%,
+      rgba(255, 187, 248, 0.3) 30%,
+      rgba(250, 255, 189, 0.2) 60%,
+      rgba(234, 255, 255, 1) 100%);
+
 }
 
 /* =======================================================
@@ -111,19 +134,6 @@ h4 {
   --font-mono: var(--font-geist-mono);
 }
 
-/* =======================================================
- 💡 Example Usage (for reference)
-======================================================= */
-/*
-<h1 className="font-[var(--font-heading)] text-[var(--font-size-4xl)]">
-  Learn Without Limits
-</h1>
-
-<p className="font-[var(--font-body)] text-[var(--font-size-base)] text-[var(--color-text-dark)]">
-  Explore courses crafted by expert instructors across diverse topics.
-</p>
-*/
-
 /* ========== 🌙 Dark Mode ========== */
 @media (prefers-color-scheme: dark) {
   :root {
@@ -132,20 +142,41 @@ h4 {
   }
 }
 
+/* ===============================
+ 🇧🇩 Bangla Font Auto Detection
+=============================== */
+
+/* Any element containing Bangla characters (Unicode range) */
+:lang(bn),
+[lang="bn"],
+.bangla,
+*:has(:lang(bn)) {
+  font-family: var(--font-bangla) !important;
+}
+
+/* Optional: Detect Bangla Unicode Range directly */
+@supports (font-family: var(--font-bangla)) {
+
+  *:not(code, pre):lang(bn),
+  [lang="bn"],
+  [class*="bangla"],
+  *:where(:lang(bn)) {
+    font-family: var(--font-bangla) !important;
+  }
+}
+
 @layer utilities {
-
-
   .bg-gradient-creamy-panda {
     @apply absolute inset-0;
   }
 
   .bg-gradient-creamy-panda::before {
-    content: '';
+    content: "";
     @apply absolute top-[-100px] left-[100px] w-[600px] h-[600px] bg-pink-300 opacity-40 blur-[120px] rounded-full;
   }
 
   .bg-gradient-creamy-panda::after {
-    content: '';
+    content: "";
     @apply absolute top-[0px] left-[400px] w-[500px] h-[500px] bg-purple-300 opacity-40 blur-[140px] rounded-full;
   }
 
@@ -251,19 +282,6 @@ h4 {
   }
 }
 
-/* 
-<div className="relative">
-  <div className="bg-gradient-creamy-panda">
-    <div className="panda-blue"></div>
-    <div className="panda-orange"></div>
-  </div>
-
-  <div className="relative z-10 text-center text-2xl font-bold text-gray-800">
-    Your main content here
-  </div>
-</div>
-
-*/
 /* ========== 🎞️ Animations ========== */
 @keyframes blob {
 

@@ -1,32 +1,58 @@
+import { hindSiliguri, inter, playfair } from "@/styles/fonts.ts";
 import type { Metadata } from "next";
-
-import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import AuthProvider from "./providers/session-provider.tsx";
 
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
-});
-
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-playfair",
-  display: "swap",
-});
-
 export const metadata: Metadata = {
-  title: "আলো স্কিল - Start Learning Today",
+  metadataBase: new URL("https://aloskill.com"),
+  title: {
+    default: "আলো স্কিল - Start Learning Today",
+    template: "%s | আলো স্কিল",
+  },
   description: "Master in-demand skills and discover great books — all in one platform, in Bangla.",
-  keywords: ["learning", "education", "bangla", "courses", "books"],
-  authors: [{ name: "Alo Skill" }],
+  keywords: ["learning", "education", "bangla", "courses", "books", "bangladesh"],
+  authors: [{ name: "Alo Skill", url: "https://aloskill.com" }],
+  creator: "Alo Skill",
+  publisher: "Alo Skill",
   openGraph: {
+    type: "website",
+    locale: "bn_BD",
+    url: "https://aloskill.com",
     title: "আলো স্কিল - Start Learning Today",
     description:
       "Master in-demand skills and discover great books — all in one platform, in Bangla.",
-    type: "website",
+    siteName: "আলো স্কিল",
+    images: [
+      {
+        url: "/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "আলো স্কিল",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "আলো স্কিল - Start Learning Today",
+    description:
+      "Master in-demand skills and discover great books — all in one platform, in Bangla.",
+    images: ["/twitter-image.jpg"],
+    creator: "@aloskill",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  verification: {
+    google: "your-google-verification-code",
+    yandex: "your-yandex-verification-code",
   },
 };
 
@@ -38,15 +64,18 @@ export default function RootLayout({
   return (
     <html lang='en'>
       <body
-        className={`antialiased ${inter.variable} ${playfair.variable}`}
+        className={`antialiased ${inter.variable} ${playfair.variable} ${hindSiliguri.variable}`}
         style={
           {
             "--font-body": "var(--font-inter)",
             "--font-heading": "var(--font-playfair)",
+            "--font-bangla": "var(--font-hind)",
           } as React.CSSProperties
         }
       >
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <main>{children}</main>
+        </AuthProvider>
       </body>
     </html>
   );

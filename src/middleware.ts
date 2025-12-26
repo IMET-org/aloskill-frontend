@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { config as envConfig } from "@/config/env";
-import { getToken } from "next-auth/jwt";
+import { getToken, type JWT } from "next-auth/jwt";
 import { withAuth } from "next-auth/middleware";
 import { type NextRequest, NextResponse } from "next/server";
 import {
@@ -53,46 +53,55 @@ export default withAuth(
       return new NextResponse("Server configuration error", { status: 500 });
     }
 
-    let token;
+    let token: JWT | null = null;
     try {
       token = await getToken({
         req: request,
         secret: secret,
       });
-      console.log("token", token);
     } catch (error) {
       console.error("Error retrieving token:", error);
       // Continue without token, let withAuth handle authentication
     }
 
-    // Public routes - early return
     if (
       pathname === "/" ||
       pathname.startsWith("/auth") ||
       pathname.startsWith("/courses") ||
-      pathname.startsWith("/test-error") ||
-      pathname.startsWith("/about")
+      pathname.startsWith("/instructors") ||
+      pathname.startsWith("/about") ||
+      pathname.startsWith("/cart") ||
+      pathname.startsWith("/checkout") ||
+      pathname.startsWith("/watch-video")
     ) {
       return NextResponse.next();
     }
 
-    if (!token) {
-      return NextResponse.redirect(new URL(`/auth/signin`, request.url));
-    }
     if (token && token?.["error"] == "RefreshAccessTokenError") {
       return NextResponse.redirect(new URL(`/auth/signin`, request.url));
     }
 
     // Role-based access control
-    if (pathname.startsWith("/dashboard/student") && token?.["role"] !== "STUDENT") {
+    if (
+      pathname.startsWith("/dashboard/student") &&
+      !(token?.["role"] && Array.isArray(token["role"]) && token["role"].includes("STUDENT"))
+    ) {
       return NextResponse.redirect(new URL("/unauthorized", request.url));
     }
 
-    if (pathname.startsWith("/dashboard/instructor") && token?.["role"] !== "INSTRUCTOR") {
+    // if (pathname.startsWith("/dashboard/instructor") && token?.["role"] !== "INSTRUCTOR")
+
+    if (
+      pathname.startsWith("/dashboard/instructor") &&
+      !(token?.["role"] && Array.isArray(token["role"]) && token["role"].includes("INSTRUCTOR"))
+    ) {
       return NextResponse.redirect(new URL("/unauthorized", request.url));
     }
 
-    if (pathname.startsWith("/admin") && token?.["role"] !== "ADMIN") {
+    if (
+      pathname.startsWith("/admin") &&
+      !(token?.["role"] && Array.isArray(token["role"]) && token["role"].includes("ADMIN"))
+    ) {
       return NextResponse.redirect(new URL("/unauthorized", request.url));
     }
 
@@ -358,7 +367,10 @@ export default withAuth(
           path === "/" ||
           path.startsWith("/auth") ||
           path.startsWith("/courses") ||
-          path.startsWith("/about");
+          path.startsWith("/about") ||
+          path.startsWith("/cart") ||
+          path.startsWith("/instructors") ||
+          path.startsWith("/checkout");
 
         if (isPublicRoute) {
           return true;
@@ -430,7 +442,16 @@ async function enforceAccessControl(
   const { pathname, searchParams } = request.nextUrl;
 
   // Public routes (no authentication required)
-  const publicRoutes = ["/", "/auth/signin", "/auth/signup", "/pricing", "/courses", "/blog"];
+  const publicRoutes = [
+    "/",
+    "/auth/signin",
+    "/auth/signup",
+    "/pricing",
+    "/courses",
+    "/blog",
+    "/products",
+    "/instructors",
+  ];
   if (publicRoutes.includes(pathname)) {
     return { granted: true, redirectUrl: "" };
   }
@@ -459,15 +480,15 @@ async function enforceAccessControl(
   }
 
   // Instructor routes
-  if (pathname.startsWith("/instructor/")) {
-    if (!["instructor", "admin"].includes(userRole)) {
-      return {
-        granted: false,
-        redirectUrl: "/dashboard?error=instructor_access_required",
-        reason: "insufficient_privileges",
-      };
-    }
-  }
+  // if (pathname.startsWith("/instructor/")) {
+  //   if (!["instructor", "admin"].includes(userRole)) {
+  //     return {
+  //       granted: false,
+  //       redirectUrl: "/dashboard?error=instructor_access_required",
+  //       reason: "insufficient_privileges",
+  //     };
+  //   }
+  // }
 
   // Student routes with enrollment checks
   if (pathname.startsWith("/learn/") || pathname.startsWith("/course/")) {

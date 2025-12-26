@@ -1,10 +1,10 @@
-import AloskillLoader from "@/components/loaders/AloskillLoder.tsx";
+import HandLoader from "@/components/loaders/HandLoader.tsx";
 
 const loading = () => {
   return (
     <div>
       This is the loading page.
-      <AloskillLoader />
+      <HandLoader />
     </div>
   );
 };

@@ -25,25 +25,27 @@ export default function LogoutButton() {
           type: "error",
         });
         redirect("/auth/signin");
-      };
+      }
 
-      const response = await fetch('/api/logout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({logoutAll: false }),
+      const response = await fetch("/api/logout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ logoutAll: false }),
       });
 
       const data = await response.json();
-      
+
       if (response.ok) {
         await signOut({ callbackUrl: "/auth/signin" });
         setToast({ message: "You have been logged out!", type: "success" });
         redirect("/auth/signin");
       } else {
         await signOut({ callbackUrl: "/auth/signin" });
-        setToast({ message: data.message || "Logout failed, but local session cleared.", type: "error" });
+        setToast({
+          message: data.message || "Logout failed, but local session cleared.",
+          type: "error",
+        });
       }
-      
     } catch (_err) {
       await signOut({ callbackUrl: "/auth/signin" });
       setToast({

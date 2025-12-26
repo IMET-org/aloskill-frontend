@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import AuthButton from "@/components/buttons/AuthButton.tsx";
+import AuthButton from "@/components/shared/buttons/AuthButton";
 import { authService } from "@/lib/api/auth.service";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, CheckCircle2, Loader2, Mail } from "lucide-react";
@@ -49,7 +49,7 @@ export default function ForgotPasswordPage() {
     <div className='min-h-screen flex items-center justify-center p-4 bg-white'>
       <div className='w-full max-w-md bg-white/80 backdrop-blur-xl border border-white/20 rounded-3xl p-8 shadow-lg'>
         <div className='text-center mb-6'>
-          <div className='w-14 h-14 rounded-xl bg-gradient-to-br from-orange-400 to-orange-700 mx-auto flex items-center justify-center mb-3 shadow-orange-800 shadow-md'>
+          <div className='w-14 h-14 rounded-xl bg-linear-to-br from-orange-400 to-orange-700 mx-auto flex items-center justify-center mb-3 shadow-orange-800 shadow-md'>
             <Mail className='w-6 h-6 text-white' />
           </div>
           <h4 className=' font-bold'>Forgot Password</h4>

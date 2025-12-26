@@ -1,4 +1,4 @@
-// lib/api/client.ts - FOR COOKIE-BASED AUTH
+import { getSession } from "next-auth/react";
 
 const API_BASE_URL = process.env["BACKEND_API_URL"] || "http://localhost:5000/api/v1";
 
@@ -17,20 +17,21 @@ class ApiClient {
   }
 
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
+    const session = await getSession();
     const headers: HeadersInit = {
       "Content-Type": "application/json",
+      ...(session?.accessToken ? { Authorization: `Bearer ${session.accessToken}` } : {}),
       ...(options.headers || {}),
     };
-    console.log("Step:3:Request Triggered.....", new Date().toLocaleTimeString());
+
     try {
+      // FIX: Use proper template literal
       const response = await fetch(`${this.baseURL}${endpoint}`, {
         ...options,
         headers,
-        credentials: "include",
       });
 
       const data = await response.json();
-
       return data;
     } catch (error) {
       console.error("API request error:", error);
@@ -54,7 +55,6 @@ class ApiClient {
     body?: unknown,
     customHeaders?: Record<string, string>
   ): Promise<ApiResponse<T>> {
-    console.log("Step 2: Post triggered....", new Date().toLocaleTimeString());
     return this.request<T>(endpoint, {
       method: "POST",
       body: JSON.stringify(body),
