@@ -645,7 +645,7 @@ function addAdvancedSecurityHeaders(response: NextResponse, _request: NextReques
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "img-src 'self' data: https: blob:",
     "font-src 'self' https://fonts.gstatic.com",
-    "connect-src 'self' http://localhost:5000 https://vitals.vercel-insights.com",
+    "connect-src 'self' http://localhost:5000 https://vitals.vercel-insights.com https://video.bunnycdn.com",
     "media-src 'self' blob: https:",
     "object-src 'none'",
     "base-uri 'self'",
