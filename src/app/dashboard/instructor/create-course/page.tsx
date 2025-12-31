@@ -33,8 +33,8 @@ export type CourseLesson = {
   notes?: string;
   description: string;
   type: "VIDEO" | "ARTICLE" | "QUIZ" | null;
-  contentUrl?: string | null;
-  files?: string[];
+  contentUrl?: {name: string; url: string} | null;
+  files?: {name: string; url: string}[];
   duration?: number | null;
   quiz?: Quiz;
   expanded: boolean;
@@ -116,8 +116,8 @@ export default function CourseCreationForm() {
             description: "",
             notes: "",
             type: null,
-            contentUrl: "",
-            files: [] as string[],
+            contentUrl: {name: "", url: ""},
+            files: [] as {name: string; url: string}[],
             duration: null,
             expanded: false,
             lessonTypeSelection: true,
