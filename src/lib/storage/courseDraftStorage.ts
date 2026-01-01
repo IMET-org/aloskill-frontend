@@ -1,6 +1,6 @@
-import { getItem, setItem, removeItem, getStorage } from "./storage";
+import type { CreateCourseData } from "@/app/(withoutSidebarLayout)/dashboard/instructor/create-course/page.tsx";
 import { storageKeys } from "./keys";
-import type { CreateCourseData } from '../../app/dashboard/instructor/create-course/page';
+import { getItem, getStorage, removeItem, setItem } from "./storage";
 
 export type CourseDraftStorage = Omit<CreateCourseData, "allCategory">;
 
@@ -14,7 +14,7 @@ export const courseDraftStorage = {
     if (!storage) return [];
 
     const courses: CourseDraftStorage[] = [];
-    const prefix = storageKeys.courseDraft('');
+    const prefix = storageKeys.courseDraft("");
 
     for (let i = 0; i < storage.length; i++) {
       const key = storage.key(i);

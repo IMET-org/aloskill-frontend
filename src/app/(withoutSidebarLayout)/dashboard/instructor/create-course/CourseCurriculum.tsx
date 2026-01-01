@@ -1,3 +1,4 @@
+import { apiClient } from "@/lib/api/client.ts";
 import {
   ChevronDown,
   ChevronUp,
@@ -14,7 +15,6 @@ import { useSession } from "next-auth/react";
 import { type ChangeEvent, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as tus from "tus-js-client";
-import { apiClient } from "../../../../lib/api/client.ts";
 import CourseFooter from "./CourseFooter.tsx";
 import CourseModal from "./CourseModal.tsx";
 import StepHeader from "./StepHeader.tsx";
@@ -64,8 +64,8 @@ export default function CourseCurriculum({
           description: "",
           notes: "",
           type: null,
-          contentUrl: "",
-          files: [] as string[],
+          contentUrl: { name: "", url: "" },
+          files: [] as { name: string; url: string }[],
           duration: null,
           expanded: false,
           lessonTypeSelection: true,
@@ -74,7 +74,7 @@ export default function CourseCurriculum({
     },
   ]);
   const [showAddQuestions, setShowAddQuestions] = useState<boolean>(false);
-
+  const [quizOptionError, setQuizOptionError] = useState<string>("");
   const {
     register,
     unregister,
@@ -99,8 +99,8 @@ export default function CourseCurriculum({
               description: "",
               notes: "",
               type: null,
-              contentUrl: "",
-              files: [] as string[],
+              contentUrl: { name: "", url: "" },
+              files: [] as { name: string; url: string }[],
               duration: null,
               expanded: false,
               lessonTypeSelection: true,
@@ -129,8 +129,8 @@ export default function CourseCurriculum({
                 description: "",
                 notes: "",
                 type: null,
-                contentUrl: "",
-                files: [] as string[],
+                contentUrl: { name: "", url: "" },
+                files: [] as { name: string; url: string }[],
                 duration: null,
                 expanded: false,
                 lessonTypeSelection: true,
@@ -212,27 +212,6 @@ export default function CourseCurriculum({
     type: string,
     value: string
   ) => {
-    // setSections(
-    //   sections.map(section => {
-    //     if (section.position === sectionId) {
-    //       return {
-    //         ...section,
-    //         lessons: section.lessons.map(lesson => {
-    //           if (lesson.position === lectureId) {
-    //             if (type === "notes") {
-    //               return { ...lesson, notes: value };
-    //             }
-    //             if (type === "description") {
-    //               return { ...lesson, description: value };
-    //             }
-    //           }
-    //           return lesson;
-    //         }),
-    //       };
-    //     }
-    //     return section;
-    //   })
-    // );
     setCourseData(prev => ({
       ...prev,
       modules: prev.modules.map(module => {
@@ -345,17 +324,6 @@ export default function CourseCurriculum({
     if (!confirmPrompt) {
       return;
     }
-    // setSections(
-    //   sections.map(section => {
-    //     if (section.position === moduleId) {
-    //       return {
-    //         ...section,
-    //         lessons: section.lessons.filter(lesson => lesson.position !== lessonId),
-    //       };
-    //     }
-    //     return section;
-    //   })
-    // );
     setCourseData(prev => ({
       ...prev,
       modules: prev.modules.map(module => {
@@ -370,7 +338,7 @@ export default function CourseCurriculum({
     }));
   };
 
-  const uploadFileToBunny = async (file: File): Promise<{ name: string; url: string }> => {
+  const uploadVideoToBunny = async (file: File): Promise<{ name: string; url: string }> => {
     setLoading(true);
     setUploadError("");
     setUploadPercentage("");
@@ -454,6 +422,51 @@ export default function CourseCurriculum({
     }
   };
 
+  const uploadFileToBunny = async (file: File[]): Promise<Array<{ name: string; url: string }>> => {
+    setLoading(true);
+    setUploadError("");
+    if (!sessionData?.user?.id) {
+      setUploadError("User not authenticated.");
+      setLoading(false);
+      return [{ name: "", url: "" }];
+    }
+
+    try {
+      const results = await Promise.allSettled(
+        file.map(async f => {
+          const formData = new FormData();
+          formData.append("file", f);
+
+          const response = await apiClient.postFormData<string>(
+            `/course/file-upload?folder=${sessionData.user.id}`,
+            formData
+          );
+
+          if (!response.success || !response.data) {
+            throw new Error("Upload failed");
+          }
+
+          return {
+            name: f.name,
+            url: response.data as string,
+          };
+        })
+      );
+      return results.map(result => {
+        if (result.status === "fulfilled") {
+          return result.value;
+        } else {
+          return { name: "", url: "" };
+        }
+      });
+    } catch (error: unknown) {
+      setUploadError(error instanceof Error ? error.message : "An unknown error occurred.");
+      return [{ name: "", url: "" }];
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleFileSelect = async (
     e: ChangeEvent<HTMLInputElement>,
     sectionId: number,
@@ -468,7 +481,7 @@ export default function CourseCurriculum({
 
         if (isVideo) {
           try {
-            const uploadResult = await uploadFileToBunny(file);
+            const uploadResult = await uploadVideoToBunny(file);
             setCourseData(prev => ({
               ...prev,
               modules: prev.modules.map(module => {
@@ -477,7 +490,33 @@ export default function CourseCurriculum({
                     ...module,
                     lessons: module.lessons.map(lesson => {
                       if (lesson.position === lectureId) {
-                        return { ...lesson, contentUrl: uploadResult.url };
+                        return { ...lesson, contentUrl: uploadResult };
+                      }
+                      return lesson;
+                    }),
+                  };
+                }
+                return module;
+              }),
+            }));
+          } catch (error) {
+            console.error("Error uploading video:", error);
+          }
+          return;
+        }
+
+        if (isPDF) {
+          try {
+            const uploadResult = await uploadFileToBunny(Array.from(e.target.files ?? []));
+            setCourseData(prev => ({
+              ...prev,
+              modules: prev.modules.map(module => {
+                if (module.position === sectionId) {
+                  return {
+                    ...module,
+                    lessons: module.lessons.map(lesson => {
+                      if (lesson.position === lectureId) {
+                        return { ...lesson, files: uploadResult };
                       }
                       return lesson;
                     }),
@@ -489,44 +528,6 @@ export default function CourseCurriculum({
           } catch (error) {
             console.error("Error uploading file:", error);
           }
-          return;
-        }
-
-        if (isPDF) {
-          const fileNames = Array.from(e.target.files ?? []).map(f => f.name);
-          // setSections(sections =>
-          //   sections.map(section => {
-          //     if (section.position === sectionId) {
-          //       return {
-          //         ...section,
-          //         lessons: section.lessons.map(lesson => {
-          //           if (lesson.position === lectureId) {
-          //             return { ...lesson, files: fileNames };
-          //           }
-          //           return lesson;
-          //         }),
-          //       };
-          //     }
-          //     return section;
-          //   })
-          // );
-          setCourseData(prev => ({
-            ...prev,
-            modules: prev.modules.map(module => {
-              if (module.position === sectionId) {
-                return {
-                  ...module,
-                  lessons: module.lessons.map(lesson => {
-                    if (lesson.position === lectureId) {
-                      return { ...lesson, files: fileNames };
-                    }
-                    return lesson;
-                  }),
-                };
-              }
-              return module;
-            }),
-          }));
           return;
         }
       }
@@ -613,6 +614,55 @@ export default function CourseCurriculum({
     setShowAddQuestions(false);
   };
 
+  // const addQuizOption = (
+  //   moduleId: number,
+  //   lessonId: number,
+  //   questionId: number,
+  //   optionId: number,
+  //   value: string
+  // ) => {
+  //   setCourseData(prev => ({
+  //     ...prev,
+  //     modules: prev.modules.map(module => {
+  //       if (module.position === moduleId) {
+  //         return {
+  //           ...module,
+  //           lessons: module.lessons.map(lesson => {
+  //             if (lesson.position === lessonId) {
+  //               if (lesson.quiz) {
+  //                 return {
+  //                   ...lesson,
+  //                   quiz: {
+  //                     ...lesson.quiz,
+  //                     questions: lesson.quiz?.questions.map(question => {
+  //                       if (question.position === questionId) {
+  //                         return {
+  //                           ...question,
+  //                           options: question.options.map(option => {
+  //                             if (option.position === optionId) {
+  //                               return {
+  //                                 ...option,
+  //                                 text: value,
+  //                               };
+  //                             }
+  //                             return option;
+  //                           }),
+  //                         };
+  //                       }
+  //                       return question;
+  //                     }),
+  //                   },
+  //                 };
+  //               }
+  //             }
+  //             return lesson;
+  //           }),
+  //         };
+  //       }
+  //       return module;
+  //     }),
+  //   }));
+  // };
   const addQuizOption = (
     moduleId: number,
     lessonId: number,
@@ -620,85 +670,55 @@ export default function CourseCurriculum({
     optionId: number,
     value: string
   ) => {
-    // setSections(
-    //   sections.map(section => {
-    //     if (section.position === moduleId) {
-    //       return {
-    //         ...section,
-    //         lessons: section.lessons.map(lesson => {
-    //           if (lesson.position === lessonId) {
-    //             if (lesson.quiz) {
-    //               return {
-    //                 ...lesson,
-    //                 quiz: {
-    //                   ...lesson.quiz,
-    //                   questions: lesson.quiz?.questions.map(question => {
-    //                     if (question.position === questionId) {
-    //                       return {
-    //                         ...question,
-    //                         options: question.options.map(option => {
-    //                           if (option.position === optionId) {
-    //                             return {
-    //                               ...option,
-    //                               text: value,
-    //                             };
-    //                           }
-    //                           return option;
-    //                         }),
-    //                       };
-    //                     }
-    //                     return question;
-    //                   }),
-    //                 },
-    //               };
-    //             }
-    //           }
-    //           return lesson;
-    //         }),
-    //       };
-    //     }
-    //     return section;
-    //   })
-    // );
     setCourseData(prev => ({
       ...prev,
       modules: prev.modules.map(module => {
-        if (module.position === moduleId) {
-          return {
-            ...module,
-            lessons: module.lessons.map(lesson => {
-              if (lesson.position === lessonId) {
-                if (lesson.quiz) {
+        if (module.position !== moduleId) return module;
+
+        return {
+          ...module,
+          lessons: module.lessons.map(lesson => {
+            if (lesson.position !== lessonId || !lesson.quiz) return lesson;
+
+            return {
+              ...lesson,
+              quiz: {
+                ...lesson.quiz,
+                questions: lesson.quiz.questions.map(question => {
+                  if (question.position !== questionId) return question;
+
+                  // 1️⃣ Update option text first
+                  const updatedOptions = question.options.map(option =>
+                    option.position === optionId ? { ...option, text: value } : option
+                  );
+
+                  // 2️⃣ Duplicate validation (NON-BLOCKING)
+                  const normalizedValue = value.trim().toLowerCase();
+
+                  const isDuplicate =
+                    normalizedValue &&
+                    updatedOptions.some(
+                      option =>
+                        option.position !== optionId &&
+                        option.text.trim().toLowerCase() === normalizedValue
+                    );
+
+                  // 3️⃣ Show error only
+                  setQuizOptionError(
+                    isDuplicate
+                      ? "This option already exists. Please enter a different option."
+                      : ""
+                  );
+
                   return {
-                    ...lesson,
-                    quiz: {
-                      ...lesson.quiz,
-                      questions: lesson.quiz?.questions.map(question => {
-                        if (question.position === questionId) {
-                          return {
-                            ...question,
-                            options: question.options.map(option => {
-                              if (option.position === optionId) {
-                                return {
-                                  ...option,
-                                  text: value,
-                                };
-                              }
-                              return option;
-                            }),
-                          };
-                        }
-                        return question;
-                      }),
-                    },
+                    ...question,
+                    options: updatedOptions,
                   };
-                }
-              }
-              return lesson;
-            }),
-          };
-        }
-        return module;
+                }),
+              },
+            };
+          }),
+        };
       }),
     }));
   };
@@ -848,34 +868,6 @@ export default function CourseCurriculum({
     fileName?: string,
     type?: string
   ) => {
-    // setSections(
-    //   sections.map(section => {
-    //     if (section.position === sectionId) {
-    //       return {
-    //         ...section,
-    //         lessons: section.lessons.map(lesson => {
-    //           if (lesson.position === lectureId) {
-    //             if (type === "video") {
-    //               return { ...lesson, video: "" };
-    //             }
-    //             if (type === "description") {
-    //               return { ...lesson, description: "" };
-    //             }
-    //             if (type === "notes") {
-    //               return { ...lesson, notes: "" };
-    //             }
-    //             return {
-    //               ...lesson,
-    //               files: lesson.files && lesson.files.filter(file => file !== fileName),
-    //             };
-    //           }
-    //           return lesson;
-    //         }),
-    //       };
-    //     }
-    //     return section;
-    //   })
-    // );
     setCourseData(prev => ({
       ...prev,
       modules: prev.modules.map(module => {
@@ -885,7 +877,7 @@ export default function CourseCurriculum({
             lessons: module.lessons.map(lesson => {
               if (lesson.position === lectureId) {
                 if (type === "video") {
-                  return { ...lesson, contentUrl: "" };
+                  return { ...lesson, contentUrl: { name: "", url: "" } };
                 }
                 if (type === "description") {
                   return { ...lesson, description: "" };
@@ -895,7 +887,7 @@ export default function CourseCurriculum({
                 }
                 return {
                   ...lesson,
-                  files: lesson.files && lesson.files.filter(file => file !== fileName),
+                  files: lesson.files && lesson.files.filter(file => file.name !== fileName),
                 };
               }
               return lesson;
@@ -909,30 +901,6 @@ export default function CourseCurriculum({
 
   const handleDeleteQuiz = (moduleId: number, lessonId: number, questionId: number) => {
     unregister(`section_${moduleId}_lecture_${lessonId}_quiz_question_${questionId}`);
-    // setSections(
-    //   sections.map(section => {
-    //     if (section.position === moduleId) {
-    //       return {
-    //         ...section,
-    //         lessons: section.lessons.map(lesson => {
-    //           if (lesson.position === lessonId) {
-    //             if (lesson.quiz) {
-    //               return {
-    //                 ...lesson,
-    //                 quiz: {
-    //                   ...lesson.quiz,
-    //                   questions: lesson.quiz?.questions.filter(q => q.position !== questionId),
-    //                 },
-    //               };
-    //             }
-    //           }
-    //           return lesson;
-    //         }),
-    //       };
-    //     }
-    //     return section;
-    //   })
-    // );
     setCourseData(prev => ({
       ...prev,
       modules: prev.modules.map(module => {
@@ -1323,10 +1291,12 @@ export default function CourseCurriculum({
                             {/* Video and Files */}
                             <div className='flex items-center justify-center gap-3'>
                               {/* Add Video For Lessons */}
-                              {lesson.contentUrl ? (
+                              {lesson.contentUrl?.name ? (
                                 <>
                                   <div className='w-full rounded border border-dashed border-gray-200 p-3 flex items-center justify-start hover:bg-gray-100/40 transition-colors relative'>
-                                    <span className='text-sm w-[95%]'>{lesson.contentUrl}</span>
+                                    <span className='text-sm w-[95%]'>
+                                      {lesson.contentUrl.name}
+                                    </span>
                                     <span
                                       onClick={() =>
                                         deleteLectureFile(
@@ -1404,13 +1374,13 @@ export default function CourseCurriculum({
                                         key={index}
                                         className='w-full p-1 flex items-center'
                                       >
-                                        <span className='text-sm w-[95%]'>{fileName}</span>
+                                        <span className='text-sm w-[95%]'>{fileName.name}</span>
                                         <span
                                           onClick={() =>
                                             deleteLectureFile(
                                               module.position,
                                               lesson.position,
-                                              fileName
+                                              fileName.name
                                             )
                                           }
                                           className='h-full w-fit flex items-center cursor-pointer'
@@ -1455,13 +1425,9 @@ export default function CourseCurriculum({
                                 }
                               </p>
                             )}
-                            {
-                              uploadError && (
-                                <p className='text-red-500 text-sm mt-1'>
-                                  {uploadError}
-                                </p>
-                              )
-                            }
+                            {uploadError && (
+                              <p className='text-red-500 text-sm mt-1'>{uploadError}</p>
+                            )}
                             {/* Notes for Lesson */}
                             <div>
                               <span className='text-sm text-gray-600 mb-1'>Lecture Note:</span>
@@ -1529,10 +1495,6 @@ export default function CourseCurriculum({
                                       message:
                                         "Lecture description must be greater than 20 characters",
                                     },
-                                    maxLength: {
-                                      value: 1000,
-                                      message: "Lecture description cannot exceed 1000 characters",
-                                    },
                                     pattern: {
                                       value: /^[a-zA-Z0-9\s.,!?'"()-]*$/,
                                       message: "Lecture description contain invalid characters",
@@ -1555,7 +1517,6 @@ export default function CourseCurriculum({
                                 }`}
                                 placeholder='Add lecture Description here...'
                                 rows={5}
-                                maxLength={1000}
                               ></textarea>
                               {errors[
                                 `section_${module.position}_lecture_${lesson.position}_description`
@@ -1582,13 +1543,13 @@ export default function CourseCurriculum({
                                       key={index}
                                       className='p-1 flex items-center w-full border-b border-gray-200 last:border-0'
                                     >
-                                      <span className='text-sm w-[98%]'>{fileName}</span>
+                                      <span className='text-sm w-[98%]'>{fileName.name}</span>
                                       <span
                                         onClick={() =>
                                           deleteLectureFile(
                                             module.position,
                                             lesson.position,
-                                            fileName
+                                            fileName.name
                                           )
                                         }
                                         className='h-full w-fit flex items-center cursor-pointer'
@@ -1657,8 +1618,8 @@ export default function CourseCurriculum({
                                         message: "Quiz title must be greater than 20 characters",
                                       },
                                       maxLength: {
-                                        value: 100,
-                                        message: "Quiz title cannot exceed 100 characters",
+                                        value: 500,
+                                        message: "Quiz title cannot exceed 500 characters",
                                       },
                                       pattern: {
                                         value: /^[a-zA-Z0-9\s.,!?'"()-]*$/,
@@ -1666,7 +1627,7 @@ export default function CourseCurriculum({
                                       },
                                     }
                                   )}
-                                  maxLength={100}
+                                  maxLength={500}
                                   onChange={e =>
                                     handleQuizInputChange(
                                       module.position,
@@ -1710,17 +1671,12 @@ export default function CourseCurriculum({
                                         value: 20,
                                         message: "Quiz description must be at least 20 characters",
                                       },
-                                      maxLength: {
-                                        value: 1000,
-                                        message: "Quiz description cannot exceed 1000 characters",
-                                      },
                                       pattern: {
                                         value: /^[a-zA-Z0-9\s.,!?'"()-]*$/,
                                         message: "Quiz description contain invalid characters",
                                       },
                                     }
                                   )}
-                                  maxLength={1000}
                                   rows={3}
                                   onChange={e =>
                                     handleQuizInputChange(
@@ -2270,6 +2226,7 @@ export default function CourseCurriculum({
                                             className='w-full px-2 py-1.5 border border-gray-200 focus:outline-none focus:border-orange text-sm rounded-r'
                                           ></input>
                                         </div>
+
                                         <div className='col-span-2 flex'>
                                           <span
                                             onClick={() => {
@@ -2308,6 +2265,11 @@ export default function CourseCurriculum({
                                           }
                                         </p>
                                       )}
+                                    {quizOptionError && (
+                                      <p className='text-red-500 text-sm mt-1 col-span-4'>
+                                        {quizOptionError}
+                                      </p>
+                                    )}
                                   </div>
                                 </div>
                               ))}
@@ -2321,7 +2283,6 @@ export default function CourseCurriculum({
             </div>
           ))}
         </div>
-
         {/* Add Sections Button */}
         <button
           type='button'
@@ -2340,7 +2301,6 @@ export default function CourseCurriculum({
           />
         </div>
       </form>
-
       {(() => {
         switch (openModal.type) {
           case "sectionName":

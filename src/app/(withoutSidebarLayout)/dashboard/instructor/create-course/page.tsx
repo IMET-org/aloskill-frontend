@@ -1,8 +1,8 @@
 "use client";
 
+import { apiClient } from "@/lib/api/client.ts";
 import { FileText, Globe, Layers, LucidePlaySquare } from "lucide-react";
 import React, { useCallback, useEffect, useState } from "react";
-import { apiClient } from "../../../../lib/api/client.ts";
 import AdvanceInformation from "./AdvanceInformation.tsx";
 import BasicInformaton from "./BasicInformaton.tsx";
 import CourseCurriculum from "./CourseCurriculum.tsx";
@@ -33,8 +33,8 @@ export type CourseLesson = {
   notes?: string;
   description: string;
   type: "VIDEO" | "ARTICLE" | "QUIZ" | null;
-  contentUrl?: string | null;
-  files?: string[];
+  contentUrl?: { name: string; url: string } | null;
+  files?: { name: string; url: string }[];
   duration?: number | null;
   quiz?: Quiz;
   expanded: boolean;
@@ -116,8 +116,8 @@ export default function CourseCreationForm() {
             description: "",
             notes: "",
             type: null,
-            contentUrl: "",
-            files: [] as string[],
+            contentUrl: { name: "", url: "" },
+            files: [] as { name: string; url: string }[],
             duration: null,
             expanded: false,
             lessonTypeSelection: true,
@@ -132,6 +132,7 @@ export default function CourseCreationForm() {
     setCategoryError("");
     try {
       const response = await apiClient.get<Categories>("/course/category");
+      console.log("category", response);
       if (response.success && response.data) {
         setCategory(response.data);
         setCourseData(prev => ({ ...prev, allCategory: response.data as Categories }));

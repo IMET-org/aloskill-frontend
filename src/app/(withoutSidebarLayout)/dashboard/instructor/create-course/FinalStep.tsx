@@ -6,7 +6,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
-import { courseDraftStorage } from "../../../../lib/storage/courseDraftStorage.ts";
+import { courseDraftStorage } from "@/lib/storage/courseDraftStorage.ts";
 import CourseFooter from "./CourseFooter.tsx";
 import { type CreateCourseData } from "./page.tsx";
 import StepHeader from "./StepHeader.tsx";
@@ -16,6 +16,7 @@ const CoursePriceAndInstructorSchema = z
   .object({
     welcomeMessage: z
       .string()
+      .max(1000, 'Welcome Message cannot exceed 1000 characters')
       .optional()
       .refine(val => {
         if (val === undefined || val === "") return true;
@@ -23,6 +24,7 @@ const CoursePriceAndInstructorSchema = z
       }, "Title contains invalid characters. Only letters, numbers, spaces, and common punctuation are allowed."),
     congratulationsMessage: z
       .string()
+      .max(1000, 'Congratulations Message cannot exceed 1000 characters')
       .optional()
       .refine(val => {
         if (val === undefined || val === "") return true;

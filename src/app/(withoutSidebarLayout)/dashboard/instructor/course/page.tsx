@@ -1,12 +1,9 @@
 "use client";
 
+import { courseDraftStorage, type CourseDraftStorage } from "@/lib/storage/courseDraftStorage.ts";
 import { ChevronDown, Edit, MoreVertical, Search, Star, Trash2, Users } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import {
-  type CourseDraftStorage,
-  courseDraftStorage,
-} from "../../../../lib/storage/courseDraftStorage";
 
 // const courses = [
 //   {
