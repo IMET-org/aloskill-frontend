@@ -1,3 +1,4 @@
+import { apiClient } from "@/lib/api/client.ts";
 import {
   ChevronDown,
   ChevronUp,
@@ -14,7 +15,6 @@ import { useSession } from "next-auth/react";
 import { type ChangeEvent, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as tus from "tus-js-client";
-import { apiClient } from "../../../../lib/api/client.ts";
 import CourseFooter from "./CourseFooter.tsx";
 import CourseModal from "./CourseModal.tsx";
 import StepHeader from "./StepHeader.tsx";
@@ -64,8 +64,8 @@ export default function CourseCurriculum({
           description: "",
           notes: "",
           type: null,
-          contentUrl: {name: "", url: ""},
-          files: [] as {name: string; url: string}[],
+          contentUrl: { name: "", url: "" },
+          files: [] as { name: string; url: string }[],
           duration: null,
           expanded: false,
           lessonTypeSelection: true,
@@ -74,7 +74,7 @@ export default function CourseCurriculum({
     },
   ]);
   const [showAddQuestions, setShowAddQuestions] = useState<boolean>(false);
-
+  const [quizOptionError, setQuizOptionError] = useState<string>("");
   const {
     register,
     unregister,
@@ -99,8 +99,8 @@ export default function CourseCurriculum({
               description: "",
               notes: "",
               type: null,
-              contentUrl: {name: "", url: ""},
-              files: [] as {name: string; url: string}[],
+              contentUrl: { name: "", url: "" },
+              files: [] as { name: string; url: string }[],
               duration: null,
               expanded: false,
               lessonTypeSelection: true,
@@ -129,8 +129,8 @@ export default function CourseCurriculum({
                 description: "",
                 notes: "",
                 type: null,
-                contentUrl: {name: "", url: ""},
-                files: [] as {name: string; url: string}[],
+                contentUrl: { name: "", url: "" },
+                files: [] as { name: string; url: string }[],
                 duration: null,
                 expanded: false,
                 lessonTypeSelection: true,
@@ -452,7 +452,7 @@ export default function CourseCurriculum({
           };
         })
       );
-      return results.map((result) => {
+      return results.map(result => {
         if (result.status === "fulfilled") {
           return result.value;
         } else {
@@ -614,6 +614,55 @@ export default function CourseCurriculum({
     setShowAddQuestions(false);
   };
 
+  // const addQuizOption = (
+  //   moduleId: number,
+  //   lessonId: number,
+  //   questionId: number,
+  //   optionId: number,
+  //   value: string
+  // ) => {
+  //   setCourseData(prev => ({
+  //     ...prev,
+  //     modules: prev.modules.map(module => {
+  //       if (module.position === moduleId) {
+  //         return {
+  //           ...module,
+  //           lessons: module.lessons.map(lesson => {
+  //             if (lesson.position === lessonId) {
+  //               if (lesson.quiz) {
+  //                 return {
+  //                   ...lesson,
+  //                   quiz: {
+  //                     ...lesson.quiz,
+  //                     questions: lesson.quiz?.questions.map(question => {
+  //                       if (question.position === questionId) {
+  //                         return {
+  //                           ...question,
+  //                           options: question.options.map(option => {
+  //                             if (option.position === optionId) {
+  //                               return {
+  //                                 ...option,
+  //                                 text: value,
+  //                               };
+  //                             }
+  //                             return option;
+  //                           }),
+  //                         };
+  //                       }
+  //                       return question;
+  //                     }),
+  //                   },
+  //                 };
+  //               }
+  //             }
+  //             return lesson;
+  //           }),
+  //         };
+  //       }
+  //       return module;
+  //     }),
+  //   }));
+  // };
   const addQuizOption = (
     moduleId: number,
     lessonId: number,
@@ -624,42 +673,52 @@ export default function CourseCurriculum({
     setCourseData(prev => ({
       ...prev,
       modules: prev.modules.map(module => {
-        if (module.position === moduleId) {
-          return {
-            ...module,
-            lessons: module.lessons.map(lesson => {
-              if (lesson.position === lessonId) {
-                if (lesson.quiz) {
+        if (module.position !== moduleId) return module;
+
+        return {
+          ...module,
+          lessons: module.lessons.map(lesson => {
+            if (lesson.position !== lessonId || !lesson.quiz) return lesson;
+
+            return {
+              ...lesson,
+              quiz: {
+                ...lesson.quiz,
+                questions: lesson.quiz.questions.map(question => {
+                  if (question.position !== questionId) return question;
+
+                  // 1️⃣ Update option text first
+                  const updatedOptions = question.options.map(option =>
+                    option.position === optionId ? { ...option, text: value } : option
+                  );
+
+                  // 2️⃣ Duplicate validation (NON-BLOCKING)
+                  const normalizedValue = value.trim().toLowerCase();
+
+                  const isDuplicate =
+                    normalizedValue &&
+                    updatedOptions.some(
+                      option =>
+                        option.position !== optionId &&
+                        option.text.trim().toLowerCase() === normalizedValue
+                    );
+
+                  // 3️⃣ Show error only
+                  setQuizOptionError(
+                    isDuplicate
+                      ? "This option already exists. Please enter a different option."
+                      : ""
+                  );
+
                   return {
-                    ...lesson,
-                    quiz: {
-                      ...lesson.quiz,
-                      questions: lesson.quiz?.questions.map(question => {
-                        if (question.position === questionId) {
-                          return {
-                            ...question,
-                            options: question.options.map(option => {
-                              if (option.position === optionId) {
-                                return {
-                                  ...option,
-                                  text: value,
-                                };
-                              }
-                              return option;
-                            }),
-                          };
-                        }
-                        return question;
-                      }),
-                    },
+                    ...question,
+                    options: updatedOptions,
                   };
-                }
-              }
-              return lesson;
-            }),
-          };
-        }
-        return module;
+                }),
+              },
+            };
+          }),
+        };
       }),
     }));
   };
@@ -818,7 +877,7 @@ export default function CourseCurriculum({
             lessons: module.lessons.map(lesson => {
               if (lesson.position === lectureId) {
                 if (type === "video") {
-                  return { ...lesson, contentUrl: {name: "", url: ""} };
+                  return { ...lesson, contentUrl: { name: "", url: "" } };
                 }
                 if (type === "description") {
                   return { ...lesson, description: "" };
@@ -1235,7 +1294,9 @@ export default function CourseCurriculum({
                               {lesson.contentUrl?.name ? (
                                 <>
                                   <div className='w-full rounded border border-dashed border-gray-200 p-3 flex items-center justify-start hover:bg-gray-100/40 transition-colors relative'>
-                                    <span className='text-sm w-[95%]'>{lesson.contentUrl.name}</span>
+                                    <span className='text-sm w-[95%]'>
+                                      {lesson.contentUrl.name}
+                                    </span>
                                     <span
                                       onClick={() =>
                                         deleteLectureFile(
@@ -1434,10 +1495,6 @@ export default function CourseCurriculum({
                                       message:
                                         "Lecture description must be greater than 20 characters",
                                     },
-                                    maxLength: {
-                                      value: 1000,
-                                      message: "Lecture description cannot exceed 1000 characters",
-                                    },
                                     pattern: {
                                       value: /^[a-zA-Z0-9\s.,!?'"()-]*$/,
                                       message: "Lecture description contain invalid characters",
@@ -1460,7 +1517,6 @@ export default function CourseCurriculum({
                                 }`}
                                 placeholder='Add lecture Description here...'
                                 rows={5}
-                                maxLength={1000}
                               ></textarea>
                               {errors[
                                 `section_${module.position}_lecture_${lesson.position}_description`
@@ -1562,8 +1618,8 @@ export default function CourseCurriculum({
                                         message: "Quiz title must be greater than 20 characters",
                                       },
                                       maxLength: {
-                                        value: 100,
-                                        message: "Quiz title cannot exceed 100 characters",
+                                        value: 500,
+                                        message: "Quiz title cannot exceed 500 characters",
                                       },
                                       pattern: {
                                         value: /^[a-zA-Z0-9\s.,!?'"()-]*$/,
@@ -1571,7 +1627,7 @@ export default function CourseCurriculum({
                                       },
                                     }
                                   )}
-                                  maxLength={100}
+                                  maxLength={500}
                                   onChange={e =>
                                     handleQuizInputChange(
                                       module.position,
@@ -1615,17 +1671,12 @@ export default function CourseCurriculum({
                                         value: 20,
                                         message: "Quiz description must be at least 20 characters",
                                       },
-                                      maxLength: {
-                                        value: 1000,
-                                        message: "Quiz description cannot exceed 1000 characters",
-                                      },
                                       pattern: {
                                         value: /^[a-zA-Z0-9\s.,!?'"()-]*$/,
                                         message: "Quiz description contain invalid characters",
                                       },
                                     }
                                   )}
-                                  maxLength={1000}
                                   rows={3}
                                   onChange={e =>
                                     handleQuizInputChange(
@@ -2175,6 +2226,7 @@ export default function CourseCurriculum({
                                             className='w-full px-2 py-1.5 border border-gray-200 focus:outline-none focus:border-orange text-sm rounded-r'
                                           ></input>
                                         </div>
+
                                         <div className='col-span-2 flex'>
                                           <span
                                             onClick={() => {
@@ -2213,6 +2265,11 @@ export default function CourseCurriculum({
                                           }
                                         </p>
                                       )}
+                                    {quizOptionError && (
+                                      <p className='text-red-500 text-sm mt-1 col-span-4'>
+                                        {quizOptionError}
+                                      </p>
+                                    )}
                                   </div>
                                 </div>
                               ))}
@@ -2226,7 +2283,6 @@ export default function CourseCurriculum({
             </div>
           ))}
         </div>
-
         {/* Add Sections Button */}
         <button
           type='button'
@@ -2245,7 +2301,6 @@ export default function CourseCurriculum({
           />
         </div>
       </form>
-
       {(() => {
         switch (openModal.type) {
           case "sectionName":

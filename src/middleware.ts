@@ -369,6 +369,7 @@ export default withAuth(
           path.startsWith("/courses") ||
           path.startsWith("/about") ||
           path.startsWith("/cart") ||
+          path.startsWith("/products") ||
           path.startsWith("/instructors") ||
           path.startsWith("/checkout");
 
