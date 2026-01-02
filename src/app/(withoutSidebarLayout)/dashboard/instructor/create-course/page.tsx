@@ -70,6 +70,7 @@ export type CreateCourseData = {
   language: "ENGLISH" | "BANGLA";
   level: "BEGINNER" | "INTERMEDIATE" | "ADVANCED" | "EXPERT";
   thumbnailUrl?: string | null;
+  trailerUrl?: string | null;
   modules: CourseModule[];
   courseInstructors?: CourseInstructor[];
   status: "DRAFT" | "PUBLISHED";
@@ -132,7 +133,6 @@ export default function CourseCreationForm() {
     setCategoryError("");
     try {
       const response = await apiClient.get<Categories>("/course/category");
-      console.log("category", response);
       if (response.success && response.data) {
         setCategory(response.data);
         setCourseData(prev => ({ ...prev, allCategory: response.data as Categories }));
