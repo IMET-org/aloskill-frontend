@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Award,
   BarChart2,
@@ -10,6 +12,56 @@ import {
   Users,
 } from "lucide-react";
 import Image from "next/image";
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { apiClient } from "@/lib/api/client";
+
+type CourseDetails = {
+  title: string;
+  originalPrice: number;
+  discountPrice: number | null;
+  isDiscountActive: boolean;
+  currency: string | null;
+  enrollmentCount: number;
+  enrolledLastWeek: number;
+  language: string;
+  level: string;
+  ratingAverage: number | null;
+  ratingCount: number;
+  views: number;
+  createdAt: Date;
+  updatedAt: Date;
+  tags: string[];
+  category: string | undefined;
+  totalWishListed: number;
+  createdBy: {
+    displayName: string | undefined;
+    avatarUrl: string | null | undefined;
+  };
+  courseInstructors: {
+    role: string | null;
+    displayName: string;
+    avatarUrl: string | null;
+  }[];
+  reviews: {
+    rating: number;
+    body: string | null;
+    createdAt: Date;
+    userDisplayName: string | undefined;
+    avatarUrl: string | null;
+  }[];
+  content: {
+    totalVideos: number;
+    totalDuration: string;
+    totalFiles: number;
+  };
+  ratingBreakdown: {
+    star: number;
+    count: number;
+    percentage: string;
+  }[];
+};
+
 const CourseDetailPage = () => {
   // Course Stats Data
   const stats = [
@@ -70,6 +122,26 @@ const CourseDetailPage = () => {
       iconColor: "text-gray-700",
     },
   ];
+  const [apiError, setApiError] = useState<string>("");
+  const [courseDetails, setCourseDetails] = useState<CourseDetails>();
+
+  const { id } = useParams();
+
+  useEffect(() => {
+    try {
+      const getCourseData = async () => {
+        const responseFromDb = await apiClient.get<CourseDetails>(`/course/course/${id}/`);
+        if (!responseFromDb.success) {
+          setApiError(responseFromDb.message || "Something went wrong!");
+          return;
+        }
+        setCourseDetails(responseFromDb.data);
+      };
+      getCourseData();
+    } catch (error: unknown) {
+      setApiError((error as Error).message || "Something went wrong!");
+    }
+  }, [id]);
 
   return (
     <div className='min-h-screen'>
@@ -93,7 +165,7 @@ const CourseDetailPage = () => {
         <div className='bg-white rounded p-3'>
           <div className='flex gap-6 items-center'>
             {/* Course Thumbnail */}
-            <div className='flex-shrink-0'>
+            <div className='shrink-0'>
               <Image
                 width={250}
                 height={200}
