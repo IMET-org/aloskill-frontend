@@ -1,4 +1,4 @@
-import type { CreateCourseData } from "@/app/(withoutSidebarLayout)/dashboard/instructor/create-course/page.tsx";
+import type { CreateCourseData } from "@/app/(withoutSidebarLayout)/dashboard/instructor/create-course/[[...courseId]]/page";
 import { storageKeys } from "./keys";
 import { getItem, getStorage, removeItem, setItem } from "./storage";
 

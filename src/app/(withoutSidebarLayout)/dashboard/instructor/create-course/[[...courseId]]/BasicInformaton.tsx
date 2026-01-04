@@ -6,8 +6,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import z from "zod";
-import CourseFooter from "./CourseFooter.tsx";
 import StepHeader from "./StepHeader.tsx";
+import CourseFooter from "./CourseFooter.tsx";
 import type { CreateCourseData } from "./page.tsx";
 
 type BasicInfoForm = {

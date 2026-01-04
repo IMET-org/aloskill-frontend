@@ -2,6 +2,7 @@
 
 import { apiClient } from "@/lib/api/client.ts";
 import { FileText, Globe, Layers, LucidePlaySquare } from "lucide-react";
+import { useParams } from "next/navigation";
 import React, { useCallback, useEffect, useState } from "react";
 import AdvanceInformation from "./AdvanceInformation.tsx";
 import BasicInformaton from "./BasicInformaton.tsx";
@@ -70,6 +71,7 @@ export type CreateCourseData = {
   language: "ENGLISH" | "BANGLA";
   level: "BEGINNER" | "INTERMEDIATE" | "ADVANCED" | "EXPERT";
   thumbnailUrl?: string | null;
+  trailerUrl?: string | null;
   modules: CourseModule[];
   courseInstructors?: CourseInstructor[];
   status: "DRAFT" | "PUBLISHED";
@@ -86,6 +88,7 @@ type Categories = {
 }[];
 
 export default function CourseCreationForm() {
+  const { courseId } = useParams();
   const [loading, setLoading] = useState<boolean>(false);
   const [categoryError, setCategoryError] = useState<string>("");
   const [currentStep, setCurrentStep] = useState(1);
@@ -132,7 +135,6 @@ export default function CourseCreationForm() {
     setCategoryError("");
     try {
       const response = await apiClient.get<Categories>("/course/category");
-      console.log("category", response);
       if (response.success && response.data) {
         setCategory(response.data);
         setCourseData(prev => ({ ...prev, allCategory: response.data as Categories }));
@@ -153,6 +155,31 @@ export default function CourseCreationForm() {
   useEffect(() => {
     handleGetCategories();
   }, [handleGetCategories]);
+
+  const handleGetCourse = useCallback(async () => {
+    setLoading(true);
+    setCategoryError("");
+    try {
+      const response = await apiClient.get(`/course/getAndEditCourse/${courseId}`);
+      if (response.success && response.data) {
+        console.log("Get Course data from DB : ", response.data);
+        return;
+      } else {
+        throw new Error("Failed to fetch Course");
+      }
+    } catch (_error) {
+      setCategoryError("Failed to load Course. Please try again.");
+      setLoading(false);
+      return undefined;
+    } finally {
+      setLoading(false);
+    }
+  }, [courseId]);
+
+  useEffect(() => {
+    if (!courseId) return;
+    handleGetCourse();
+  }, [courseId, handleGetCourse]);
 
   const steps = [
     { id: 1, name: "Basic Information", icon: Layers },
