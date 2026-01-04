@@ -17,6 +17,9 @@ import TabletDrawer from "@/components/shared/menu/TabletDrawer";
 import { useState } from "react";
 import ContactSection from "../(HomePageComponents)/(ContactSection)/ContactSection.tsx";
 import TestimonialSlider from "../(HomePageComponents)/(TestimonialSection)/TestimonialSlider.tsx";
+import FAQStickyStack from "../(HomePageComponents)/FAQStickyStack.tsx";
+import ProcessPerfect from "../(HomePageComponents)/Process.tsx";
+import StdTestimonials from "../(HomePageComponents)/StdTestimonials.tsx";
 
 export default function HomePage() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -39,6 +42,9 @@ export default function HomePage() {
       {/* <CourseCarousel /> */}
       <DiscoverBooksSectionCarousel />
       <InstructorsSectionAdvanced />
+      <StdTestimonials />
+      <ProcessPerfect />
+      <FAQStickyStack />
       <TestimonialSlider />
       {/* <CommunitySection /> */}
       <GCommunitySection />
