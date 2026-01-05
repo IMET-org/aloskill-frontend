@@ -130,8 +130,8 @@ function AdvanceInformation({
   const [uploadError, setUploadError] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [uploadPercentage, setUploadPercentage] = useState<string>("");
-  const [preview, setPreview] = useState<string>("");
-  const [videoPreview, setVideoPreview] = useState<string>("");
+  const [preview, setPreview] = useState<string>(courseData.thumbnailUrl || "");
+  const [videoPreview, setVideoPreview] = useState<string>(courseData.trailerUrl || "");
   const { data: sessionData } = useSession();
   const {
     register,
@@ -356,7 +356,7 @@ function AdvanceInformation({
       );
 
       if (!response.success || !response.data) {
-        setUploadError("Upload failed");
+        setUploadError("Upload failed: try different Image or try again");
         return { name: "", url: "" };
       }
 

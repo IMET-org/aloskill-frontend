@@ -163,6 +163,8 @@ export default function CourseCreationForm() {
       const response = await apiClient.get(`/course/getAndEditCourse/${courseId}`);
       if (response.success && response.data) {
         console.log("Get Course data from DB : ", response.data);
+        // setCourseData(response.data);
+        setLoading(false);
         return;
       } else {
         throw new Error("Failed to fetch Course");
