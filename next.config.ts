@@ -36,6 +36,11 @@ const nextConfig: NextConfig = {
         hostname: "lh3.googleusercontent.com",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "aloskill-course-storage-pullzone.b-cdn.net",
+        pathname: "/**",
+      },
     ],
 
     unoptimized: false,
