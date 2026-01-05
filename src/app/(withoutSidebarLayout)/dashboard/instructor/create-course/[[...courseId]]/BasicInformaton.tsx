@@ -7,8 +7,8 @@ import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import z from "zod";
 import CourseFooter from "./CourseFooter.tsx";
-import StepHeader from "./StepHeader.tsx";
 import type { CreateCourseData } from "./page.tsx";
+import StepHeader from "./StepHeader.tsx";
 
 type BasicInfoForm = {
   title: string;
@@ -38,8 +38,8 @@ const BasicInfoSchema = z.object({
     .min(3, "Slug must be at least 3 characters long")
     .max(50, "Slug cannot exceed 50 characters")
     .regex(
-      /^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$/,
-      "Slug use hyphens instead of spaces, and contain no special characters."
+      /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
+      "Slug use lowercase letters and hyphens instead of spaces, and contain no special characters."
     ),
   tags: z
     .array(z.string("Tag is required"), "Tag is required For this Course")
@@ -266,6 +266,19 @@ const BasicInformaton = ({
               <div className='relative'>
                 <input
                   {...register("slug")}
+                  onChange={e => {
+                    const slugify = (text: string) =>
+                      text
+                        .toLowerCase()
+                        .trim()
+                        .replace(/[^\w\s-]/g, "")
+                        .replace(/[\s_-]+/g, "-")
+                        .replace(/^-+|-+$/g, "");
+                    setValue("slug", slugify(e.target.value), {
+                      shouldDirty: true,
+                      shouldValidate: true,
+                    });
+                  }}
                   type='text'
                   defaultValue={courseData.slug}
                   placeholder='Your course slug'

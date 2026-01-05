@@ -2,21 +2,20 @@ import { useDebounce } from "@/hooks/useDebounce.ts";
 import { apiClient } from "@/lib/api/client.ts";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Search, UserCircleIcon, X } from "lucide-react";
+import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
-import { courseDraftStorage } from "@/lib/storage/courseDraftStorage.ts";
 import CourseFooter from "./CourseFooter.tsx";
 import { type CreateCourseData } from "./page.tsx";
 import StepHeader from "./StepHeader.tsx";
-import { useSession } from 'next-auth/react';
 
 const CoursePriceAndInstructorSchema = z
   .object({
     welcomeMessage: z
       .string()
-      .max(1000, 'Welcome Message cannot exceed 1000 characters')
+      .max(1000, "Welcome Message cannot exceed 1000 characters")
       .optional()
       .refine(val => {
         if (val === undefined || val === "") return true;
@@ -24,7 +23,7 @@ const CoursePriceAndInstructorSchema = z
       }, "Title contains invalid characters. Only letters, numbers, spaces, and common punctuation are allowed."),
     congratulationsMessage: z
       .string()
-      .max(1000, 'Congratulations Message cannot exceed 1000 characters')
+      .max(1000, "Congratulations Message cannot exceed 1000 characters")
       .optional()
       .refine(val => {
         if (val === undefined || val === "") return true;
@@ -167,9 +166,19 @@ const FinalStep = ({
     }
   };
 
+  const handlePriceChange = (field: "originalPrice" | "discountPrice", value: string) => {
+    if (!value) {
+      return;
+    }
+    setCourseData(prev => ({
+      ...prev,
+      [field]: Number(value),
+    }));
+  };
+
   const onFormSubmit = (data: FinalStepForm) => {
     const { originalPrice, discountPrice } = data;
-    const {allCategory: _allCategory, ...restCourseData} = courseData;
+    const { allCategory: _allCategory, ...restCourseData } = courseData;
     setCourseData(prev => ({
       ...prev,
       originalPrice: Number(originalPrice),
@@ -188,12 +197,24 @@ const FinalStep = ({
         welcomeMessage: data.welcomeMessage,
         congratulationsMessage: data.congratulationsMessage,
         courseInstructors: data.courseInstructors,
+        status: "PUBLISHED",
       });
       console.log("Response from DB : ", courseSaveToDB);
       return;
     }
     if (dataSaveMode === "draft") {
-      courseDraftStorage.save(courseData.slug, courseData);
+      const courseSaveToDB = apiClient.post(`/course/create-course?user=${session?.user.email}`, {
+        ...restCourseData,
+        originalPrice: Number(originalPrice),
+        discountPrice: Number(discountPrice),
+        discountEndDate: data.discountEndDate ? new Date(data.discountEndDate) : null,
+        welcomeMessage: data.welcomeMessage,
+        congratulationsMessage: data.congratulationsMessage,
+        courseInstructors: data.courseInstructors,
+        status: "DRAFT",
+      });
+      console.log("Response from DB : ", courseSaveToDB);
+      return;
     }
     console.log("courseData : ", courseData, "data : ", data);
   };
@@ -216,6 +237,7 @@ const FinalStep = ({
                 {...register("welcomeMessage")}
                 rows={4}
                 maxLength={1000}
+                defaultValue={courseData.welcomeMessage}
                 placeholder='Enter Course Welcome Message here...'
                 className={`w-full px-3 py-1.5 border text-sm rounded focus:outline-none focus:ring-1 focus:ring-orange-light focus:border-transparent placeholder:text-gray-400 placeholder:text-sm resize-none ${errors["welcomeMessage"] ? "border-red-200 bg-red-50" : "border-gray-200"}`}
               />
@@ -233,6 +255,7 @@ const FinalStep = ({
                 {...register("congratulationsMessage")}
                 rows={4}
                 maxLength={1000}
+                defaultValue={courseData.congratulationsMessage}
                 placeholder='Enter Your Course Complete Message here...'
                 className={`w-full px-3 py-1.5 border text-sm rounded focus:outline-none focus:ring-1 focus:ring-orange-light focus:border-transparent placeholder:text-gray-400 placeholder:text-sm resize-none ${errors["congratulationsMessage"] ? "border-red-200 bg-red-50" : "border-gray-200"}`}
               />
@@ -285,7 +308,9 @@ const FinalStep = ({
                       })}
                       type='number'
                       placeholder='Your course price'
+                      defaultValue={courseData.originalPrice.toString()}
                       min={0}
+                      onChange={e => handlePriceChange("originalPrice", e.target.value)}
                       className={`w-full px-4 py-1.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-orange-light focus:border-transparent placeholder:text-sm ${errors["originalPrice"] ? "border-red-200 bg-red-50" : "border-gray-200"}`}
                     />
                     {errors["originalPrice"] && (
@@ -300,7 +325,9 @@ const FinalStep = ({
                       {...register("discountPrice")}
                       type='number'
                       placeholder='Your discount price'
+                      defaultValue={courseData.discountPrice?.toString()}
                       min={0}
+                      onChange={e => handlePriceChange("discountPrice", e.target.value)}
                       className={`w-full px-4 py-1.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-orange-light focus:border-transparent placeholder:text-sm ${errors["discountPrice"] ? "border-red-200 bg-red-50" : "border-gray-200"}`}
                     />
                     {errors["discountPrice"] && (
@@ -316,6 +343,11 @@ const FinalStep = ({
                     {...register("discountEndDate")}
                     type='date'
                     placeholder='Discount End Date'
+                    defaultValue={
+                      courseData.discountEndDate instanceof Date
+                        ? courseData.discountEndDate.toISOString().slice(0, 10)
+                        : ""
+                    }
                     min={new Date().toISOString().slice(0, 10)}
                     className={`w-full px-4 py-1.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-orange-light focus:border-transparent placeholder:text-sm ${errors["discountEndDate"] ? "border-red-200 bg-red-50" : "border-gray-200"}`}
                   />

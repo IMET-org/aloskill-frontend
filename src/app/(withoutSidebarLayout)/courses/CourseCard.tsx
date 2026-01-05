@@ -93,7 +93,7 @@ const CourseCard = memo(function CourseCard({
 
           <div className='absolute top-4 left-4 z-10'>
             <span
-              className={`${categoryColor} text-white text-sm font-bold px-3 py-1.5 rounded-full shadow-lg backdrop-blur-sm`}
+              className={`${categoryColor} text-white text-sm  px-2 py-1.5 rounded-xl shadow-lg backdrop-blur-sm`}
             >
               {category}
             </span>

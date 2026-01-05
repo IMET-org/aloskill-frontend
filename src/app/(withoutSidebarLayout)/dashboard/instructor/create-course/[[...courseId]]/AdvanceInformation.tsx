@@ -1,9 +1,12 @@
-/* eslint-disable jsx-a11y/alt-text */
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Image, Play, Plus, Trash, Upload } from "lucide-react";
-import { useState } from "react";
+import { CloudUpload, ImageIcon, Loader, Play, Plus, Trash, Upload } from "lucide-react";
+import { useSession } from "next-auth/react";
+import Image from "next/image";
+import { type ChangeEvent, useState } from "react";
 import { useForm } from "react-hook-form";
+import * as tus from "tus-js-client";
 import z from "zod";
+import { apiClient } from "../../../../../../lib/api/client.ts";
 import CourseFooter from "./CourseFooter.tsx";
 import { type CreateCourseData } from "./page.tsx";
 import StepHeader from "./StepHeader.tsx";
@@ -123,6 +126,13 @@ function AdvanceInformation({
   const [requirements, setRequirements] = useState<string[]>(
     courseDescriptionParsed.requirements || [""]
   );
+  const [imageUploadLoading, setImageUploadLoading] = useState<boolean>(false);
+  const [uploadError, setUploadError] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+  const [uploadPercentage, setUploadPercentage] = useState<string>("");
+  const [preview, setPreview] = useState<string>("");
+  const [videoPreview, setVideoPreview] = useState<string>("");
+  const { data: sessionData } = useSession();
   const {
     register,
     unregister,
@@ -212,6 +222,202 @@ function AdvanceInformation({
     }
   };
 
+  const uploadVideoToBunny = async (file: File): Promise<{ name: string; url: string }> => {
+    setLoading(true);
+    setUploadError("");
+    setUploadPercentage("");
+    if (!sessionData?.user?.id) {
+      setUploadError("User not authenticated.");
+      setUploadPercentage("");
+      setLoading(false);
+      return { name: "", url: "" };
+    }
+
+    try {
+      const backendResponse = await apiClient.post<{
+        videoId: string;
+        token: string;
+        expires: number;
+        libraryId: string;
+        collectionId: string;
+      }>(`/course/bunny-signature?fileName=${file.name}&collectionName=${sessionData?.user?.id}`);
+
+      if (!backendResponse.success || !backendResponse.data) {
+        return { name: "", url: "" };
+      }
+
+      if (backendResponse.success && backendResponse.data) {
+        const { videoId, token, expires, libraryId, collectionId } = backendResponse.data;
+        return await new Promise((resolve, reject) => {
+          const upload = new tus.Upload(file, {
+            endpoint: "https://video.bunnycdn.com/tusupload",
+            retryDelays: [0, 3000, 5000, 10000, 20000, 60000, 60000],
+            headers: {
+              AuthorizationSignature: token,
+              AuthorizationExpire: expires.toString(),
+              VideoId: videoId,
+              LibraryId: libraryId,
+            },
+            metadata: {
+              filetype: file.type,
+              title: file.name,
+              collection: collectionId,
+            },
+            onError: function (error: Error) {
+              setUploadError("Failed to upload video. " + error.message);
+              setLoading(false);
+              setUploadPercentage("");
+              reject(error);
+            },
+            onProgress: function (bytesUploaded, bytesTotal) {
+              setUploadError("");
+              const percentage = ((bytesUploaded / bytesTotal) * 100).toFixed(2);
+              setUploadPercentage(`${percentage}%`);
+              setLoading(false);
+            },
+            onSuccess: () => {
+              setLoading(false);
+              setUploadError("");
+              setUploadPercentage("");
+              const videoUrl = `https://video.bunnycdn.com/library/${libraryId}/videos/${videoId}`;
+              resolve({ name: file.name, url: videoUrl });
+            },
+          });
+
+          upload.findPreviousUploads().then((previousUploads: tus.PreviousUpload[]) => {
+            if (previousUploads.length > 0) {
+              const previousUpload = previousUploads[0];
+              if (previousUpload) {
+                upload.resumeFromPreviousUpload(previousUpload);
+              }
+            }
+            upload.start();
+          });
+        });
+      }
+
+      return { name: "", url: "" };
+    } catch (error: unknown) {
+      setUploadError(error instanceof Error ? error.message : "An unknown error occurred.");
+      return { name: "", url: "" };
+    } finally {
+      setLoading(false);
+      setUploadPercentage("");
+    }
+  };
+
+  const validateImageRatio = (file: File): Promise<{ isValid: boolean; error: string }> => {
+    return new Promise(resolve => {
+      const img = document.createElement("img");
+      const objectUrl = URL.createObjectURL(file);
+
+      img.onload = () => {
+        URL.revokeObjectURL(objectUrl);
+        const ratio = img.naturalWidth / img.naturalHeight;
+        const is16by9 = ratio >= 1.77 && ratio <= 1.78;
+        if (img.naturalWidth < 1280) {
+          resolve({ isValid: false, error: "Image is too small. Minimum width is 1280px." });
+        } else if (!is16by9) {
+          resolve({ isValid: false, error: "Image must have a 16:9 aspect ratio." });
+        } else {
+          resolve({ isValid: true, error: "" });
+        }
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(objectUrl);
+        resolve({ isValid: false, error: "Failed to load image." });
+      };
+      img.src = objectUrl;
+    });
+  };
+
+  const uploadFileToBunny = async (file: File): Promise<{ name: string; url: string }> => {
+    setImageUploadLoading(true);
+    setUploadError("");
+    if (!sessionData?.user?.id) {
+      setUploadError("User not authenticated.");
+      setImageUploadLoading(false);
+      return { name: "", url: "" };
+    }
+
+    try {
+      const isValidRatio = await validateImageRatio(file);
+      if (!isValidRatio.isValid) {
+        setUploadError(isValidRatio.error);
+        return { name: "", url: "" };
+      }
+      setUploadError("");
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await apiClient.postFormData<string>(
+        `/course/file-upload?folder=${sessionData.user.id}`,
+        formData
+      );
+
+      if (!response.success || !response.data) {
+        setUploadError("Upload failed");
+        return { name: "", url: "" };
+      }
+
+      return {
+        name: file.name,
+        url: response.data,
+      };
+    } catch (error: unknown) {
+      setUploadError(error instanceof Error ? error.message : "An unknown error occurred.");
+      return { name: "", url: "" };
+    } finally {
+      setImageUploadLoading(false);
+    }
+  };
+
+  const handleFileSelect = async (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+
+      if (file) {
+        const isVideo = file.type.startsWith("video/");
+        const isImage = file.type.startsWith("image/");
+
+        if (isVideo) {
+          try {
+            const uploadResult = await uploadVideoToBunny(file);
+            if (uploadResult.url) {
+              const objectUrl = URL.createObjectURL(file);
+              setVideoPreview(objectUrl);
+            }
+            setCourseData(prev => ({
+              ...prev,
+              trailerUrl: uploadResult.url,
+            }));
+          } catch (error) {
+            console.error("Error uploading video:", error);
+          }
+          return;
+        }
+
+        if (isImage) {
+          try {
+            const uploadResult = await uploadFileToBunny(file);
+            console.log("object",uploadResult)
+            if (uploadResult.url) {
+              const objectUrl = URL.createObjectURL(file);
+              setPreview(objectUrl);
+            }
+            setCourseData(prev => ({
+              ...prev,
+              thumbnailUrl: new URL(uploadResult.url),
+            }));
+          } catch (error) {
+            console.error("Error uploading file:", error);
+          }
+          return;
+        }
+      }
+    }
+  };
+
   const handlePrevious = () => {
     setCurrentStep(currentStep - 1);
   };
@@ -229,27 +435,57 @@ function AdvanceInformation({
             <div className='w-full flex flex-col gap-3 h-full'>
               <h4 className='font-semibold text-gray-900'>Course Thumbnail</h4>
               <div className='flex items-center gap-2 h-full'>
-                <div className='w-[35%] h-full p-4 rounded bg-gray-100 flex items-center justify-center'>
-                  <Image
-                    size={90}
-                    strokeWidth={1}
-                    className='text-gray-500'
-                  />
+                <div className='w-[55%] h-full p-2 rounded bg-gray-100 flex items-center justify-center'>
+                  {imageUploadLoading ? (
+                    <Loader className='w-4 h-4 animate-spin mx-auto my-auto' />
+                  ) : (
+                    <>
+                      {preview ? (
+                        <Image
+                          width={200}
+                          height={150}
+                          src={preview}
+                          alt='Thumbnail Preview'
+                          className='w-full h-full object-contain overflow-hidden rounded'
+                        />
+                      ) : (
+                        <ImageIcon
+                          size={90}
+                          strokeWidth={1}
+                          className='text-gray-500'
+                        />
+                      )}
+                    </>
+                  )}
                 </div>
                 <div className='flex-1 h-full flex flex-col items-start justify-between'>
                   <p className='text-sm text-gray-600'>
-                    Upload your course Thumbnail here.{" "}
+                    Upload your course Thumbnail here.
                     <span className='font-semibold'>Important</span>
                   </p>
-                  <p className='text-sm text-gray-600'>
-                    <span className='font-semibold'>guidelines:</span> 1200x800 pixels or 12:8
-                    Ratio. Supported format:{" "}
-                    <span className='font-semibold'>.jpg, .jpeg, or .png</span>
-                  </p>
-                  <button className='flex items-center gap-2 px-4 py-1.5 bg-orange-50 text-orange rounded font-medium hover:bg-orange-100 transition-colors'>
+                  {uploadError ? (
+                    <p className='text-sm text-red-600'>{uploadError}</p>
+                  ) : (
+                    <p className='text-sm text-gray-600'>
+                      <span className='font-semibold'>guidelines:</span> 1280 x 720 pixels or 16:9
+                      Ratio. Supported format:{" "}
+                      <span className='font-semibold'>.jpg, .jpeg, or .png</span>
+                    </p>
+                  )}
+                  <label
+                    htmlFor='imageUpload'
+                    className='flex items-center gap-2 px-4 py-1.5 bg-orange-50 text-orange rounded font-medium hover:bg-orange-100 transition-colors cursor-pointer'
+                  >
                     <Upload size={16} />
                     Upload Image
-                  </button>
+                  </label>
+                  <input
+                    type='file'
+                    id='imageUpload'
+                    onChange={e => handleFileSelect(e)}
+                    hidden
+                    accept='.jpg,.jpeg,.png'
+                  />
                 </div>
               </div>
             </div>
@@ -258,12 +494,38 @@ function AdvanceInformation({
             <div className='w-full flex flex-col gap-3 h-full'>
               <h4 className='font-semibold text-gray-900'>Course Trailer</h4>
               <div className='flex items-center gap-2 h-full'>
-                <div className='w-[35%] h-full p-4 rounded bg-gray-100 flex items-center justify-center'>
-                  <Play
-                    size={90}
-                    strokeWidth={1}
-                    className='text-gray-500'
-                  />
+                <div className='w-[50%] h-full p-2 rounded bg-gray-100 flex items-center justify-center'>
+                  {loading ? (
+                    <Loader className='w-4 h-4 animate-spin mx-auto my-auto' />
+                  ) : (
+                    <>
+                      {uploadPercentage ? (
+                        <span className='flex items-center gap-2 text-sm'>
+                          <CloudUpload className='animate-pulse mr-2 w-4 h-4' /> {uploadPercentage}
+                        </span>
+                      ) : (
+                        <>
+                          {videoPreview ? (
+                            <>
+                              <video
+                                src={videoPreview}
+                                controls
+                                className='w-full h-full rounded'
+                              >
+                                Your browser does not support the video tag.
+                              </video>
+                            </>
+                          ) : (
+                            <Play
+                              size={90}
+                              strokeWidth={1}
+                              className='text-gray-500'
+                            />
+                          )}
+                        </>
+                      )}
+                    </>
+                  )}
                 </div>
                 <div className='flex-1'>
                   <p className='text-sm text-gray-600 mb-3'>
@@ -271,10 +533,20 @@ function AdvanceInformation({
                     course. We&apos;ve seen that statistic go up to 10X for exceptionally awesome
                     videos.
                   </p>
-                  <button className='flex items-center gap-2 px-4 py-1.5 bg-orange-50 text-orange rounded font-medium hover:bg-orange-100 transition-colors'>
+                  <label
+                    htmlFor='thumbUpload'
+                    className='flex items-center gap-2 px-4 py-1.5 bg-orange-50 text-orange rounded font-medium hover:bg-orange-100 transition-colors cursor-pointer w-fit'
+                  >
                     <Upload size={16} />
-                    Upload Video
-                  </button>
+                    Upload video
+                  </label>
+                  <input
+                    type='file'
+                    onChange={e => handleFileSelect(e)}
+                    id='thumbUpload'
+                    hidden
+                    accept='.mp4,.mov,.webm'
+                  />
                 </div>
               </div>
             </div>
