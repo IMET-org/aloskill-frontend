@@ -101,6 +101,8 @@ export default function CourseCreationForm() {
     category: "",
     subCategory: "",
     description: "",
+    thumbnailUrl: "",
+    trailerUrl: "",
     originalPrice: 0,
     discountPercent: 0,
     discountPrice: 0,

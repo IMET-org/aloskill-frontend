@@ -353,9 +353,9 @@ export default function PopularCoursesSection() {
           badge='Top Popular Course'
           title={
             <>
-              Aloskill Course Student Can
+              Aloskill Course Student
               <br />
-              Join With Us.
+              Can Join With Us.
             </>
           }
           showButton={true}
@@ -370,9 +370,9 @@ export default function PopularCoursesSection() {
           slides={courseSlides}
           visibleCount={1}
           breakpoints={{
-            640: { visibleCount: 1 }, // sm: 2 slides
-            768: { visibleCount: 2 }, // md: 3 slides
-            1280: { visibleCount: 3 }, // xl: 4 slides
+            640: { visibleCount: 1 }, // sm: 1 slides
+            768: { visibleCount: 2 }, // md: 2 slides
+            1440: { visibleCount: 3 }, // xl: 3 slides
           }}
           autoplay
           loop

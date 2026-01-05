@@ -1445,8 +1445,8 @@ export default function CourseCurriculum({
                                       message: "Lecture notes must be greater than 20 characters",
                                     },
                                     pattern: {
-                                      value: /^[a-zA-Z0-9\s.,!?'"()-]*$/,
-                                      message: "Lecture notes contain invalid characters",
+                                      value: /^[^<>]*$/,
+                                      message: "Lecture notes must not contain any opening or closing HTML tags",
                                     },
                                   }
                                 )}
@@ -1496,8 +1496,8 @@ export default function CourseCurriculum({
                                         "Lecture description must be greater than 20 characters",
                                     },
                                     pattern: {
-                                      value: /^[a-zA-Z0-9\s.,!?'"()-]*$/,
-                                      message: "Lecture description contain invalid characters",
+                                      value: /^[^<>]*$/,
+                                      message: "Lecture description must not contain any opening or closing HTML tags",
                                     },
                                   }
                                 )}
@@ -1622,8 +1622,9 @@ export default function CourseCurriculum({
                                         message: "Quiz title cannot exceed 500 characters",
                                       },
                                       pattern: {
-                                        value: /^[a-zA-Z0-9\s.,!?'"()-]*$/,
-                                        message: "Quiz title contain invalid characters",
+                                        value: /^[^<>]*$/,
+                                        message:
+                                          "Quiz title must not contain any opening or closing HTML tags",
                                       },
                                     }
                                   )}
@@ -1672,8 +1673,9 @@ export default function CourseCurriculum({
                                         message: "Quiz description must be at least 20 characters",
                                       },
                                       pattern: {
-                                        value: /^[a-zA-Z0-9\s.,!?'"()-]*$/,
-                                        message: "Quiz description contain invalid characters",
+                                        value: /^[^<>]*$/,
+                                        message:
+                                          "Quiz description must not contain any opening or closing HTML tags",
                                       },
                                     }
                                   )}
@@ -1950,8 +1952,9 @@ export default function CourseCurriculum({
                                             message: "Question title cannot exceed 200 characters",
                                           },
                                           pattern: {
-                                            value: /^[a-zA-Z0-9\s.,!?'+"()-]*$/,
-                                            message: "Question title contain invalid characters",
+                                            value: /^[^<>]*$/,
+                                            message:
+                                              "Question title must not contain any opening or closing HTML tags",
                                           },
                                         }
                                       )}
@@ -2020,8 +2023,9 @@ export default function CourseCurriculum({
                                                     "Option text cannot exceed 50 characters",
                                                 },
                                                 pattern: {
-                                                  value: /^[a-zA-Z0-9\s.,!?'"()-]*$/,
-                                                  message: "Option text contain invalid characters",
+                                                  value: /^[^<>]*$/,
+                                                  message:
+                                                    "Option text must not contain any opening or closing HTML tags",
                                                 },
                                               }
                                             )}

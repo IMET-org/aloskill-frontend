@@ -400,13 +400,14 @@ function AdvanceInformation({
         if (isImage) {
           try {
             const uploadResult = await uploadFileToBunny(file);
+            console.log("object",uploadResult)
             if (uploadResult.url) {
               const objectUrl = URL.createObjectURL(file);
               setPreview(objectUrl);
             }
             setCourseData(prev => ({
               ...prev,
-              thumbnailUrl: uploadResult.url,
+              thumbnailUrl: new URL(uploadResult.url),
             }));
           } catch (error) {
             console.error("Error uploading file:", error);
