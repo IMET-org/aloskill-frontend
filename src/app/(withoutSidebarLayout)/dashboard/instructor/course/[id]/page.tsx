@@ -142,6 +142,7 @@ const CourseDetailPage = () => {
       setApiError((error as Error).message || "Something went wrong!");
     }
   }, [id]);
+console.log("course details", courseDetails);
 
   return (
     <div className='min-h-screen'>
