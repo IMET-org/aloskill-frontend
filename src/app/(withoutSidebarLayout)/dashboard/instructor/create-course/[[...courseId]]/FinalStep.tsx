@@ -145,6 +145,12 @@ const FinalStep = ({
     fetchInstructors();
   }, [debouncedQuery]);
 
+  useEffect(() => {
+    if (courseData.courseInstructors && courseData.courseInstructors.length > 0) {
+      setValue("courseInstructors", courseData.courseInstructors);
+    }
+  }, [courseData.courseInstructors, setValue]);
+
   const { fields, append, remove } = useFieldArray({
     name: "courseInstructors",
     control,
@@ -276,7 +282,7 @@ const FinalStep = ({
             : "Unknown error occurred";
         setCourseUploadError(message);
       }
-      console.log("Response from DB : ", backendData);
+      console.log("Response from DB for update: ", backendData);
       if (backendData.success) {
         redirect("/dashboard/instructor/course");
       }

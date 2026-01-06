@@ -78,23 +78,28 @@ const BasicInformaton = ({
   >([]);
 
   const checkUniqueSlug = useCallback(async (slug: string) => {
-    if (!slug) return;
+    if (!slug) return false;
+    if(courseData.slug === slug) return true;
     try {
       const response = await apiClient.get<{ canProceed: boolean }>(`/course/slug-check/${slug}`);
       if (response.success && response.data) {
         const userData = response.data;
         if (!userData?.canProceed) {
           setSlugError("This slug is already registered. Please enter a new slug");
-          return;
+          return false;
         } else {
           setSlugError("");
+          return true;
         }
+      } else {
+        return false;
       }
     } catch (error) {
       console.error("Error checking slug uniqueness:", error);
       setSlugError("Error checking slug");
+      return false;
     }
-  }, []);
+  }, [courseData.slug]);
 
   const {
     register,
@@ -121,7 +126,6 @@ const BasicInformaton = ({
       title: courseData.title,
       slug: courseData.slug,
       tags: courseData.tags,
-      category: courseData.category,
       subCategory: courseData.subCategory,
       language: courseData.language,
       level: courseData.level,
@@ -129,9 +133,10 @@ const BasicInformaton = ({
   }, [courseData, reset]);
 
   const onSubmit = useCallback(
-    (data: BasicInfoForm) => {
+    async (data: BasicInfoForm) => {
       const { slug, ...rest } = data;
-      checkUniqueSlug(slug);
+      const isValidSlug = await checkUniqueSlug(slug);
+      if (!isValidSlug) return;
       setCourseData(prev => ({
         ...prev,
         ...rest,
@@ -143,7 +148,7 @@ const BasicInformaton = ({
   );
 
   useEffect(() => {
-    if (courseData.category) {
+    if (courseData.category !== "") {
       setSelectedCategory(courseData.category);
       setValue("category", courseData.category);
     }
@@ -162,12 +167,12 @@ const BasicInformaton = ({
     }
   }, [courseData.category, courseData.subCategory, setValue, courseData.allCategory]);
 
-  const handleTitleChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setCourseData(prev => ({ ...prev, title: e.target.value }));
-    },
-    [setCourseData]
-  );
+  // const handleTitleChange = useCallback(
+  //   (e: React.ChangeEvent<HTMLInputElement>) => {
+  //     setCourseData(prev => ({ ...prev, title: e.target.value }));
+  //   },
+  //   [setCourseData]
+  // );
 
   const handleCategoryChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedCategory(e.target.value);
@@ -186,7 +191,6 @@ const BasicInformaton = ({
   };
 
   const subCategories = () => {
-    // return courseData.allCategory.filter(cat => cat.name === selectedCategory);
     return courseData.allCategory.find(cat => cat.name === selectedCategory)?.children ?? [];
   };
 
@@ -219,6 +223,7 @@ const BasicInformaton = ({
   const tags = watch("tags") ?? [];
   const watchedTitle = watch("title");
   const watchedSlug = watch("slug");
+  const watchedCategory = watch("category");
 
   const handleAddTags = (tag: string) => {
     if (!tag.trim()) return;
@@ -269,7 +274,6 @@ const BasicInformaton = ({
               <div className='relative'>
                 <input
                   {...register("title")}
-                  onChange={handleTitleChange}
                   type='text'
                   value={watchedTitle}
                   placeholder='You course tittle'
@@ -277,7 +281,7 @@ const BasicInformaton = ({
                   className={`w-full px-4 py-1.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-orange-light focus:border-transparent placeholder:text-sm ${errors.title ? "border-red-200 bg-red-50" : "border-gray-200"}`}
                 />
                 <span
-                  className={`absolute right-4 ${errors.title ? "top-[15%] bg-red-50" : "top-1/2 -translate-y-1/2 bg-white"} text-xs text-gray-400 pl-2`}
+                  className={`absolute right-4 ${errors.title ? "top-[20%] bg-red-50" : "top-1/2 -translate-y-1/2 bg-white"} text-xs text-gray-400 pl-2`}
                 >
                   {courseData?.title?.length}/100
                 </span>
@@ -292,28 +296,32 @@ const BasicInformaton = ({
               <label className='block text-xs font-medium text-gray-700 mb-2'>Slug</label>
               <div className='relative'>
                 <input
-                  {...register("slug")}
-                  onChange={e => {
-                    const slugify = (text: string) =>
-                      text
-                        .toLowerCase()
-                        .trim()
-                        .replace(/[^\w\s-]/g, "")
-                        .replace(/[\s_-]+/g, "-")
-                        .replace(/^-+|-+$/g, "");
-                    setValue("slug", slugify(e.target.value), {
-                      shouldDirty: true,
-                      shouldValidate: true,
-                    });
-                  }}
+                  {...register("slug", {
+                    onBlur: e => {
+                      const slugify = (text: string) =>
+                        text
+                          .toLowerCase()
+                          .trim()
+                          .replace(/[^\w\s-]/g, "")
+                          .replace(/[\s_-]+/g, "-")
+                          .replace(/^-+|-+$/g, "");
+                      setValue("slug", slugify(e.target.value), {
+                        shouldDirty: true,
+                        shouldValidate: true,
+                      });
+                    },
+                    onChange: _e => {
+                      setSlugError("");
+                    },
+                  })}
                   type='text'
                   value={watchedSlug}
                   placeholder='Your course slug'
                   maxLength={50}
-                  className={`w-full px-4 py-1.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-orange-light focus:border-transparent placeholder:text-sm ${errors.slug ? "border-red-200 bg-red-50" : "border-gray-200"}`}
+                  className={`w-full px-4 py-1.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-orange-light focus:border-transparent placeholder:text-sm ${slugError || errors.slug ? "border-red-200 bg-red-50" : "border-gray-200"}`}
                 />
                 <span
-                  className={`absolute right-4 ${errors.slug ? "top-[15%] bg-red-50" : "top-1/2 -translate-y-1/2 bg-white"} text-xs text-gray-400 pl-2`}
+                  className={`absolute right-4 ${slugError || errors.slug ? "top-[20%] bg-red-50" : "top-1/2 -translate-y-1/2 bg-white"} text-xs text-gray-400 pl-2`}
                 >
                   {courseData?.slug?.length}/50
                 </span>
@@ -396,7 +404,7 @@ const BasicInformaton = ({
                 </label>
                 <select
                   {...register("category")}
-                  value={selectedCategory}
+                  defaultValue={watchedCategory}
                   onChange={handleCategoryChange}
                   className='w-full px-4 py-2.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-orange-light focus:border-transparent bg-white appearance-none cursor-pointer text-sm text-gray-400'
                   style={{
@@ -431,7 +439,7 @@ const BasicInformaton = ({
                 </label>
                 <select
                   {...register("subCategory")}
-                  value={selectedSubCategory}
+                  defaultValue={selectedSubCategory}
                   onChange={handleSubCategoryChange}
                   className={`w-full px-4 py-2.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-orange-light focus:border-transparent bg-white appearance-none cursor-pointer text-sm text-gray-400 ${errors.subCategory ? "border-red-200 bg-red-50" : "border-gray-200"}`}
                   style={{
@@ -464,7 +472,7 @@ const BasicInformaton = ({
                 </label>
                 <select
                   {...register("language")}
-                  value={courseData.language}
+                  defaultValue={courseData.language}
                   className={`w-full px-4 py-2.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-orange-light focus:border-transparent bg-white appearance-none cursor-pointer text-sm text-gray-400 ${errors.language ? "border-red-200 bg-red-50" : "border-gray-200"}`}
                   style={{
                     backgroundImage: `url("data:image/svg+xml,%3Csvg width='8' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
@@ -485,7 +493,7 @@ const BasicInformaton = ({
                 <label className='block text-xs font-medium text-gray-700 mb-2'>Course Level</label>
                 <select
                   {...register("level")}
-                  value={courseData.level}
+                  defaultValue={courseData.level}
                   className={`w-full px-4 py-2.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-orange-light focus:border-transparent bg-white appearance-none cursor-pointer text-sm text-gray-400 ${errors.level ? "border-red-200 bg-red-50" : "border-gray-200"}`}
                   style={{
                     backgroundImage: `url("data:image/svg+xml,%3Csvg width='8' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,

@@ -614,55 +614,6 @@ export default function CourseCurriculum({
     setShowAddQuestions(false);
   };
 
-  // const addQuizOption = (
-  //   moduleId: number,
-  //   lessonId: number,
-  //   questionId: number,
-  //   optionId: number,
-  //   value: string
-  // ) => {
-  //   setCourseData(prev => ({
-  //     ...prev,
-  //     modules: prev.modules.map(module => {
-  //       if (module.position === moduleId) {
-  //         return {
-  //           ...module,
-  //           lessons: module.lessons.map(lesson => {
-  //             if (lesson.position === lessonId) {
-  //               if (lesson.quiz) {
-  //                 return {
-  //                   ...lesson,
-  //                   quiz: {
-  //                     ...lesson.quiz,
-  //                     questions: lesson.quiz?.questions.map(question => {
-  //                       if (question.position === questionId) {
-  //                         return {
-  //                           ...question,
-  //                           options: question.options.map(option => {
-  //                             if (option.position === optionId) {
-  //                               return {
-  //                                 ...option,
-  //                                 text: value,
-  //                               };
-  //                             }
-  //                             return option;
-  //                           }),
-  //                         };
-  //                       }
-  //                       return question;
-  //                     }),
-  //                   },
-  //                 };
-  //               }
-  //             }
-  //             return lesson;
-  //           }),
-  //         };
-  //       }
-  //       return module;
-  //     }),
-  //   }));
-  // };
   const addQuizOption = (
     moduleId: number,
     lessonId: number,
@@ -686,15 +637,10 @@ export default function CourseCurriculum({
                 ...lesson.quiz,
                 questions: lesson.quiz.questions.map(question => {
                   if (question.position !== questionId) return question;
-
-                  // 1️⃣ Update option text first
                   const updatedOptions = question.options.map(option =>
                     option.position === optionId ? { ...option, text: value } : option
                   );
-
-                  // 2️⃣ Duplicate validation (NON-BLOCKING)
                   const normalizedValue = value.trim().toLowerCase();
-
                   const isDuplicate =
                     normalizedValue &&
                     updatedOptions.some(
@@ -702,14 +648,11 @@ export default function CourseCurriculum({
                         option.position !== optionId &&
                         option.text.trim().toLowerCase() === normalizedValue
                     );
-
-                  // 3️⃣ Show error only
                   setQuizOptionError(
                     isDuplicate
                       ? "This option already exists. Please enter a different option."
                       : ""
                   );
-
                   return {
                     ...question,
                     options: updatedOptions,
@@ -1153,7 +1096,7 @@ export default function CourseCurriculum({
                               required: `Please Add Quiz title for Module ${module.position} lesson ${lesson.position}.`,
                             }
                           )}
-                          value={lesson.quiz && lesson.quiz.title ? "added" : ""}
+                          value={lesson.quiz && lesson.quiz.title ? lesson.quiz.title : ""}
                         />
                         {lesson.quiz &&
                           lesson.quiz?.questions.length <= 0 &&
@@ -1177,7 +1120,9 @@ export default function CourseCurriculum({
                               required: `Please Add Quiz description for Module ${module.position} lesson ${lesson.position}.`,
                             }
                           )}
-                          value={lesson.quiz && lesson.quiz.description ? "added" : ""}
+                          value={
+                            lesson.quiz && lesson.quiz.description ? lesson.quiz.description : ""
+                          }
                         />
                         {lesson.quiz &&
                           lesson.quiz?.questions.length <= 0 &&
@@ -1201,7 +1146,9 @@ export default function CourseCurriculum({
                               required: `Please Add Quiz passing score for Module ${module.position} lesson ${lesson.position}.`,
                             }
                           )}
-                          value={lesson.quiz && lesson.quiz.passingScore ? "added" : ""}
+                          value={
+                            lesson.quiz && lesson.quiz.passingScore ? lesson.quiz.passingScore : ""
+                          }
                         />
                         {lesson.quiz &&
                           lesson.quiz?.questions.length <= 0 &&
@@ -1446,7 +1393,8 @@ export default function CourseCurriculum({
                                     },
                                     pattern: {
                                       value: /^[^<>]*$/,
-                                      message: "Lecture notes must not contain any opening or closing HTML tags",
+                                      message:
+                                        "Lecture notes must not contain any opening or closing HTML tags",
                                     },
                                   }
                                 )}
@@ -1497,7 +1445,8 @@ export default function CourseCurriculum({
                                     },
                                     pattern: {
                                       value: /^[^<>]*$/,
-                                      message: "Lecture description must not contain any opening or closing HTML tags",
+                                      message:
+                                        "Lecture description must not contain any opening or closing HTML tags",
                                     },
                                   }
                                 )}
@@ -1806,89 +1755,6 @@ export default function CourseCurriculum({
                                 </div>
                               </div>
                             </div>
-                            {/* Add Quiz */}
-                            <div>
-                              <span className='text-sm text-gray-600 mb-1'>Add a Quiz :</span>
-                              <div className='flex items-center justify-center gap-10 border border-dashed border-gray-200 p-2'>
-                                <button
-                                  type='button'
-                                  onClick={() => {
-                                    setShowAddQuestions(true);
-                                    setValue(
-                                      `section_${module.position}_lecture_${lesson.position}_addQuiz_type`,
-                                      "ADD_QUIZ"
-                                    );
-                                  }}
-                                  className='flex items-center gap-2 px-3 py-1.5 border border-gray-100 text-gray-800 rounded! text-sm hover:bg-gray-100 transition-colors duration-500 cursor-pointer'
-                                >
-                                  <Plus className='w-4 h-4' />
-                                  Add Quiz Question
-                                </button>
-                              </div>
-                            </div>
-
-                            {showAddQuestions && (
-                              <>
-                                <div>
-                                  <span className='text-sm text-gray-600 mb-1'>
-                                    Select Question type :
-                                  </span>
-                                  <div className='flex items-center justify-center gap-10 border border-dashed border-gray-200 p-2'>
-                                    <button
-                                      type='button'
-                                      onClick={() => {
-                                        addQuizQuestion(
-                                          module.position,
-                                          lesson.position,
-                                          "MULTIPLE_CHOICE"
-                                        );
-                                        setValue(
-                                          `section_${module.position}_lecture_${lesson.position}_quiz_type`,
-                                          "MULTIPLE_CHOICE"
-                                        );
-                                      }}
-                                      className='px-3 py-1.5 border border-gray-100 text-gray-800 rounded text-sm hover:bg-gray-100 transition-colors duration-500 cursor-pointer'
-                                    >
-                                      MULTIPLE_CHOICE
-                                    </button>
-                                    <button
-                                      type='button'
-                                      onClick={() => {
-                                        addQuizQuestion(
-                                          module.position,
-                                          lesson.position,
-                                          "SINGLE_CHOICE"
-                                        );
-                                        setValue(
-                                          `section_${module.position}_lecture_${lesson.position}_quiz_type`,
-                                          "SINGLE_CHOICE"
-                                        );
-                                      }}
-                                      className='px-3 py-1.5 border border-gray-100 text-gray-800 rounded text-sm hover:bg-gray-100 transition-colors duration-500 cursor-pointer'
-                                    >
-                                      SINGLE_CHOICE
-                                    </button>
-                                    <button
-                                      type='button'
-                                      onClick={() => {
-                                        addQuizQuestion(
-                                          module.position,
-                                          lesson.position,
-                                          "TRUE_FALSE"
-                                        );
-                                        setValue(
-                                          `section_${module.position}_lecture_${lesson.position}_quiz_type`,
-                                          "TRUE_FALSE"
-                                        );
-                                      }}
-                                      className='px-3 py-1.5 border border-gray-100 text-gray-800 rounded text-sm hover:bg-gray-100 transition-colors duration-500 cursor-pointer'
-                                    >
-                                      TRUE_FALSE
-                                    </button>
-                                  </div>
-                                </div>
-                              </>
-                            )}
 
                             {lesson.quiz?.questions &&
                               lesson.quiz.questions.length > 0 &&
@@ -2277,6 +2143,89 @@ export default function CourseCurriculum({
                                   </div>
                                 </div>
                               ))}
+                            {/* Add Quiz */}
+                            <div>
+                              <span className='text-sm text-gray-600 mb-1'>Add a Quiz :</span>
+                              <div className='flex items-center justify-center gap-10 border border-dashed border-gray-200 p-2'>
+                                <button
+                                  type='button'
+                                  onClick={() => {
+                                    setShowAddQuestions(true);
+                                    setValue(
+                                      `section_${module.position}_lecture_${lesson.position}_addQuiz_type`,
+                                      "ADD_QUIZ"
+                                    );
+                                  }}
+                                  className='flex items-center gap-2 px-3 py-1.5 border border-gray-100 text-gray-800 rounded! text-sm hover:bg-gray-100 transition-colors duration-500 cursor-pointer'
+                                >
+                                  <Plus className='w-4 h-4' />
+                                  Add Quiz Question
+                                </button>
+                              </div>
+                            </div>
+
+                            {showAddQuestions && (
+                              <>
+                                <div>
+                                  <span className='text-sm text-gray-600 mb-1'>
+                                    Select Question type :
+                                  </span>
+                                  <div className='flex items-center justify-center gap-10 border border-dashed border-gray-200 p-2'>
+                                    <button
+                                      type='button'
+                                      onClick={() => {
+                                        addQuizQuestion(
+                                          module.position,
+                                          lesson.position,
+                                          "MULTIPLE_CHOICE"
+                                        );
+                                        setValue(
+                                          `section_${module.position}_lecture_${lesson.position}_quiz_type`,
+                                          "MULTIPLE_CHOICE"
+                                        );
+                                      }}
+                                      className='px-3 py-1.5 border border-gray-100 text-gray-800 rounded text-sm hover:bg-gray-100 transition-colors duration-500 cursor-pointer'
+                                    >
+                                      MULTIPLE_CHOICE
+                                    </button>
+                                    <button
+                                      type='button'
+                                      onClick={() => {
+                                        addQuizQuestion(
+                                          module.position,
+                                          lesson.position,
+                                          "SINGLE_CHOICE"
+                                        );
+                                        setValue(
+                                          `section_${module.position}_lecture_${lesson.position}_quiz_type`,
+                                          "SINGLE_CHOICE"
+                                        );
+                                      }}
+                                      className='px-3 py-1.5 border border-gray-100 text-gray-800 rounded text-sm hover:bg-gray-100 transition-colors duration-500 cursor-pointer'
+                                    >
+                                      SINGLE_CHOICE
+                                    </button>
+                                    <button
+                                      type='button'
+                                      onClick={() => {
+                                        addQuizQuestion(
+                                          module.position,
+                                          lesson.position,
+                                          "TRUE_FALSE"
+                                        );
+                                        setValue(
+                                          `section_${module.position}_lecture_${lesson.position}_quiz_type`,
+                                          "TRUE_FALSE"
+                                        );
+                                      }}
+                                      className='px-3 py-1.5 border border-gray-100 text-gray-800 rounded text-sm hover:bg-gray-100 transition-colors duration-500 cursor-pointer'
+                                    >
+                                      TRUE_FALSE
+                                    </button>
+                                  </div>
+                                </div>
+                              </>
+                            )}
                           </div>
                         )}
                       </div>
