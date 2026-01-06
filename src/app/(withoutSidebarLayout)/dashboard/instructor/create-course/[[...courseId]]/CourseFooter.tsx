@@ -1,7 +1,7 @@
 "use client";
 
 import { Loader2 } from "lucide-react";
-import React from 'react';
+import React from "react";
 
 const CourseFooter = ({
   handleCancel,
@@ -9,12 +9,14 @@ const CourseFooter = ({
   currentStep,
   handlePrevious,
   setDataSaveMode,
+  isParamsExisting,
 }: {
   handleCancel?: () => void;
   isSubmitting: boolean;
   currentStep: number;
   handlePrevious?: () => void;
-  setDataSaveMode?: React.Dispatch<React.SetStateAction<"draft" | "publish">>;
+  setDataSaveMode?: React.Dispatch<React.SetStateAction<"draft" | "publish" | "update">>;
+  isParamsExisting?: boolean;
 }) => {
   return (
     <div className='w-full flex items-center justify-between'>
@@ -35,24 +37,10 @@ const CourseFooter = ({
       )}
       <div>
         {currentStep === 4 ? (
-          <div className='w-fit flex items-center gap-3'>
+          isParamsExisting ? (
             <button
               type='submit'
-              onClick={() => setDataSaveMode && setDataSaveMode("draft")}
-              className='px-4 py-1.5 bg-orange text-white rounded font-medium hover:bg-orange-light transition-colors cursor-pointer'
-            >
-              {isSubmitting ? (
-                <span className='flex items-center justify-center gap-2'>
-                  <Loader2 className='w-5 h-5 animate-spin' />
-                  Saving...
-                </span>
-              ) : (
-                "Draft Save"
-              )}
-            </button>
-            <button
-              type='submit'
-              onClick={() => setDataSaveMode && setDataSaveMode("publish")}
+              onClick={() => setDataSaveMode && setDataSaveMode("update")}
               className='px-4 py-1.5 bg-orange text-white rounded font-medium hover:bg-orange-light transition-colors cursor-pointer'
             >
               {isSubmitting ? (
@@ -61,10 +49,41 @@ const CourseFooter = ({
                   Submitting...
                 </span>
               ) : (
-                "Submit for Review"
+                "Update Course"
               )}
             </button>
-          </div>
+          ) : (
+            <div className='w-fit flex items-center gap-3'>
+              <button
+                type='submit'
+                onClick={() => setDataSaveMode && setDataSaveMode("draft")}
+                className='px-4 py-1.5 bg-orange text-white rounded font-medium hover:bg-orange-light transition-colors cursor-pointer'
+              >
+                {isSubmitting ? (
+                  <span className='flex items-center justify-center gap-2'>
+                    <Loader2 className='w-5 h-5 animate-spin' />
+                    Saving...
+                  </span>
+                ) : (
+                  "Draft Save"
+                )}
+              </button>
+              <button
+                type='submit'
+                onClick={() => setDataSaveMode && setDataSaveMode("publish")}
+                className='px-4 py-1.5 bg-orange text-white rounded font-medium hover:bg-orange-light transition-colors cursor-pointer'
+              >
+                {isSubmitting ? (
+                  <span className='flex items-center justify-center gap-2'>
+                    <Loader2 className='w-5 h-5 animate-spin' />
+                    Submitting...
+                  </span>
+                ) : (
+                  "Submit for Review"
+                )}
+              </button>
+            </div>
+          )
         ) : (
           <button
             type='submit'

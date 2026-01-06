@@ -407,7 +407,7 @@ function AdvanceInformation({
             }
             setCourseData(prev => ({
               ...prev,
-              thumbnailUrl: new URL(uploadResult.url),
+              thumbnailUrl: uploadResult.url,
             }));
           } catch (error) {
             console.error("Error uploading file:", error);

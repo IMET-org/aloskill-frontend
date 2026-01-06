@@ -204,10 +204,12 @@ const InstructorCoursePage = () => {
                             <span>View Details</span>
                           </button>
                         </Link>
-                        <button className='w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center space-x-2'>
-                          <Edit className='w-4 h-4' />
-                          <span>Edit Course</span>
-                        </button>
+                        <Link href={`/dashboard/instructor/create-course/${course.id}`}>
+                          <button className='w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center space-x-2'>
+                            <Edit className='w-4 h-4' />
+                            <span>Edit Course</span>
+                          </button>
+                        </Link>
                         <button className='w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center space-x-2'>
                           <Trash2 className='w-4 h-4' />
                           <span>Delete Course</span>
