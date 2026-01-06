@@ -4,7 +4,9 @@ import { BookOpen, Clock, Heart, ShoppingCart, Star, Users } from "lucide-react"
 import Image from "next/image";
 import Link from "next/link";
 import { memo, useState } from "react";
-import { type CourseCardProps } from "./allCourses.types.ts";
+import type { CourseCardProps } from "./allCourses.types.ts";
+
+
 
 const CourseCard = memo(function CourseCard({
   id,
@@ -184,13 +186,19 @@ const CourseCard = memo(function CourseCard({
           <div className='flex items-center justify-between gap-2'>
             <div className='flex items-center gap-2 min-w-0'>
               <div className='relative w-8 h-8 shrink-0'>
-                <Image
-                  src={instructor.avatar}
-                  alt={instructor.name}
-                  fill
-                  sizes='32px'
-                  className='rounded-full object-cover'
-                />
+                {instructor.avatar ? (
+                  <Image
+                    src={instructor.avatar}
+                    alt={instructor.name}
+                    fill
+                    sizes='32px'
+                    className='rounded-full object-cover'
+                  />
+                ) : (
+                  <div className='w-full h-full rounded-full bg-orange-200 flex items-center justify-center'>
+                    <Users className='w-4 h-4 text-orange-600' />
+                  </div>
+                )}
               </div>
               <span className='text-sm font-medium text-gray-700 truncate'>{instructor.name}</span>
             </div>

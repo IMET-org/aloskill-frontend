@@ -27,6 +27,58 @@ export interface Course {
 
   instructor: CourseInstructor;
 }
+
+export type CourseType = {
+  id: string;
+  title: string;
+  originalPrice: number;
+  discountPrice: number | null;
+  status: string;
+  thumbnailUrl: string | null;
+  createdAt: Date;
+  modules: {
+    _count: {
+      lessons: number;
+    };
+    lessons: {
+      duration: number | null;
+    }[];
+  }[];
+  category: {
+    name: string;
+  } | null;
+  courseInstructors: {
+    role: string | null;
+  }[];
+  _count: {
+    enrollments: number;
+    reviews: number;
+  };
+};
+export type CourseCardProps = {
+  id: string;
+  image: string;
+  category: string;
+  categoryColor?: string;
+  rating?: number;
+  reviewCount: number;
+  price: number;
+  originalPrice?: number;
+  discount?: number;
+  title: string;
+  lessons: number;
+  duration: string;
+  students: number;
+  instructor: {
+    name: string;
+    avatar?: string;
+  };
+  onEnroll?: (courseId: string) => void;
+  onAddToCart?: (courseId: string) => void;
+  onAddToWishlist?: (courseId: string) => Promise<void> | void;
+  isInCart?: boolean;
+  isInWishlist?: boolean;
+};
 export interface FilterOption {
   value: string;
   label: string;
