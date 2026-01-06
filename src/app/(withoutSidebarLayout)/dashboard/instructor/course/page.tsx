@@ -138,26 +138,28 @@ const InstructorCoursePage = () => {
               //         <MoreVertical className='w-4 h-4 text-gray-600' />
               //       </button>
 
-              //       {/* Dropdown Menu */}
-              //       {showMenu === course.id && (
-              //         <div className='absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-100 py-2 z-10'>
-              //           <Link href={`/dashboard/instructor/course/${course.id}`}>
-              //             <button className='w-full px-4 py-2 text-left text-sm text-orange-500 hover:bg-orange-50 transition-colors flex items-center space-x-2 cursor-pointer'>
-              //               <span>View Details</span>
-              //             </button>
-              //           </Link>
-              //           <button className='w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center space-x-2'>
-              //             <Edit className='w-4 h-4' />
-              //             <span>Edit Course</span>
-              //           </button>
-              //           <button className='w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center space-x-2'>
-              //             <Trash2 className='w-4 h-4' />
-              //             <span>Delete Course</span>
-              //           </button>
-              //         </div>
-              //       )}
-              //     </div>
-              //   </div>
+                //     {/* Dropdown Menu */}
+                //     {showMenu === course.id && (
+                //       <div className='absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-100 py-2 z-10'>
+                //         <Link href={`/dashboard/instructor/course/${course.id}`}>
+                //           <button className='w-full px-4 py-2 text-left text-sm text-orange-500 hover:bg-orange-50 transition-colors flex items-center space-x-2 cursor-pointer'>
+                //             <span>View Details</span>
+                //           </button>
+                //         </Link>
+                //         <Link href={`/dashboard/instructor/create-course/${course.id}`}>
+                //           <button className='w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center space-x-2'>
+                //             <Edit className='w-4 h-4' />
+                //             <span>Edit Course</span>
+                //           </button>
+                //         </Link>
+                //         <button className='w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center space-x-2'>
+                //           <Trash2 className='w-4 h-4' />
+                //           <span>Delete Course</span>
+                //         </button>
+                //       </div>
+                //     )}
+                //   </div>
+                // </div>
 
               //   {/* Course Content */}
               //   <div className='flex flex-col gap-2 mt-2'>

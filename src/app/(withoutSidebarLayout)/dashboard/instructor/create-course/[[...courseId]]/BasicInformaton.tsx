@@ -3,6 +3,7 @@
 import { useDebounce } from "@/hooks/useDebounce.ts";
 import { apiClient } from "@/lib/api/client.ts";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import z from "zod";
@@ -79,10 +80,10 @@ const BasicInformaton = ({
   const checkUniqueSlug = useCallback(async (slug: string) => {
     if (!slug) return;
     try {
-      const response = await apiClient.get(`/course/slug-check/${slug}`);
+      const response = await apiClient.get<{ canProceed: boolean }>(`/course/slug-check/${slug}`);
       if (response.success && response.data) {
-        const userData = response.data as { result: { canProceed: boolean } };
-        if (!userData?.result?.canProceed) {
+        const userData = response.data;
+        if (!userData?.canProceed) {
           setSlugError("This slug is already registered. Please enter a new slug");
           return;
         } else {
@@ -91,6 +92,7 @@ const BasicInformaton = ({
       }
     } catch (error) {
       console.error("Error checking slug uniqueness:", error);
+      setSlugError("Error checking slug");
     }
   }, []);
 
@@ -98,6 +100,7 @@ const BasicInformaton = ({
     register,
     handleSubmit,
     setValue,
+    reset,
     watch,
     formState: { errors, isSubmitting },
   } = useForm<BasicInfoForm>({
@@ -108,17 +111,27 @@ const BasicInformaton = ({
       tags: courseData.tags,
       category: courseData.category,
       subCategory: courseData.subCategory,
-      language: courseData.language || "ENGLISH",
-      level: courseData.level || "BEGINNER",
+      language: courseData.language,
+      level: courseData.level,
     },
   });
+
+  useEffect(() => {
+    reset({
+      title: courseData.title,
+      slug: courseData.slug,
+      tags: courseData.tags,
+      category: courseData.category,
+      subCategory: courseData.subCategory,
+      language: courseData.language,
+      level: courseData.level,
+    });
+  }, [courseData, reset]);
 
   const onSubmit = useCallback(
     (data: BasicInfoForm) => {
       const { slug, ...rest } = data;
       checkUniqueSlug(slug);
-      // const selectedCat = courseData.category.find(cat => cat.name === selectedCategory);
-      // const subCat = selectedCat?.children?.find(sub => sub.name === subCategory);
       setCourseData(prev => ({
         ...prev,
         ...rest,
@@ -135,11 +148,19 @@ const BasicInformaton = ({
       setValue("category", courseData.category);
     }
 
+    if (courseData.category === "" && courseData.subCategory) {
+      const findCategory = courseData.allCategory.find(category =>
+        category.children.some(child => child.name === courseData.subCategory)
+      );
+      setSelectedCategory(findCategory?.name ?? "");
+      setValue("category", findCategory?.name ?? "");
+    }
+
     if (courseData.subCategory) {
       setSelectedSubCategory(courseData.subCategory);
       setValue("subCategory", courseData.subCategory);
     }
-  }, [courseData.category, courseData.subCategory, setValue]);
+  }, [courseData.category, courseData.subCategory, setValue, courseData.allCategory]);
 
   const handleTitleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -196,6 +217,8 @@ const BasicInformaton = ({
   }, [debouncedQuery]);
 
   const tags = watch("tags") ?? [];
+  const watchedTitle = watch("title");
+  const watchedSlug = watch("slug");
 
   const handleAddTags = (tag: string) => {
     if (!tag.trim()) return;
@@ -221,7 +244,11 @@ const BasicInformaton = ({
     );
   };
   if (loading) {
-    return <h1>Loading...</h1>;
+    return (
+      <h1 className='p-8 flex items-center gap-3'>
+        <Loader className='animate-spin h-5 w-5' /> Loading...
+      </h1>
+    );
   }
 
   return (
@@ -244,7 +271,7 @@ const BasicInformaton = ({
                   {...register("title")}
                   onChange={handleTitleChange}
                   type='text'
-                  defaultValue={courseData.title}
+                  value={watchedTitle}
                   placeholder='You course tittle'
                   maxLength={100}
                   className={`w-full px-4 py-1.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-orange-light focus:border-transparent placeholder:text-sm ${errors.title ? "border-red-200 bg-red-50" : "border-gray-200"}`}
@@ -280,7 +307,7 @@ const BasicInformaton = ({
                     });
                   }}
                   type='text'
-                  defaultValue={courseData.slug}
+                  value={watchedSlug}
                   placeholder='Your course slug'
                   maxLength={50}
                   className={`w-full px-4 py-1.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-orange-light focus:border-transparent placeholder:text-sm ${errors.slug ? "border-red-200 bg-red-50" : "border-gray-200"}`}
@@ -437,7 +464,7 @@ const BasicInformaton = ({
                 </label>
                 <select
                   {...register("language")}
-                  defaultValue={courseData.language}
+                  value={courseData.language}
                   className={`w-full px-4 py-2.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-orange-light focus:border-transparent bg-white appearance-none cursor-pointer text-sm text-gray-400 ${errors.language ? "border-red-200 bg-red-50" : "border-gray-200"}`}
                   style={{
                     backgroundImage: `url("data:image/svg+xml,%3Csvg width='8' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
@@ -458,7 +485,7 @@ const BasicInformaton = ({
                 <label className='block text-xs font-medium text-gray-700 mb-2'>Course Level</label>
                 <select
                   {...register("level")}
-                  defaultValue={courseData.level}
+                  value={courseData.level}
                   className={`w-full px-4 py-2.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-orange-light focus:border-transparent bg-white appearance-none cursor-pointer text-sm text-gray-400 ${errors.level ? "border-red-200 bg-red-50" : "border-gray-200"}`}
                   style={{
                     backgroundImage: `url("data:image/svg+xml,%3Csvg width='8' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,

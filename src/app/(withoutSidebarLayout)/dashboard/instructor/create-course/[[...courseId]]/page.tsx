@@ -93,6 +93,7 @@ export default function CourseCreationForm() {
   const [categoryError, setCategoryError] = useState<string>("");
   const [currentStep, setCurrentStep] = useState(1);
   const [category, setCategory] = useState<Categories>([]);
+  const [courseUploadError, setCourseUploadError] = useState<string>("");
   const [courseData, setCourseData] = useState<CreateCourseData>({
     title: "",
     slug: "",
@@ -162,9 +163,12 @@ export default function CourseCreationForm() {
     setLoading(true);
     setCategoryError("");
     try {
-      const response = await apiClient.get(`/course/getAndEditCourse/${courseId}`);
+      const response = await apiClient.get<CreateCourseData>(
+        `/course/getAndEditCourse/${courseId}`
+      );
       if (response.success && response.data) {
-        console.log("Get Course data from DB : ", response.data);
+        setCourseData(prev => ({ ...prev, ...response.data }));
+        setLoading(false);
         return;
       } else {
         throw new Error("Failed to fetch Course");
@@ -224,7 +228,10 @@ export default function CourseCreationForm() {
       {/* Form Content Step -1*/}
       <div className='w-full'>
         {categoryError !== "" && (
-          <p className='text-red-500 text-md mb-2 font-semibold'>{categoryError}</p>
+          <p className='text-red-500 text-md mb-2 p-2 font-semibold'>{categoryError}</p>
+        )}
+        {courseUploadError !== "" && (
+          <p className='text-red-500 text-md mb-2 p-2 font-semibold'>{courseUploadError}</p>
         )}
         {currentStep === 1 && (
           <BasicInformaton
@@ -260,6 +267,8 @@ export default function CourseCreationForm() {
             setCurrentStep={setCurrentStep}
             courseData={courseData}
             setCourseData={setCourseData}
+            isParamsExisting={courseId !== undefined ? true : false}
+            setCourseUploadError={setCourseUploadError}
           />
         )}
       </div>
