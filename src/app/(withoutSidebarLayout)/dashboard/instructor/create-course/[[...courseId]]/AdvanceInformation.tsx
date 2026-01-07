@@ -400,7 +400,6 @@ function AdvanceInformation({
         if (isImage) {
           try {
             const uploadResult = await uploadFileToBunny(file);
-            console.log("object",uploadResult)
             if (uploadResult.url) {
               const objectUrl = URL.createObjectURL(file);
               setPreview(objectUrl);

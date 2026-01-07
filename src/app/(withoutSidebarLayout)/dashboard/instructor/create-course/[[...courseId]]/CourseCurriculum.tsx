@@ -467,6 +467,27 @@ export default function CourseCurriculum({
     }
   };
 
+  const getVideoDuration = (file: File): Promise<{ duration: number }> => {
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(file);
+      const video = document.createElement("video");
+
+      video.onloadedmetadata = () => {
+        URL.revokeObjectURL(url);
+        resolve({
+          duration: Math.round(video.duration),
+        });
+      };
+
+      video.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject("Could not load video metadata");
+      };
+
+      video.src = url;
+    });
+  };
+
   const handleFileSelect = async (
     e: ChangeEvent<HTMLInputElement>,
     sectionId: number,
@@ -482,6 +503,7 @@ export default function CourseCurriculum({
         if (isVideo) {
           try {
             const uploadResult = await uploadVideoToBunny(file);
+            const fileObject = await getVideoDuration(file);
             setCourseData(prev => ({
               ...prev,
               modules: prev.modules.map(module => {
@@ -490,7 +512,11 @@ export default function CourseCurriculum({
                     ...module,
                     lessons: module.lessons.map(lesson => {
                       if (lesson.position === lectureId) {
-                        return { ...lesson, contentUrl: uploadResult };
+                        return {
+                          ...lesson,
+                          contentUrl: uploadResult,
+                          duration: fileObject.duration,
+                        };
                       }
                       return lesson;
                     }),
@@ -516,7 +542,14 @@ export default function CourseCurriculum({
                     ...module,
                     lessons: module.lessons.map(lesson => {
                       if (lesson.position === lectureId) {
-                        return { ...lesson, files: uploadResult };
+                        return {
+                          ...lesson,
+                          files: uploadResult,
+                          duration:
+                            lesson.type === "ARTICLE"
+                              ? uploadResult.length * 5 * 60
+                              : lesson.duration,
+                        };
                       }
                       return lesson;
                     }),

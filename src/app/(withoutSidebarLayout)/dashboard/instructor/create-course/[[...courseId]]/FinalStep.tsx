@@ -100,7 +100,9 @@ const FinalStep = ({
   const { data: session } = useSession();
   const [paymentSelection, setPaymentSelection] = useState<"paid" | "free">("paid");
   const [query, setQuery] = useState<string>("");
-  const [dataSaveMode, setDataSaveMode] = useState<"draft" | "publish" | "update">("draft");
+  const [dataSaveMode, setDataSaveMode] = useState<
+    "draft" | "publish" | "update" | "updateAndPublish"
+  >("draft");
   const [results, setResults] = useState<
     | {
         userId: string;
@@ -261,8 +263,34 @@ const FinalStep = ({
       }
     }
     if (dataSaveMode === "update") {
-      const backendData = await apiClient.post(
-        `/course/create-course?user=${session?.user.email}`,
+      const backendData = await apiClient.patch(
+        `/course/editOrUpdate-course?user=${session?.user.email}`,
+        {
+          ...restCourseData,
+          originalPrice: Number(originalPrice),
+          discountPrice: Number(discountPrice),
+          discountEndDate: data.discountEndDate ? new Date(data.discountEndDate) : null,
+          welcomeMessage: data.welcomeMessage,
+          congratulationsMessage: data.congratulationsMessage,
+          courseInstructors: data.courseInstructors,
+        }
+      );
+      if (!backendData.success) {
+        const message =
+          backendData.message && typeof backendData.message === "string"
+            ? errorMessages[backendData.message as keyof typeof errorMessages] ||
+              backendData.message
+            : "Unknown error occurred";
+        setCourseUploadError(message);
+      }
+      console.log("Response from DB for update: ", backendData);
+      if (backendData.success) {
+        redirect("/dashboard/instructor/course");
+      }
+    }
+    if (dataSaveMode === "updateAndPublish") {
+      const backendData = await apiClient.patch(
+        `/course/editOrUpdate-course?user=${session?.user.email}`,
         {
           ...restCourseData,
           originalPrice: Number(originalPrice),
@@ -522,6 +550,7 @@ const FinalStep = ({
               currentStep={currentStep}
               setDataSaveMode={setDataSaveMode}
               isParamsExisting={isParamsExisting}
+              isDraft={courseData.status === "DRAFT" ? true : false}
             />
           </div>
         </form>

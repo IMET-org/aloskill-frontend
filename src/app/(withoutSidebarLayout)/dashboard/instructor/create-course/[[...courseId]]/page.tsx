@@ -55,6 +55,7 @@ export type CourseModule = {
 };
 
 export type CreateCourseData = {
+  id?: string;
   title: string;
   slug: string;
   allCategory: Categories;

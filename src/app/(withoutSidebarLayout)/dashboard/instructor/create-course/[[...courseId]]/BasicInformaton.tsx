@@ -167,13 +167,6 @@ const BasicInformaton = ({
     }
   }, [courseData.category, courseData.subCategory, setValue, courseData.allCategory]);
 
-  // const handleTitleChange = useCallback(
-  //   (e: React.ChangeEvent<HTMLInputElement>) => {
-  //     setCourseData(prev => ({ ...prev, title: e.target.value }));
-  //   },
-  //   [setCourseData]
-  // );
-
   const handleCategoryChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedCategory(e.target.value);
   }, []);
