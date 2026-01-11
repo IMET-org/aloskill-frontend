@@ -101,66 +101,112 @@ export type CourseCardProps = {
     onDelete?: (courseId: string) => void;
   };
 };
-export type CourseDetailsViewModel = {
-  // ===== Core =====
-  id: string;
+export type CourseDetails = {
   title: string;
-  slug: string;
-  description: string;
-
-  welcomeMessage?: string | null;
-  congratulationsMessage?: string | null;
-
-  // ===== Pricing =====
   originalPrice: number;
-  discountPercent?: number | null;
-  discountPrice?: number | null;
-  discountEndDate?: string | null;
+  discountPrice: number | null;
   isDiscountActive: boolean;
-  currency?: string | null;
-
-  // ===== Stats =====
+  currency: string | null;
   enrollmentCount: number;
-  reviewCount: number;
-  moduleCount: number;
-  views: number;
-
-  ratingAverage?: number | null;
+  enrolledLastWeek: number;
+  language: string;
+  thumbnailUrl: string | null;
+  level: string;
+  ratingAverage: number | null;
   ratingCount: number;
-  totalRevenueAmount: number;
-
-  // ===== Media =====
-  thumbnailUrl: string;
-  trailerUrl?: string | null;
-
-  // ===== Meta =====
-  status: CourseStatus;
-  language: Language;
-  level: CourseLevel;
-
-  // ===== Ownership & Category =====
-  category?: {
-    id: string;
-    name: string;
-  } | null;
-
-  createdBy?: {
-    id: string;
-    fullName?: string | null;
-    avatarUrl?: string | null;
-  } | null;
-
-  // ===== Relations (counts or summaries) =====
-  tags?: {
-    id: string;
-    name: string;
-  }[];
-
-  // ===== Timestamps =====
+  views: number;
   createdAt: string;
   updatedAt: string;
-  deletedAt?: string | null;
+  tags: string[];
+  category: string | undefined;
+  totalWishListed: number;
+  createdBy: {
+    displayName: string | undefined;
+    avatarUrl: string | null | undefined;
+  };
+  courseInstructors: {
+    role: string | null;
+    displayName: string;
+    avatarUrl: string | null;
+  }[];
+  reviews: {
+    rating: number;
+    body: string | null;
+    createdAt: string;
+    userDisplayName: string | undefined;
+    avatarUrl: string | null;
+  }[];
+  content: {
+    totalVideos: number;
+    totalDuration: string;
+    totalFiles: number;
+  };
+  ratingBreakdown: {
+    star: number;
+    count: number;
+    percentage: string;
+  }[];
 };
+// export type CourseDetails = {
+//   // ===== Core =====
+//   id: string;
+//   title: string;
+//   slug: string;
+//   description: string;
+
+//   welcomeMessage?: string | null;
+//   congratulationsMessage?: string | null;
+
+//   // ===== Pricing =====
+//   originalPrice: number;
+//   discountPercent?: number | null;
+//   discountPrice?: number | null;
+//   discountEndDate?: string | null;
+//   isDiscountActive: boolean;
+//   currency?: string | null;
+
+//   // ===== Stats =====
+//   enrollmentCount: number;
+//   reviewCount: number;
+//   moduleCount: number;
+//   views: number;
+
+//   ratingAverage?: number | null;
+//   ratingCount: number;
+//   totalRevenueAmount: number;
+
+//   // ===== Media =====
+//   thumbnailUrl: string;
+//   trailerUrl?: string | null;
+
+//   // ===== Meta =====
+//   status: CourseStatus;
+//   language: Language;
+//   level: CourseLevel;
+
+//   // ===== Ownership & Category =====
+//   category?: {
+//     id: string;
+//     name: string;
+//   } | null;
+
+//   createdBy?: {
+//     id: string;
+//     fullName?: string | null;
+//     avatarUrl?: string | null;
+//   } | null;
+
+//   // ===== Relations (counts or summaries) =====
+//   tags?: {
+//     id: string;
+//     name: string;
+//   }[];
+
+//   // ===== Timestamps =====
+//   createdAt: string;
+//   updatedAt: string;
+//   deletedAt?: string | null;
+// };
 export interface FilterOption {
   value: string;
   label: string;
