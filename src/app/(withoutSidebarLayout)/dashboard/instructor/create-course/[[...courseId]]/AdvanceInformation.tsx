@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { CloudUpload, ImageIcon, Loader, Play, Plus, Trash, Upload } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
-import { type ChangeEvent, useState } from "react";
+import { type ChangeEvent, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as tus from "tus-js-client";
 import z from "zod";
@@ -12,6 +12,7 @@ import { type CreateCourseData } from "./page.tsx";
 import StepHeader from "./StepHeader.tsx";
 
 type CourseDescriptionForm = {
+  trailerUrl?: string;
   objectives: string;
   description: string;
   whyThisCourse: string[];
@@ -21,6 +22,7 @@ type CourseDescriptionForm = {
 };
 
 const CourseDescriptionSchema = z.object({
+  trailerUrl: z.url("Trailer Url is invalid. Please provide a valid URL.").optional(),
   objectives: z
     .string()
     .trim()
@@ -132,6 +134,12 @@ function AdvanceInformation({
   const [uploadPercentage, setUploadPercentage] = useState<string>("");
   const [preview, setPreview] = useState<string>(courseData.thumbnailUrl || "");
   const [videoPreview, setVideoPreview] = useState<string>(courseData.trailerUrl || "");
+  const [videoData, setVideoData] = useState<{
+    libraryId: string;
+    token: string;
+    expiresAt: number;
+    videoId: string;
+  } | null>(null);
   const { data: sessionData } = useSession();
   const {
     register,
@@ -140,6 +148,43 @@ function AdvanceInformation({
     setValue,
     formState: { errors, isSubmitting },
   } = useForm<CourseDescriptionForm>({ resolver: zodResolver(CourseDescriptionSchema) });
+
+  const getFileIdFromUrl = (url: string) => {
+    try {
+      const pathname = new URL(url).pathname;
+      const parts = pathname.split("/");
+      return parts.pop() || parts.pop();
+    } catch (_error: unknown) {
+      console.error("Invalid URL provided");
+      return "";
+    }
+  };
+
+  useEffect(() => {
+    if (!courseData.trailerUrl) {
+      return;
+    }
+    try {
+      const getVideoData = async () => {
+        const getVideoFromBunny = await apiClient.post<{
+          libraryId: string;
+          token: string;
+          videoId: string;
+          expiresAt: number;
+        }>("/course/get-video-url", {
+          filePath: getFileIdFromUrl(courseData.trailerUrl as string),
+          duration: 10,
+        });
+        if (!getVideoFromBunny.success) {
+          return;
+        }
+        if (getVideoFromBunny.data) {
+          setVideoData(getVideoFromBunny.data);
+        }
+      };
+      getVideoData();
+    } catch (_error: unknown) {}
+  }, [courseData.trailerUrl]);
 
   const onSubmit = (data: CourseDescriptionForm) => {
     const { objectives, description, whatYouTeach, targetAudience, requirements } = data;
@@ -153,6 +198,7 @@ function AdvanceInformation({
         targetAudience: targetAudience.join("||"),
         requirements: requirements.join("||"),
       }),
+      trailerUrl: data.trailerUrl,
     }));
     setCurrentStep(currentStep + 1);
   };
@@ -387,10 +433,7 @@ function AdvanceInformation({
               const objectUrl = URL.createObjectURL(file);
               setVideoPreview(objectUrl);
             }
-            setCourseData(prev => ({
-              ...prev,
-              trailerUrl: uploadResult.url,
-            }));
+            setValue("trailerUrl", uploadResult.url);
           } catch (error) {
             console.error("Error uploading video:", error);
           }
@@ -400,7 +443,6 @@ function AdvanceInformation({
         if (isImage) {
           try {
             const uploadResult = await uploadFileToBunny(file);
-            console.log("object",uploadResult)
             if (uploadResult.url) {
               const objectUrl = URL.createObjectURL(file);
               setPreview(objectUrl);
@@ -421,7 +463,6 @@ function AdvanceInformation({
   const handlePrevious = () => {
     setCurrentStep(currentStep - 1);
   };
-
   return (
     <div className='w-full bg-white'>
       {/* Header */}
@@ -505,22 +546,35 @@ function AdvanceInformation({
                         </span>
                       ) : (
                         <>
-                          {videoPreview ? (
+                          {videoData ? (
                             <>
-                              <video
-                                src={videoPreview}
-                                controls
-                                className='w-full h-full rounded'
-                              >
-                                Your browser does not support the video tag.
-                              </video>
+                              <iframe
+                                className='w-full h-full'
+                                src={`https://iframe.mediadelivery.net/embed/${videoData.libraryId}/${videoData.videoId}?token=${videoData.token}&expires=${videoData.expiresAt}`}
+                                allow='encrypted-media; autoplay'
+                                allowFullScreen
+                              />
                             </>
                           ) : (
-                            <Play
-                              size={90}
-                              strokeWidth={1}
-                              className='text-gray-500'
-                            />
+                            <>
+                              {videoPreview ? (
+                                <>
+                                  <video
+                                    src={videoPreview}
+                                    controls
+                                    className='w-full h-full rounded'
+                                  >
+                                    Your browser does not support the video tag.
+                                  </video>
+                                </>
+                              ) : (
+                                <Play
+                                  size={90}
+                                  strokeWidth={1}
+                                  className='text-gray-500'
+                                />
+                              )}
+                            </>
                           )}
                         </>
                       )}
@@ -546,6 +600,13 @@ function AdvanceInformation({
                     id='thumbUpload'
                     hidden
                     accept='.mp4,.mov,.webm'
+                  />
+
+                  {/* This input is only for holding trailer video url */}
+                  <input
+                    type='hidden'
+                    {...register("trailerUrl")}
+                    value={courseData.trailerUrl || ""}
                   />
                 </div>
               </div>

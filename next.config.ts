@@ -45,7 +45,8 @@ const nextConfig: NextConfig = {
 
     unoptimized: false,
     dangerouslyAllowSVG: false,
-    contentSecurityPolicy: `default-src 'self'; script-src 'none'; sandbox;`,
+    // contentSecurityPolicy: `default-src 'self'; script-src 'none'; sandbox;`,
+    contentSecurityPolicy: `default-src 'self'; script-src 'self'; sandbox;`,
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     minimumCacheTTL: 60 * 60 * 24, // 24 hours
@@ -265,7 +266,7 @@ const securityHeaders = [
     key: "Content-Security-Policy",
     value: `
     default-src 'self';
-    script-src 'self' 'unsafe-inline' ${config.NODE_ENV === "development" ? "'unsafe-eval'" : ""};
+    script-src 'self' 'unsafe-inline' ${config.NODE_ENV === "development" ? "'unsafe-eval'" : ""} http://assets.mediadelivery.net;
     style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
     img-src 'self' data: https: blob:;
     font-src 'self' https://fonts.gstatic.com;
@@ -273,9 +274,9 @@ const securityHeaders = [
       config.NODE_ENV === "development"
         ? "http://localhost:5000"
         : process.env["NEXT_PUBLIC_API_URL"] || ""
-    } https://vitals.vercel-insights.com;
+    } https://vitals.vercel-insights.com https://video.bunnycdn.com;
     frame-ancestors 'none';
-    frame-src 'none';
+    frame-src https://iframe.mediadelivery.net;
     object-src 'none';
     base-uri 'self';
     form-action 'self';

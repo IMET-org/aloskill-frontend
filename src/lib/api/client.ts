@@ -25,7 +25,6 @@ class ApiClient {
     };
 
     try {
-      // FIX: Use proper template literal
       const response = await fetch(`${this.baseURL}${endpoint}`, {
         ...options,
         headers,
@@ -63,23 +62,23 @@ class ApiClient {
   }
 
   async postFormData<T>(endpoint: string, formData: FormData): Promise<ApiResponse<T>> {
-  const session = await getSession();
-  const headers: HeadersInit = {
-    ...(session?.accessToken ? { Authorization: `Bearer ${session.accessToken}` } : {}),
-  };
-  try {
-    const response = await fetch(`${this.baseURL}${endpoint}`, {
-      method: "POST",
-      body: formData,
-      headers,
-    });
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error("API request error:", error);
-    return { success: false, message: "Network error." };
+    const session = await getSession();
+    const headers: HeadersInit = {
+      ...(session?.accessToken ? { Authorization: `Bearer ${session.accessToken}` } : {}),
+    };
+    try {
+      const response = await fetch(`${this.baseURL}${endpoint}`, {
+        method: "POST",
+        body: formData,
+        headers,
+      });
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("API request error:", error);
+      return { success: false, message: "Network error." };
+    }
   }
-}
 
   // PUT request
   async put<T>(endpoint: string, body?: unknown): Promise<ApiResponse<T>> {
@@ -98,9 +97,10 @@ class ApiClient {
   }
 
   // DELETE request
-  async delete<T>(endpoint: string): Promise<ApiResponse<T>> {
+  async delete<T>(endpoint: string, body?: unknown): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, {
       method: "DELETE",
+      body: JSON.stringify(body),
     });
   }
 }
