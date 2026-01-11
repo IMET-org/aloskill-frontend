@@ -641,8 +641,8 @@ async function enforceExamSecurity(
 function addAdvancedSecurityHeaders(response: NextResponse, _request: NextRequest) {
   // Content Security Policy with LMS-specific directives
   const cspDirectives = [
-    "default-src 'self'",
-    "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
+    "default-src 'self' https://iframe.mediadelivery.net",
+    "script-src 'self' 'unsafe-eval' 'unsafe-inline' http://assets.mediadelivery.net",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "img-src 'self' data: https: blob:",
     "font-src 'self' https://fonts.gstatic.com",

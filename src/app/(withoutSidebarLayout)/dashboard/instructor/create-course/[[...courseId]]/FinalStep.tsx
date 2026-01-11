@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Search, UserCircleIcon, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
+import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
@@ -86,16 +87,22 @@ const FinalStep = ({
   setCurrentStep,
   courseData,
   setCourseData,
+  isParamsExisting,
+  setCourseUploadError,
 }: {
   currentStep: number;
   setCurrentStep: (step: number) => void;
   courseData: CreateCourseData;
   setCourseData: React.Dispatch<React.SetStateAction<CreateCourseData>>;
+  setCourseUploadError: React.Dispatch<React.SetStateAction<string>>;
+  isParamsExisting: boolean;
 }) => {
   const { data: session } = useSession();
   const [paymentSelection, setPaymentSelection] = useState<"paid" | "free">("paid");
   const [query, setQuery] = useState<string>("");
-  const [dataSaveMode, setDataSaveMode] = useState<"draft" | "publish">("draft");
+  const [dataSaveMode, setDataSaveMode] = useState<
+    "draft" | "publish" | "update" | "updateAndPublish"
+  >("draft");
   const [results, setResults] = useState<
     | {
         userId: string;
@@ -140,6 +147,12 @@ const FinalStep = ({
     fetchInstructors();
   }, [debouncedQuery]);
 
+  useEffect(() => {
+    if (courseData.courseInstructors && courseData.courseInstructors.length > 0) {
+      setValue("courseInstructors", courseData.courseInstructors);
+    }
+  }, [courseData.courseInstructors, setValue]);
+
   const { fields, append, remove } = useFieldArray({
     name: "courseInstructors",
     control,
@@ -176,7 +189,38 @@ const FinalStep = ({
     }));
   };
 
-  const onFormSubmit = (data: FinalStepForm) => {
+  const handleCourseSaveToDb = async (data: FinalStepForm, status: string) => {
+    const { originalPrice, discountPrice } = data;
+    const { allCategory: _allCategory, ...restCourseData } = courseData;
+    const courseSaveToDB = await apiClient.post(
+      `/course/create-course?user=${session?.user.email}`,
+      {
+        ...restCourseData,
+        originalPrice: Number(originalPrice),
+        discountPrice: Number(discountPrice),
+        discountEndDate: data.discountEndDate ? new Date(data.discountEndDate) : null,
+        welcomeMessage: data.welcomeMessage,
+        congratulationsMessage: data.congratulationsMessage,
+        courseInstructors: data.courseInstructors,
+        status: status,
+      }
+    );
+    return courseSaveToDB;
+  };
+
+  const errorMessages = {
+    Unauthorized: "You are not authorized to perform this action.",
+    "Validation failed": "Please fill the required fields correctly.",
+    "Internal Server Error":
+      "Something went wrong while saving your course. Please try again later.",
+    "Database operation failed":
+      "Something went wrong while saving your course. Please try again later.",
+    "Duplicate entry found": "This course already exists in our database.",
+    "Unknown error occurred":
+      "Something went wrong while saving your course. Please try again later.",
+  };
+
+  const onFormSubmit = async (data: FinalStepForm) => {
     const { originalPrice, discountPrice } = data;
     const { allCategory: _allCategory, ...restCourseData } = courseData;
     setCourseData(prev => ({
@@ -189,32 +233,88 @@ const FinalStep = ({
       courseInstructors: data.courseInstructors,
     }));
     if (dataSaveMode === "publish") {
-      const courseSaveToDB = apiClient.post(`/course/create-course?user=${session?.user.email}`, {
-        ...restCourseData,
-        originalPrice: Number(originalPrice),
-        discountPrice: Number(discountPrice),
-        discountEndDate: data.discountEndDate ? new Date(data.discountEndDate) : null,
-        welcomeMessage: data.welcomeMessage,
-        congratulationsMessage: data.congratulationsMessage,
-        courseInstructors: data.courseInstructors,
-        status: "PUBLISHED",
-      });
-      console.log("Response from DB : ", courseSaveToDB);
-      return;
+      const backendData = await handleCourseSaveToDb(data, "PUBLISHED");
+      if (!backendData.success) {
+        const message =
+          backendData.message && typeof backendData.message === "string"
+            ? errorMessages[backendData.message as keyof typeof errorMessages] ||
+              backendData.message
+            : "Unknown error occurred";
+        setCourseUploadError(message);
+      }
+      console.log("Response from DB : ", backendData);
+      if (backendData.success) {
+        redirect("/dashboard/instructor/course");
+      }
     }
     if (dataSaveMode === "draft") {
-      const courseSaveToDB = apiClient.post(`/course/create-course?user=${session?.user.email}`, {
-        ...restCourseData,
-        originalPrice: Number(originalPrice),
-        discountPrice: Number(discountPrice),
-        discountEndDate: data.discountEndDate ? new Date(data.discountEndDate) : null,
-        welcomeMessage: data.welcomeMessage,
-        congratulationsMessage: data.congratulationsMessage,
-        courseInstructors: data.courseInstructors,
-        status: "DRAFT",
-      });
-      console.log("Response from DB : ", courseSaveToDB);
-      return;
+      const backendData = await handleCourseSaveToDb(data, "DRAFT");
+      if (!backendData.success) {
+        const message =
+          backendData.message && typeof backendData.message === "string"
+            ? errorMessages[backendData.message as keyof typeof errorMessages] ||
+              backendData.message
+            : "Unknown error occurred";
+        setCourseUploadError(message);
+      }
+      console.log("Response from DB : ", backendData);
+      if (backendData.success) {
+        redirect("/dashboard/instructor/course");
+      }
+    }
+    if (dataSaveMode === "update") {
+      const backendData = await apiClient.patch(
+        `/course/editOrUpdate-course?user=${session?.user.email}`,
+        {
+          ...restCourseData,
+          originalPrice: Number(originalPrice),
+          discountPrice: Number(discountPrice),
+          discountEndDate: data.discountEndDate ? new Date(data.discountEndDate) : null,
+          welcomeMessage: data.welcomeMessage,
+          congratulationsMessage: data.congratulationsMessage,
+          courseInstructors: data.courseInstructors,
+          status: courseData.status,
+        }
+      );
+      if (!backendData.success) {
+        const message =
+          backendData.message && typeof backendData.message === "string"
+            ? errorMessages[backendData.message as keyof typeof errorMessages] ||
+              backendData.message
+            : "Unknown error occurred";
+        setCourseUploadError(message);
+      }
+      console.log("Response from DB for update: ", backendData);
+      if (backendData.success) {
+        redirect("/dashboard/instructor/course");
+      }
+    }
+    if (dataSaveMode === "updateAndPublish") {
+      const backendData = await apiClient.patch(
+        `/course/editOrUpdate-course?user=${session?.user.email}`,
+        {
+          ...restCourseData,
+          originalPrice: Number(originalPrice),
+          discountPrice: Number(discountPrice),
+          discountEndDate: data.discountEndDate ? new Date(data.discountEndDate) : null,
+          welcomeMessage: data.welcomeMessage,
+          congratulationsMessage: data.congratulationsMessage,
+          courseInstructors: data.courseInstructors,
+          status: "PUBLISHED",
+        }
+      );
+      if (!backendData.success) {
+        const message =
+          backendData.message && typeof backendData.message === "string"
+            ? errorMessages[backendData.message as keyof typeof errorMessages] ||
+              backendData.message
+            : "Unknown error occurred";
+        setCourseUploadError(message);
+      }
+      console.log("Response from DB for update: ", backendData);
+      if (backendData.success) {
+        redirect("/dashboard/instructor/course");
+      }
     }
     console.log("courseData : ", courseData, "data : ", data);
   };
@@ -292,6 +392,15 @@ const FinalStep = ({
                 onClick={() => {
                   setPaymentSelection("free");
                   setValue("paymentSelection", "free");
+                  setValue("originalPrice", "");
+                  setValue("discountPrice", "");
+                  setValue("discountEndDate", "");
+                  setCourseData(prev => ({
+                    ...prev,
+                    originalPrice: 0,
+                    discountPrice: 0,
+                    discountEndDate: null,
+                  }));
                 }}
               >
                 Free
@@ -343,11 +452,11 @@ const FinalStep = ({
                     {...register("discountEndDate")}
                     type='date'
                     placeholder='Discount End Date'
-                    defaultValue={
-                      courseData.discountEndDate instanceof Date
-                        ? courseData.discountEndDate.toISOString().slice(0, 10)
-                        : ""
-                    }
+                    defaultValue={(() => {
+                      if (!courseData.discountEndDate) return "";
+                      const date = new Date(courseData.discountEndDate);
+                      return isNaN(date.getTime()) ? "" : date.toISOString().slice(0, 10);
+                    })()}
                     min={new Date().toISOString().slice(0, 10)}
                     className={`w-full px-4 py-1.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-orange-light focus:border-transparent placeholder:text-sm ${errors["discountEndDate"] ? "border-red-200 bg-red-50" : "border-gray-200"}`}
                   />
@@ -441,6 +550,8 @@ const FinalStep = ({
               isSubmitting={isSubmitting}
               currentStep={currentStep}
               setDataSaveMode={setDataSaveMode}
+              isParamsExisting={isParamsExisting}
+              isDraft={courseData.status === "DRAFT" ? true : false}
             />
           </div>
         </form>

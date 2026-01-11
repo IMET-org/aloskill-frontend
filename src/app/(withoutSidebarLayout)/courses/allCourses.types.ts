@@ -1,5 +1,3 @@
-
-
 export interface CourseInstructor {
   name: string;
   avatar: string;
@@ -27,6 +25,188 @@ export interface Course {
 
   instructor: CourseInstructor;
 }
+export type CourseStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
+export type Language = "ENGLISH" | "BANGLA" | string;
+export type CourseLevel = "BEGINNER" | "INTERMEDIATE" | "ADVANCED" | "EXPERT" | string;
+export type CourseType = {
+  id: string;
+  title: string;
+  status: CourseStatus;
+  originalPrice: number;
+  discountPrice: number | null;
+  thumbnailUrl: string | null | undefined;
+  createdAt: Date;
+  updatedAt?: Date;
+  description?: string | null | undefined;
+  previewVideoUrl?: string | null;
+  level?: "beginner" | "intermediate" | "advanced" | string;
+  language?: string | null;
+  rating?: number | null;
+  modules: {
+    _count: {
+      lessons: number;
+    };
+    lessons: {
+      duration: number | null;
+    }[];
+  }[];
+  category: {
+    name: string;
+  } | null;
+  courseInstructors: {
+    role: string | null;
+  }[];
+  _count: {
+    enrollments: number;
+    reviews: number;
+  };
+  instructor?: {
+    id?: string;
+    name?: string;
+    bio?: string;
+    avatarUrl?: string;
+  } | null;
+};
+export type CourseCardProps = {
+  id: string;
+  image: string;
+  category: string;
+  categoryColor?: string;
+  rating: number;
+  reviewCount: number;
+  price: number;
+  originalPrice?: number;
+  discount?: number;
+  title: string;
+  status: CourseStatus;
+  lessons: number;
+  duration: string;
+  students: number;
+  instructor: {
+    name: string;
+    avatar?: string;
+  };
+
+  onEnroll?: (courseId: string) => void;
+  onAddToCart?: (courseId: string) => void;
+  onAddToWishlist?: (courseId: string) => Promise<void> | void;
+
+  isInCart?: boolean;
+  isInWishlist?: boolean;
+
+  /** Dashboard-only actions */
+  dashboardActions?: {
+    onView?: (courseId: string) => void;
+    onEdit?: (courseId: string) => void;
+    onDelete?: (courseId: string) => void;
+  };
+};
+export type CourseDetails = {
+  title: string;
+  originalPrice: number;
+  discountPrice: number | null;
+  isDiscountActive: boolean;
+  currency: string | null;
+  enrollmentCount: number;
+  enrolledLastWeek: number;
+  language: string;
+  thumbnailUrl: string | null;
+  level: string;
+  ratingAverage: number | null;
+  ratingCount: number;
+  views: number;
+  createdAt: string;
+  updatedAt: string;
+  tags: string[];
+  category: string | undefined;
+  totalWishListed: number;
+  createdBy: {
+    displayName: string | undefined;
+    avatarUrl: string | null | undefined;
+  };
+  courseInstructors: {
+    role: string | null;
+    displayName: string;
+    avatarUrl: string | null;
+  }[];
+  reviews: {
+    rating: number;
+    body: string | null;
+    createdAt: string;
+    userDisplayName: string | undefined;
+    avatarUrl: string | null;
+  }[];
+  content: {
+    totalVideos: number;
+    totalDuration: string;
+    totalFiles: number;
+  };
+  ratingBreakdown: {
+    star: number;
+    count: number;
+    percentage: string;
+  }[];
+};
+// export type CourseDetails = {
+//   // ===== Core =====
+//   id: string;
+//   title: string;
+//   slug: string;
+//   description: string;
+
+//   welcomeMessage?: string | null;
+//   congratulationsMessage?: string | null;
+
+//   // ===== Pricing =====
+//   originalPrice: number;
+//   discountPercent?: number | null;
+//   discountPrice?: number | null;
+//   discountEndDate?: string | null;
+//   isDiscountActive: boolean;
+//   currency?: string | null;
+
+//   // ===== Stats =====
+//   enrollmentCount: number;
+//   reviewCount: number;
+//   moduleCount: number;
+//   views: number;
+
+//   ratingAverage?: number | null;
+//   ratingCount: number;
+//   totalRevenueAmount: number;
+
+//   // ===== Media =====
+//   thumbnailUrl: string;
+//   trailerUrl?: string | null;
+
+//   // ===== Meta =====
+//   status: CourseStatus;
+//   language: Language;
+//   level: CourseLevel;
+
+//   // ===== Ownership & Category =====
+//   category?: {
+//     id: string;
+//     name: string;
+//   } | null;
+
+//   createdBy?: {
+//     id: string;
+//     fullName?: string | null;
+//     avatarUrl?: string | null;
+//   } | null;
+
+//   // ===== Relations (counts or summaries) =====
+//   tags?: {
+//     id: string;
+//     name: string;
+//   }[];
+
+//   // ===== Timestamps =====
+//   createdAt: string;
+//   updatedAt: string;
+//   deletedAt?: string | null;
+// };
 export interface FilterOption {
   value: string;
   label: string;

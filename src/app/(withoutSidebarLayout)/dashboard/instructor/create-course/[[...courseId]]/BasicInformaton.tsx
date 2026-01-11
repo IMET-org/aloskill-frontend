@@ -3,6 +3,7 @@
 import { useDebounce } from "@/hooks/useDebounce.ts";
 import { apiClient } from "@/lib/api/client.ts";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import z from "zod";
@@ -77,27 +78,34 @@ const BasicInformaton = ({
   >([]);
 
   const checkUniqueSlug = useCallback(async (slug: string) => {
-    if (!slug) return;
+    if (!slug) return false;
+    if(courseData.slug === slug) return true;
     try {
-      const response = await apiClient.get(`/course/slug-check/${slug}`);
+      const response = await apiClient.get<{ canProceed: boolean }>(`/course/slug-check/${slug}`);
       if (response.success && response.data) {
-        const userData = response.data as { result: { canProceed: boolean } };
-        if (!userData?.result?.canProceed) {
+        const userData = response.data;
+        if (!userData?.canProceed) {
           setSlugError("This slug is already registered. Please enter a new slug");
-          return;
+          return false;
         } else {
           setSlugError("");
+          return true;
         }
+      } else {
+        return false;
       }
     } catch (error) {
       console.error("Error checking slug uniqueness:", error);
+      setSlugError("Error checking slug");
+      return false;
     }
-  }, []);
+  }, [courseData.slug]);
 
   const {
     register,
     handleSubmit,
     setValue,
+    reset,
     watch,
     formState: { errors, isSubmitting },
   } = useForm<BasicInfoForm>({
@@ -108,17 +116,27 @@ const BasicInformaton = ({
       tags: courseData.tags,
       category: courseData.category,
       subCategory: courseData.subCategory,
-      language: courseData.language || "ENGLISH",
-      level: courseData.level || "BEGINNER",
+      language: courseData.language,
+      level: courseData.level,
     },
   });
 
+  useEffect(() => {
+    reset({
+      title: courseData.title,
+      slug: courseData.slug,
+      tags: courseData.tags,
+      subCategory: courseData.subCategory,
+      language: courseData.language,
+      level: courseData.level,
+    });
+  }, [courseData, reset]);
+
   const onSubmit = useCallback(
-    (data: BasicInfoForm) => {
+    async (data: BasicInfoForm) => {
       const { slug, ...rest } = data;
-      checkUniqueSlug(slug);
-      // const selectedCat = courseData.category.find(cat => cat.name === selectedCategory);
-      // const subCat = selectedCat?.children?.find(sub => sub.name === subCategory);
+      const isValidSlug = await checkUniqueSlug(slug);
+      if (!isValidSlug) return;
       setCourseData(prev => ({
         ...prev,
         ...rest,
@@ -130,23 +148,24 @@ const BasicInformaton = ({
   );
 
   useEffect(() => {
-    if (courseData.category) {
+    if (courseData.category !== "") {
       setSelectedCategory(courseData.category);
       setValue("category", courseData.category);
+    }
+
+    if (courseData.category === "" && courseData.subCategory) {
+      const findCategory = courseData.allCategory.find(category =>
+        category.children.some(child => child.name === courseData.subCategory)
+      );
+      setSelectedCategory(findCategory?.name ?? "");
+      setValue("category", findCategory?.name ?? "");
     }
 
     if (courseData.subCategory) {
       setSelectedSubCategory(courseData.subCategory);
       setValue("subCategory", courseData.subCategory);
     }
-  }, [courseData.category, courseData.subCategory, setValue]);
-
-  const handleTitleChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setCourseData(prev => ({ ...prev, title: e.target.value }));
-    },
-    [setCourseData]
-  );
+  }, [courseData.category, courseData.subCategory, setValue, courseData.allCategory]);
 
   const handleCategoryChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedCategory(e.target.value);
@@ -165,7 +184,6 @@ const BasicInformaton = ({
   };
 
   const subCategories = () => {
-    // return courseData.allCategory.filter(cat => cat.name === selectedCategory);
     return courseData.allCategory.find(cat => cat.name === selectedCategory)?.children ?? [];
   };
 
@@ -196,6 +214,9 @@ const BasicInformaton = ({
   }, [debouncedQuery]);
 
   const tags = watch("tags") ?? [];
+  const watchedTitle = watch("title");
+  const watchedSlug = watch("slug");
+  const watchedCategory = watch("category");
 
   const handleAddTags = (tag: string) => {
     if (!tag.trim()) return;
@@ -221,7 +242,11 @@ const BasicInformaton = ({
     );
   };
   if (loading) {
-    return <h1>Loading...</h1>;
+    return (
+      <h1 className='p-8 flex items-center gap-3'>
+        <Loader className='animate-spin h-5 w-5' /> Loading...
+      </h1>
+    );
   }
 
   return (
@@ -242,15 +267,14 @@ const BasicInformaton = ({
               <div className='relative'>
                 <input
                   {...register("title")}
-                  onChange={handleTitleChange}
                   type='text'
-                  defaultValue={courseData.title}
+                  value={watchedTitle}
                   placeholder='You course tittle'
                   maxLength={100}
                   className={`w-full px-4 py-1.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-orange-light focus:border-transparent placeholder:text-sm ${errors.title ? "border-red-200 bg-red-50" : "border-gray-200"}`}
                 />
                 <span
-                  className={`absolute right-4 ${errors.title ? "top-[15%] bg-red-50" : "top-1/2 -translate-y-1/2 bg-white"} text-xs text-gray-400 pl-2`}
+                  className={`absolute right-4 ${errors.title ? "top-[20%] bg-red-50" : "top-1/2 -translate-y-1/2 bg-white"} text-xs text-gray-400 pl-2`}
                 >
                   {courseData?.title?.length}/100
                 </span>
@@ -265,28 +289,32 @@ const BasicInformaton = ({
               <label className='block text-xs font-medium text-gray-700 mb-2'>Slug</label>
               <div className='relative'>
                 <input
-                  {...register("slug")}
-                  onChange={e => {
-                    const slugify = (text: string) =>
-                      text
-                        .toLowerCase()
-                        .trim()
-                        .replace(/[^\w\s-]/g, "")
-                        .replace(/[\s_-]+/g, "-")
-                        .replace(/^-+|-+$/g, "");
-                    setValue("slug", slugify(e.target.value), {
-                      shouldDirty: true,
-                      shouldValidate: true,
-                    });
-                  }}
+                  {...register("slug", {
+                    onBlur: e => {
+                      const slugify = (text: string) =>
+                        text
+                          .toLowerCase()
+                          .trim()
+                          .replace(/[^\w\s-]/g, "")
+                          .replace(/[\s_-]+/g, "-")
+                          .replace(/^-+|-+$/g, "");
+                      setValue("slug", slugify(e.target.value), {
+                        shouldDirty: true,
+                        shouldValidate: true,
+                      });
+                    },
+                    onChange: _e => {
+                      setSlugError("");
+                    },
+                  })}
                   type='text'
-                  defaultValue={courseData.slug}
+                  value={watchedSlug}
                   placeholder='Your course slug'
                   maxLength={50}
-                  className={`w-full px-4 py-1.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-orange-light focus:border-transparent placeholder:text-sm ${errors.slug ? "border-red-200 bg-red-50" : "border-gray-200"}`}
+                  className={`w-full px-4 py-1.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-orange-light focus:border-transparent placeholder:text-sm ${slugError || errors.slug ? "border-red-200 bg-red-50" : "border-gray-200"}`}
                 />
                 <span
-                  className={`absolute right-4 ${errors.slug ? "top-[15%] bg-red-50" : "top-1/2 -translate-y-1/2 bg-white"} text-xs text-gray-400 pl-2`}
+                  className={`absolute right-4 ${slugError || errors.slug ? "top-[20%] bg-red-50" : "top-1/2 -translate-y-1/2 bg-white"} text-xs text-gray-400 pl-2`}
                 >
                   {courseData?.slug?.length}/50
                 </span>
@@ -369,7 +397,7 @@ const BasicInformaton = ({
                 </label>
                 <select
                   {...register("category")}
-                  value={selectedCategory}
+                  defaultValue={watchedCategory}
                   onChange={handleCategoryChange}
                   className='w-full px-4 py-2.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-orange-light focus:border-transparent bg-white appearance-none cursor-pointer text-sm text-gray-400'
                   style={{
@@ -404,7 +432,7 @@ const BasicInformaton = ({
                 </label>
                 <select
                   {...register("subCategory")}
-                  value={selectedSubCategory}
+                  defaultValue={selectedSubCategory}
                   onChange={handleSubCategoryChange}
                   className={`w-full px-4 py-2.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-orange-light focus:border-transparent bg-white appearance-none cursor-pointer text-sm text-gray-400 ${errors.subCategory ? "border-red-200 bg-red-50" : "border-gray-200"}`}
                   style={{

@@ -1,164 +1,116 @@
 "use client";
 
-import {
-  Award,
-  BarChart2,
-  Eye,
-  Globe,
-  Heart,
-  MoreHorizontal,
-  Play,
-  Star,
-  Users,
-} from "lucide-react";
+import type { CourseDetails } from "@/app/(withoutSidebarLayout)/courses/allCourses.types.ts";
+import { apiClient } from "@/lib/api/client";
+import { Award, BarChart2, Eye, Globe, Heart, Play, Star, Users } from "lucide-react";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { apiClient } from "@/lib/api/client";
-
-type CourseDetails = {
-  title: string;
-  originalPrice: number;
-  discountPrice: number | null;
-  isDiscountActive: boolean;
-  currency: string | null;
-  enrollmentCount: number;
-  enrolledLastWeek: number;
-  language: string;
-  level: string;
-  ratingAverage: number | null;
-  ratingCount: number;
-  views: number;
-  createdAt: Date;
-  updatedAt: Date;
-  tags: string[];
-  category: string | undefined;
-  totalWishListed: number;
-  createdBy: {
-    displayName: string | undefined;
-    avatarUrl: string | null | undefined;
-  };
-  courseInstructors: {
-    role: string | null;
-    displayName: string;
-    avatarUrl: string | null;
-  }[];
-  reviews: {
-    rating: number;
-    body: string | null;
-    createdAt: Date;
-    userDisplayName: string | undefined;
-    avatarUrl: string | null;
-  }[];
-  content: {
-    totalVideos: number;
-    totalDuration: string;
-    totalFiles: number;
-  };
-  ratingBreakdown: {
-    star: number;
-    count: number;
-    percentage: string;
-  }[];
-};
 
 const CourseDetailPage = () => {
+  const [apiError, setApiError] = useState<string>("");
+  const [courseDetails, setCourseDetails] = useState<CourseDetails | null>(null);
+
+  const { id } = useParams<{ id: string }>();
+
+  useEffect(() => {
+    const getCourseData = async () => {
+      try {
+        setApiError("");
+
+        const response = await apiClient.get<CourseDetails>(`/course/course/${id}`);
+        console.log("response: ", response);
+        if (!response.success || !response.data) {
+          setApiError(response.message || "Something went wrong!");
+          return;
+        }
+
+        setCourseDetails(response.data);
+      } catch (error) {
+        setApiError(error instanceof Error ? error.message : "Something went wrong!");
+      }
+    };
+
+    if (id) getCourseData();
+  }, [id]);
+
+  if (apiError) {
+    return <p className='text-red-500'> this is apiERROR : {apiError}</p>;
+  }
+
+  if (!courseDetails) {
+    return <p>Loading...</p>;
+  }
   // Course Stats Data
   const stats = [
     {
       icon: Play,
-      value: "1,957",
+      value: courseDetails.enrollmentCount,
       label: "Students Enrolled",
       bgColor: "bg-red-50",
       iconColor: "text-red-500",
     },
     {
       icon: BarChart2,
-      value: "51,439",
+      value: courseDetails.content.totalVideos,
       label: "Total Video",
       bgColor: "bg-purple-50",
       iconColor: "text-purple-500",
     },
     {
       icon: Users,
-      value: "9,416,418",
+      value: courseDetails.enrolledLastWeek,
       label: "Enrolled Last Week",
       bgColor: "bg-red-50",
       iconColor: "text-red-500",
     },
     {
       icon: Award,
-      value: "Beginner",
+      value: courseDetails.level,
       label: "Skill level",
       bgColor: "bg-green-50",
       iconColor: "text-green-500",
     },
     {
       icon: Globe,
-      value: "Mandarin",
+      value: courseDetails.language,
       label: "Language",
       bgColor: "bg-gray-50",
       iconColor: "text-gray-700",
     },
     {
       icon: Award,
-      value: "142",
+      value: courseDetails.content.totalFiles,
       label: "Total File Size",
       bgColor: "bg-orange-50",
       iconColor: "text-orange-500",
     },
     {
       icon: Heart,
-      value: "19,37:51",
+      value: courseDetails.content.totalDuration,
       label: "Time",
       bgColor: "bg-purple-50",
       iconColor: "text-purple-500",
     },
     {
       icon: Eye,
-      value: "76,395,167",
+      value: courseDetails.views,
       label: "View",
       bgColor: "bg-gray-50",
       iconColor: "text-gray-700",
     },
   ];
-  const [apiError, setApiError] = useState<string>("");
-  const [courseDetails, setCourseDetails] = useState<CourseDetails>();
-
-  const { id } = useParams();
-
-  useEffect(() => {
-    try {
-      const getCourseData = async () => {
-        const responseFromDb = await apiClient.get<CourseDetails>(`/course/course/${id}/`);
-        if (!responseFromDb.success) {
-          setApiError(responseFromDb.message || "Something went wrong!");
-          return;
-        }
-        setCourseDetails(responseFromDb.data);
-      };
-      getCourseData();
-    } catch (error: unknown) {
-      setApiError((error as Error).message || "Something went wrong!");
-    }
-  }, [id]);
-console.log("course details", courseDetails);
-
+  console.log("course details", courseDetails);
+  console.log(courseDetails.thumbnailUrl);
   return (
     <div className='min-h-screen'>
       {/* Breadcrumb Navigation */}
       <div className='flex items-center text-sm text-gray-500 space-x-2 mb-4'>
-        <span className='hover:text-gray-700 cursor-pointer'>Course</span>
-        <span>/</span>
         <span className='hover:text-gray-700 cursor-pointer'>All Courses</span>
         <span>/</span>
-        <span className='hover:text-gray-700 cursor-pointer'>Developments</span>
+        <span className='hover:text-gray-700 cursor-pointer'>{courseDetails.category}</span>
         <span>/</span>
-        <span className='hover:text-gray-700 cursor-pointer'>Web Development</span>
-        <span>/</span>
-        <span className='text-gray-900 font-medium'>
-          2021 Complete Python Bootcamp From Zero to Hero in Python
-        </span>
+        <span className='text-gray-900 font-medium'>{courseDetails.title}</span>
       </div>
 
       <div className='w-full flex flex-col gap-4'>
@@ -168,10 +120,10 @@ console.log("course details", courseDetails);
             {/* Course Thumbnail */}
             <div className='shrink-0'>
               <Image
-                width={250}
-                height={200}
-                src='https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=300&h=200&fit=crop'
-                alt='Course thumbnail'
+                src={courseDetails.thumbnailUrl || "/images/course-placeholder.png"}
+                alt={courseDetails.title}
+                width={400}
+                height={225}
                 className='h-full object-cover rounded'
               />
             </div>
@@ -180,32 +132,28 @@ console.log("course details", courseDetails);
             <div className='flex-1 flex flex-col gap-2'>
               {/* Course Creation info */}
               <div className='flex items-center gap-6'>
-                <span className='text-xs text-gray-500'>Uploaded On: May 1st, 2023</span>
-                <span className='text-xs text-gray-500'>Updated On: May 1st, 2023</span>
+                <span className='text-xs text-gray-500'>Uploaded On:{courseDetails.createdAt}</span>
+                <span className='text-xs text-gray-500'>Updated On: {courseDetails.updatedAt}</span>
               </div>
               {/* Title */}
-              <h4 className='font-bold text-gray-900'>
-                2021 Complete Python Bootcamp From Zero to Hero in Python
-              </h4>
-              {/* Subtitle */}
-              <span className='text-xs text-gray-500'>
-                3 in 1 Course: Learn to design websites with Figma, build with Webflow, and make a
-                living freelancing.
-              </span>
-
+              <h4 className='font-bold text-gray-900'>{courseDetails.title}</h4>
               {/* Instructor Info */}
               <div className='w-full flex items-center justify-between'>
                 <div className='flex items-center space-x-3'>
                   <Image
                     width={80}
                     height={80}
-                    src='https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop'
+                    src={courseDetails.createdBy?.avatarUrl || "/images/instructor-placeholder.png"}
                     alt='Instructor'
                     className='w-10 h-10 rounded-full'
                   />
                   <div>
-                    <p className='text-sm font-medium text-gray-900'>Kevin Gilbert</p>
-                    <p className='text-xs text-gray-500'>Master Vedeo • 45,653 Wishlist</p>
+                    <p className='text-sm font-medium text-gray-900'>
+                      {courseDetails.createdBy.displayName}
+                    </p>
+                    <p className='text-xs text-gray-500'>
+                      Primary Instructor • {courseDetails.totalWishListed} Wishlist
+                    </p>
                   </div>
                 </div>
 
@@ -219,8 +167,12 @@ console.log("course details", courseDetails);
                       />
                     ))}
                   </div>
-                  <span className='text-sm font-semibold text-gray-900'>4.8</span>
-                  <span className='text-sm text-gray-500'>(451,444 Rating)</span>
+                  <span className='text-sm font-semibold text-gray-900'>
+                    {courseDetails.ratingAverage}
+                  </span>
+                  <span className='text-sm text-gray-500'>
+                    ({courseDetails.ratingCount} Rating)
+                  </span>
                 </div>
               </div>
 
@@ -228,17 +180,29 @@ console.log("course details", courseDetails);
               <div className='flex items-center justify-between'>
                 <div className='flex items-center space-x-4'>
                   <div className='flex items-center gap-2'>
-                    <span className='text-xl font-bold text-orange-light'>$13.99</span>
-                    <span className='text-lg text-gray-400 line-through'>$11,605,412.02</span>
+                    {courseDetails.isDiscountActive && (
+                      <>
+                        <span className='text-xl font-bold text-orange-light'>
+                          BDT {courseDetails.discountPrice}
+                        </span>
+                      </>
+                    )}
+                    <span
+                      className={`text-lg text-gray-600 ${courseDetails.isDiscountActive && "line-through"}`}
+                    >
+                      BDT {courseDetails.originalPrice}
+                    </span>
                   </div>
                 </div>
                 <div className='flex items-center space-x-3'>
-                  <button className='px-4 py-2 bg-orange-500 text-white text-sm font-semibold rounded hover:bg-orange transition-colors'>
-                    Withdrew Money
-                  </button>
-                  <button className='p-2 border border-gray-300 rounded hover:bg-gray-50 transition-colors'>
-                    <MoreHorizontal className='w-4 h-4 text-gray-600' />
-                  </button>
+                  {courseDetails.tags.map((tag, idx) => (
+                    <span
+                      key={idx}
+                      className='px-2 py-1 bg-gray-200 text-sm text-gray-900 rounded'
+                    >
+                      #{tag}
+                    </span>
+                  ))}
                 </div>
               </div>
             </div>
@@ -283,7 +247,9 @@ console.log("course details", courseDetails);
               <div className='flex flex-col gap-4'>
                 <div className='flex items-center gap-2 px-4 py-3 border-b border-gray-200'>
                   <div className='flex flex-col gap-1 items-center justify-center bg-[#FFF2E5] w-[40%] aspect-square rounded'>
-                    <div className='text-3xl font-bold text-gray-800'>4.6</div>
+                    <div className='text-3xl font-bold text-gray-800'>
+                      {courseDetails.ratingAverage}
+                    </div>
                     <div className='flex items-center justify-center'>
                       {[...Array(5)].map((_, i) => (
                         <svg
@@ -311,16 +277,16 @@ console.log("course details", courseDetails);
                   </svg>
                 </div>
                 <div className='flex flex-col gap-2 p-4 pt-0'>
-                  {[5, 4, 3, 2, 1].map((stars, idx) => (
+                  {courseDetails.ratingBreakdown.map((stars, idx) => (
                     <div
-                      key={stars}
+                      key={idx}
                       className='flex items-center space-x-3'
                     >
                       <div className='flex'>
                         {[...Array(5)].map((_, i) => (
                           <svg
                             key={i}
-                            className={`w-4 h-4 ${i < stars ? "text-orange-400" : "text-gray-300"}`}
+                            className={`w-4 h-4 ${i < stars.star ? "text-orange-400" : "text-gray-300"}`}
                             fill='currentColor'
                             viewBox='0 0 20 20'
                           >
@@ -328,14 +294,14 @@ console.log("course details", courseDetails);
                           </svg>
                         ))}
                       </div>
-                      <div className='flex-1 h-2 bg-gray-200 rounded-full overflow-hidden'>
+                      <div className='flex-1 h-2 bg-orange-400 rounded-full overflow-hidden'>
                         <div
-                          className='h-full bg-orange-400 rounded-full'
-                          style={{ width: `${[55, 27, 10, 5, 3][idx]}%` }}
+                          className='h-full bg-green-400 rounded-full'
+                          style={{ width: `${stars.percentage}` }}
                         ></div>
                       </div>
                       <span className='text-sm text-gray-600 w-10 text-right'>
-                        {[55, 27, 10, 5, 3][idx]}%
+                        {stars.percentage}
                       </span>
                     </div>
                   ))}
@@ -345,7 +311,7 @@ console.log("course details", courseDetails);
           </div>
         </div>
 
-        {/* Course Revenue*/}
+        {/* Course Reviews & Overview */}
         <div className='w-full h-[380px] flex gap-4 items-center'>
           <div className='bg-white rounded w-[45%] h-full overflow-y-auto'>
             <div className='flex items-center justify-between p-4 border-b border-gray-200'>
