@@ -1,5 +1,6 @@
 import type {
   CourseCardProps,
+  CourseStatus,
   CourseType,
 } from "@/app/(withoutSidebarLayout)/courses/allCourses.types.ts";
 
@@ -16,7 +17,7 @@ const normalizeNumber = (value: number | string | null): number => {
   return value;
 };
 
-export const mapCourseToCourseCardProps = (course: CourseType): CourseCardProps => {
+export const mapCourseToCourseCard = (course: CourseType): CourseCardProps => {
   const rawPrice =
     course.discountPrice !== null
       ? normalizeNumber(course.discountPrice)
@@ -34,16 +35,15 @@ export const mapCourseToCourseCardProps = (course: CourseType): CourseCardProps 
   return {
     id: course.id,
     title: course.title,
-
+    status: course.status as CourseStatus,
     image:
       course.thumbnailUrl ??
       "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=250&fit=crop",
 
     category: course.category?.name ?? "Uncategorized",
     categoryColor: "bg-orange-500",
-
-    price: rawPrice, // ✅ always number
-    originalPrice, // ✅ number | undefined
+    price: rawPrice,
+    originalPrice, 
 
     discount:
       originalPrice && rawPrice < originalPrice

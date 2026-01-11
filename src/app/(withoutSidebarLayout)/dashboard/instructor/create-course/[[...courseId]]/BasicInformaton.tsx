@@ -121,7 +121,6 @@ const BasicInformaton = ({
       title: courseData.title,
       slug: courseData.slug,
       tags: courseData.tags,
-      category: courseData.category,
       subCategory: courseData.subCategory,
       language: courseData.language,
       level: courseData.level,

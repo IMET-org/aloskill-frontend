@@ -1,5 +1,7 @@
 "use client";
 
+import type { CourseDetailsViewModel } from "@/app/(withoutSidebarLayout)/courses/allCourses.types.ts";
+import { apiClient } from "@/lib/api/client";
 import {
   Award,
   BarChart2,
@@ -14,53 +16,7 @@ import {
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { apiClient } from "@/lib/api/client";
-
-type CourseDetails = {
-  title: string;
-  originalPrice: number;
-  discountPrice: number | null;
-  isDiscountActive: boolean;
-  currency: string | null;
-  enrollmentCount: number;
-  enrolledLastWeek: number;
-  language: string;
-  level: string;
-  ratingAverage: number | null;
-  ratingCount: number;
-  views: number;
-  createdAt: Date;
-  updatedAt: Date;
-  tags: string[];
-  category: string | undefined;
-  totalWishListed: number;
-  createdBy: {
-    displayName: string | undefined;
-    avatarUrl: string | null | undefined;
-  };
-  courseInstructors: {
-    role: string | null;
-    displayName: string;
-    avatarUrl: string | null;
-  }[];
-  reviews: {
-    rating: number;
-    body: string | null;
-    createdAt: Date;
-    userDisplayName: string | undefined;
-    avatarUrl: string | null;
-  }[];
-  content: {
-    totalVideos: number;
-    totalDuration: string;
-    totalFiles: number;
-  };
-  ratingBreakdown: {
-    star: number;
-    count: number;
-    percentage: string;
-  }[];
-};
+import { mapCourseToDetailsViewModel } from "./courseDetails.mapper.ts";
 
 const CourseDetailPage = () => {
   // Course Stats Data
@@ -123,27 +79,40 @@ const CourseDetailPage = () => {
     },
   ];
   const [apiError, setApiError] = useState<string>("");
-  const [courseDetails, setCourseDetails] = useState<CourseDetails>();
+  const [courseDetails, setCourseDetails] = useState<CourseDetailsViewModel | null>(null);
 
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
 
   useEffect(() => {
-    try {
-      const getCourseData = async () => {
-        const responseFromDb = await apiClient.get<CourseDetails>(`/course/course/${id}/`);
-        if (!responseFromDb.success) {
-          setApiError(responseFromDb.message || "Something went wrong!");
+    const getCourseData = async () => {
+      try {
+        setApiError("");
+
+        const response = await apiClient.get<CourseDetailsViewModel>(`/course/course/${id}`);
+
+        if (!response.success || !response.data) {
+          setApiError(response.message || "Something went wrong!");
           return;
         }
-        setCourseDetails(responseFromDb.data);
-      };
-      getCourseData();
-    } catch (error: unknown) {
-      setApiError((error as Error).message || "Something went wrong!");
-    }
-  }, [id]);
-console.log("course details", courseDetails);
 
+        setCourseDetails(mapCourseToDetailsViewModel(response.data));
+      } catch (error) {
+        setApiError(error instanceof Error ? error.message : "Something went wrong!");
+      }
+    };
+
+    if (id) getCourseData();
+  }, [id]);
+
+  if (apiError) {
+    return <p className='text-red-500'> this is apiERROR : {apiError}</p>;
+  }
+
+  if (!courseDetails) {
+    return <p>Loading...</p>;
+  }
+  console.log("course details", courseDetails);
+  console.log(courseDetails.thumbnailUrl);
   return (
     <div className='min-h-screen'>
       {/* Breadcrumb Navigation */}
@@ -168,10 +137,10 @@ console.log("course details", courseDetails);
             {/* Course Thumbnail */}
             <div className='shrink-0'>
               <Image
-                width={250}
-                height={200}
-                src='https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=300&h=200&fit=crop'
-                alt='Course thumbnail'
+                src={courseDetails.thumbnailUrl}
+                alt={courseDetails.title}
+                width={400}
+                height={225}
                 className='h-full object-cover rounded'
               />
             </div>
@@ -180,7 +149,7 @@ console.log("course details", courseDetails);
             <div className='flex-1 flex flex-col gap-2'>
               {/* Course Creation info */}
               <div className='flex items-center gap-6'>
-                <span className='text-xs text-gray-500'>Uploaded On: May 1st, 2023</span>
+                <span className='text-xs text-gray-500'>Uploaded On:</span>
                 <span className='text-xs text-gray-500'>Updated On: May 1st, 2023</span>
               </div>
               {/* Title */}
