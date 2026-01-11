@@ -838,12 +838,23 @@ export default function CourseCurriculum({
     }));
   };
 
-  const deleteLectureFile = (
+  const deleteLectureFile = async (
     sectionId: number,
     lectureId: number,
     fileName?: string,
     type?: string
   ) => {
+    if (type === "video") {
+      const selectedModule = courseData.modules.find(m => m.position === sectionId);
+      const lesson = selectedModule?.lessons.find(l => l.position === lectureId);
+
+      if (lesson?.contentUrl?.url) {
+        const deletedResult = await apiClient.delete("/course/delete-video", { videoUrl: lesson.contentUrl.url });
+        if(!deletedResult.success){
+          return;
+        }
+      }
+    }
     setCourseData(prev => ({
       ...prev,
       modules: prev.modules.map(module => {
@@ -854,12 +865,6 @@ export default function CourseCurriculum({
               if (lesson.position === lectureId) {
                 if (type === "video") {
                   return { ...lesson, contentUrl: { name: "", url: "" } };
-                }
-                if (type === "description") {
-                  return { ...lesson, description: "" };
-                }
-                if (type === "notes") {
-                  return { ...lesson, notes: "" };
                 }
                 return {
                   ...lesson,

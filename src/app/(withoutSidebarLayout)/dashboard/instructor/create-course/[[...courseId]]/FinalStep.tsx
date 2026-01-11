@@ -273,6 +273,7 @@ const FinalStep = ({
           welcomeMessage: data.welcomeMessage,
           congratulationsMessage: data.congratulationsMessage,
           courseInstructors: data.courseInstructors,
+          status: courseData.status,
         }
       );
       if (!backendData.success) {
