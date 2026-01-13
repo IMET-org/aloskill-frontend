@@ -132,8 +132,12 @@ const CourseDetailPage = () => {
             <div className='flex-1 flex flex-col gap-2'>
               {/* Course Creation info */}
               <div className='flex items-center gap-6'>
-                <span className='text-xs text-gray-500'>Uploaded On:{courseDetails.createdAt}</span>
-                <span className='text-xs text-gray-500'>Updated On: {courseDetails.updatedAt}</span>
+                <span className='text-xs text-gray-500'>
+                  Uploaded On: {new Date(courseDetails.createdAt).toLocaleDateString()}
+                </span>
+                <span className='text-xs text-gray-500'>
+                  Updated On: {new Date(courseDetails.updatedAt).toLocaleDateString()}
+                </span>
               </div>
               {/* Title */}
               <h4 className='font-bold text-gray-900'>{courseDetails.title}</h4>
@@ -313,6 +317,7 @@ const CourseDetailPage = () => {
 
         {/* Course Reviews & Overview */}
         <div className='w-full h-[380px] flex gap-4 items-center'>
+          {/* Reviews Section */}
           <div className='bg-white rounded w-[45%] h-full overflow-y-auto'>
             <div className='flex items-center justify-between p-4 border-b border-gray-200'>
               <h4 className='font-semibold'>Reviews</h4>
@@ -323,7 +328,56 @@ const CourseDetailPage = () => {
                 See more →
               </a>
             </div>
+
+            {courseDetails.reviews && courseDetails.reviews.length > 0 ? (
+              <div className='flex flex-col divide-y divide-gray-200'>
+                {courseDetails.reviews.map((review, idx) => (
+                  <div
+                    key={idx}
+                    className='flex gap-3 p-4'
+                  >
+                    {/* Avatar */}
+                    <Image
+                      width={48}
+                      height={48}
+                      src={review.avatarUrl || "/images/user-placeholder.png"}
+                      alt={review.userDisplayName || "User"}
+                      className='w-12 h-12 rounded-full object-cover'
+                    />
+
+                    <div className='flex-1 flex flex-col gap-1'>
+                      <div className='flex items-center justify-between'>
+                        <p className='text-sm font-semibold text-gray-900'>
+                          {review.userDisplayName || "Anonymous"}
+                        </p>
+                        <span className='text-xs text-gray-500'>
+                          {new Date(review.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+
+                      {/* Rating Stars */}
+                      <div className='flex items-center gap-1'>
+                        {[...Array(5)].map((_, i) => (
+                          <Star
+                            key={i}
+                            className={`w-4 h-4 ${
+                              i < review.rating ? "text-orange-400 fill-current" : "text-gray-300"
+                            }`}
+                          />
+                        ))}
+                      </div>
+
+                      {/* Review Body */}
+                      {review.body && <p className='text-sm text-gray-700 mt-1'>{review.body}</p>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className='p-4 text-gray-500'>No reviews yet.</p>
+            )}
           </div>
+
           {/* Course Overview */}
           <div className='bg-white rounded w-[55%] h-full overflow-y-auto'>
             <div className='flex items-center justify-between border-b border-gray-200 p-4'>
@@ -334,6 +388,9 @@ const CourseDetailPage = () => {
               >
                 Today →
               </a>
+            </div>
+            <div className='p-4 text-gray-700'>
+              {courseDetails.overview || "No overview available."}
             </div>
           </div>
         </div>
