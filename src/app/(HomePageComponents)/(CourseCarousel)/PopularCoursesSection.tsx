@@ -1,331 +1,57 @@
-// File: components/home/PopularCoursesSection.tsx
 "use client";
 
 import SectionHeader from "@/components/sections/SectionHeader";
 import Slider from "@/components/slider/Slider";
+import { apiClient } from "@/lib/api/client";
 import { Pencil } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import CourseCard from "../../(withoutSidebarLayout)/courses/CourseCard";
-import type { Course } from "../../(withoutSidebarLayout)/courses/allCourses.types";
+import type { CourseType } from "../../(withoutSidebarLayout)/courses/allCourses.types";
 
-// Mock data - In production, fetch from API
-const INITIAL_COURSES: Course[] = [
-  {
-    id: 1,
-    image: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=500&q=80",
-    category: "Digital Marketing",
-    categoryColor: "bg-blue-900",
-    rating: 4.5,
-    reviewCount: "4.5k",
-    price: 50.0,
-    originalPrice: 100.0,
-    discount: 50,
-    title: "IT Statistics Data Science And Business Analysis",
-    lessons: 10,
-    duration: "19h 30m",
-    students: "20+",
-    level: "Beginner",
-    language: "English",
-    certificate: true,
-    instructor: {
-      name: "Samantha",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Samantha",
-    },
-  },
-  {
-    id: 2,
-    image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=500&q=80",
-    category: "Social Marketing",
-    categoryColor: "bg-purple-700",
-    rating: 4.5,
-    reviewCount: "4.5k",
-    price: 50.0,
-    title: "Beginner Adobe Illustrator For Graphic Design",
-    lessons: 10,
-    duration: "19h 30m",
-    students: "20+",
-    level: "Beginner",
-    language: "English",
-    certificate: true,
-    instructor: {
-      name: "Charles",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Charles",
-    },
-  },
-  {
-    id: 3,
-    image: "https://images.unsplash.com/photo-1556761175-b413da4baf72?w=500&q=80",
-    category: "Social Marketing",
-    categoryColor: "bg-purple-700",
-    rating: 4.5,
-    reviewCount: "4.5k",
-    price: 50.0,
-    originalPrice: 75.0,
-    discount: 33,
-    title: "Starting SEO As Your Home Based Business",
-    lessons: 8,
-    duration: "19h 30m",
-    students: "20+",
-    level: "Intermediate",
-    language: "English",
-    certificate: true,
-    instructor: {
-      name: "Morgan",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Morgan",
-    },
-  },
-  {
-    id: 4,
-    image: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=500&q=80",
-    category: "Digital Marketing",
-    categoryColor: "bg-blue-900",
-    rating: 4.5,
-    reviewCount: "4.5k",
-    price: 50.0,
-    originalPrice: 100.0,
-    discount: 50,
-    title: "IT Statistics Data Science And Business Analysis",
-    lessons: 10,
-    duration: "19h 30m",
-    students: "20+",
-    level: "Beginner",
-    language: "English",
-    certificate: true,
-    instructor: {
-      name: "Samantha",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Samantha",
-    },
-  },
-  {
-    id: 5,
-    image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=500&q=80",
-    category: "Social Marketing",
-    categoryColor: "bg-purple-700",
-    rating: 4.5,
-    reviewCount: "4.5k",
-    price: 50.0,
-    title: "Beginner Adobe Illustrator For Graphic Design",
-    lessons: 10,
-    duration: "19h 30m",
-    students: "20+",
-    level: "Beginner",
-    language: "English",
-    certificate: true,
-    instructor: {
-      name: "Charles",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Charles",
-    },
-  },
-  {
-    id: 6,
-    image: "https://images.unsplash.com/photo-1556761175-b413da4baf72?w=500&q=80",
-    category: "Social Marketing",
-    categoryColor: "bg-purple-700",
-    rating: 4.5,
-    reviewCount: "4.5k",
-    price: 50.0,
-    originalPrice: 75.0,
-    discount: 33,
-    title: "Starting SEO As Your Home Based Business",
-    lessons: 8,
-    duration: "19h 30m",
-    students: "20+",
-    level: "Intermediate",
-    language: "English",
-    certificate: true,
-    instructor: {
-      name: "Morgan",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Morgan",
-    },
-  },
-  {
-    id: 7,
-    image: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=500&q=80",
-    category: "Digital Marketing",
-    categoryColor: "bg-blue-900",
-    rating: 4.5,
-    reviewCount: "4.5k",
-    price: 50.0,
-    originalPrice: 100.0,
-    discount: 50,
-    title: "IT Statistics Data Science And Business Analysis",
-    lessons: 10,
-    duration: "19h 30m",
-    students: "20+",
-    level: "Beginner",
-    language: "English",
-    certificate: true,
-    instructor: {
-      name: "Samantha",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Samantha",
-    },
-  },
-  {
-    id: 8,
-    image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=500&q=80",
-    category: "Social Marketing",
-    categoryColor: "bg-purple-700",
-    rating: 4.5,
-    reviewCount: "4.5k",
-    price: 50.0,
-    title: "Beginner Adobe Illustrator For Graphic Design",
-    lessons: 10,
-    duration: "19h 30m",
-    students: "20+",
-    level: "Beginner",
-    language: "English",
-    certificate: true,
-    instructor: {
-      name: "Charles",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Charles",
-    },
-  },
-  {
-    id: 9,
-    image: "https://images.unsplash.com/photo-1556761175-b413da4baf72?w=500&q=80",
-    category: "Social Marketing",
-    categoryColor: "bg-purple-700",
-    rating: 4.5,
-    reviewCount: "4.5k",
-    price: 50.0,
-    originalPrice: 75.0,
-    discount: 33,
-    title: "Starting SEO As Your Home Based Business",
-    lessons: 8,
-    duration: "19h 30m",
-    students: "20+",
-    level: "Intermediate",
-    language: "English",
-    certificate: true,
-    instructor: {
-      name: "Morgan",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Morgan",
-    },
-  },
-];
-
-/**
- * PopularCoursesSection Component
- * Production-ready section displaying popular courses with full functionality
- */
 export default function PopularCoursesSection() {
-  const [courses, setCourses] = useState<Course[]>(INITIAL_COURSES);
-  const [isLoading, setIsLoading] = useState(false);
-  const [cartItems, setCartItems] = useState<Set<string | number>>(new Set());
-  const [wishlistItems, setWishlistItems] = useState<Set<string | number>>(new Set());
+  const [courses, setCourses] = useState<CourseType[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const [cartItems, setCartItems] = useState<Set<string>>(new Set());
+  const [wishlistItems, setWishlistItems] = useState<Set<string>>(new Set());
+
   const router = useRouter();
 
-  /**
-   * Handle course enrollment
-   * In production: Navigate to checkout or enrollment page
-   */
-  const handleEnroll = useCallback((courseId: string | number) => {
-    console.log(`Enrolling in course: ${courseId}`);
-    // TODO: Implement enrollment logic
-    // - Check authentication
-    // - Navigate to checkout
-    // - Show confirmation modal
-  }, []);
-
-  /**
-   * Handle add to cart
-   * In production: Update cart state/context and show notification
-   */
-  const handleAddToCart = useCallback((courseId: string | number) => {
-    setCartItems(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(courseId)) {
-        newSet.delete(courseId);
-        console.log(`Removed course ${courseId} from cart`);
-        // TODO: Show toast notification
-      } else {
-        newSet.add(courseId);
-        console.log(`Added course ${courseId} to cart`);
-        // TODO: Show toast notification
+  // 🔹 Fetch courses from DB
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        setIsLoading(true);
+        const response = await apiClient.get<CourseType[]>("/course/public/allCourses");
+        console.log(response);
+        setCourses(response.data ?? []);
+      } catch (error) {
+        console.error("Failed to fetch popular courses", error);
+      } finally {
+        setIsLoading(false);
       }
-      return newSet;
-    });
+    };
+
+    fetchCourses();
   }, []);
 
-  /**
-   * Handle add to wishlist
-   * In production: Update wishlist state/context and sync with backend
-   */
-  const handleAddToWishlist = useCallback(async (courseId: string | number) => {
-    setWishlistItems(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(courseId)) {
-        newSet.delete(courseId);
-        console.log(`Removed course ${courseId} from wishlist`);
-        // TODO: API call to remove from wishlist
-      } else {
-        newSet.add(courseId);
-        console.log(`Added course ${courseId} to wishlist`);
-        // TODO: API call to add to wishlist
-      }
-      return newSet;
-    });
-
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
+  const handleEnroll = useCallback((courseId: string) => {
+    console.log("Enroll clicked:", courseId);
   }, []);
 
-  /**
-   * Handle load more courses
-   * In production: Fetch next page from API
-   */
-  const handleLoadMore = useCallback(async () => {
-    setIsLoading(true);
+  const handleAddToCart = useCallback((courseId: string) => {
+    console.log("Add to cart clicked:", courseId);
+  }, []);
 
-    router.push("/courses");
-    try {
-      // TODO: Replace with actual API call
-      // const response = await fetch('/api/courses?page=2&limit=6');
-      // const newCourses = await response.json();
+  const handleAddToWishlist = useCallback((courseId: string) => {
+    console.log("Add to wishlist clicked:", courseId);
+  }, []);
 
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-
-      // Mock: Add more courses (in production, append from API)
-      const moreCourses: Course[] = [
-        {
-          id: 10,
-          image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=500&q=80",
-          category: "Web Development",
-          categoryColor: "bg-green-700",
-          rating: 4.8,
-          reviewCount: "3.2k",
-          price: 45.0,
-          title: "Full Stack Web Development Bootcamp",
-          lessons: 15,
-          duration: "25h 00m",
-          students: "50+",
-          level: "Advanced",
-          language: "English",
-          certificate: true,
-          instructor: {
-            name: "Alex",
-            avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alex",
-          },
-        },
-      ];
-
-      setCourses(prev => [...prev, ...moreCourses]);
-      console.log("Loaded more courses");
-    } catch (error) {
-      console.error("Failed to load more courses:", error);
-      // TODO: Show error toast notification
-    } finally {
-      setIsLoading(false);
-    }
-  }, [router]);
-
-  // Map courses to CourseCard components
   const courseSlides = courses.map(course => (
     <CourseCard
       key={course.id}
-      {...course}
+      course={course}
       onEnroll={handleEnroll}
       onAddToCart={handleAddToCart}
       onAddToWishlist={handleAddToWishlist}
@@ -335,20 +61,12 @@ export default function PopularCoursesSection() {
   ));
 
   return (
-    <section
-      className='py-16 md:py-24 bg-gradient-to-b from-white to-gray-50 relative overflow-hidden'
-      aria-labelledby='popular-courses-heading'
-    >
-      {/* Decorative Background Element */}
-      <div
-        className='absolute top-16 right-16 opacity-10 pointer-events-none'
-        aria-hidden='true'
-      >
+    <section className='py-16 md:py-24 bg-gradient-to-b from-white to-gray-50 relative'>
+      <div className='absolute top-16 right-16 opacity-10 pointer-events-none'>
         <Pencil className='w-32 h-32 text-orange-400 rotate-12' />
       </div>
 
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10'>
-        {/* Section Header */}
         <SectionHeader
           badge='Top Popular Course'
           title={
@@ -358,21 +76,19 @@ export default function PopularCoursesSection() {
               Can Join With Us.
             </>
           }
-          showButton={true}
-          buttonText='Load More Courses'
-          loadingText='Loading Courses...'
-          onButtonClick={handleLoadMore}
+          showButton
+          buttonText='View All Courses'
+          onButtonClick={() => router.push("/courses")}
           isLoading={isLoading}
         />
 
-        {/* Fixed Slider Configuration */}
         <Slider
           slides={courseSlides}
           visibleCount={1}
           breakpoints={{
-            640: { visibleCount: 1 }, // sm: 1 slides
-            768: { visibleCount: 2 }, // md: 2 slides
-            1440: { visibleCount: 3 }, // xl: 3 slides
+            640: { visibleCount: 1 },
+            768: { visibleCount: 2 },
+            1440: { visibleCount: 3 },
           }}
           autoplay
           loop

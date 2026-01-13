@@ -18,21 +18,7 @@ import { memo, useState } from "react";
 import type { CourseCardProps, CourseStatus } from "./allCourses.types.ts";
 
 const CourseCard = memo(function CourseCard({
-  id,
-  image,
-  status,
-  category,
-  categoryColor,
-  rating,
-  reviewCount,
-  price,
-  originalPrice,
-  discount,
-  title,
-  lessons,
-  duration,
-  students,
-  instructor,
+  course,
   onEnroll,
   onAddToCart,
   onAddToWishlist,
@@ -40,6 +26,37 @@ const CourseCard = memo(function CourseCard({
   isInWishlist = false,
   dashboardActions,
 }: CourseCardProps) {
+  const {
+    id,
+    title,
+    thumbnailUrl,
+    createdBy,
+    category,
+    modules,
+    _count,
+    originalPrice,
+    discountPrice,
+    status,
+  } = course;
+  const lessons = modules.reduce((acc, m) => acc + m._count.lessons, 0);
+
+  const totalMinutes = modules
+    .flatMap(m => m.lessons)
+    .reduce((acc, l) => acc + (l.duration ?? 0), 0);
+
+  const duration = `${Math.ceil(totalMinutes / 60)}h`;
+
+  const price = discountPrice ?? originalPrice;
+
+  const instructor = {
+    name: createdBy.displayName ?? "Unknown Instructor",
+    avatar: createdBy.avatarUrl,
+  };
+
+  const rating = 0; // backend doesn’t provide it
+  const reviewCount = _count.reviews;
+  const students = _count.enrollments;
+
   const [imageError, setImageError] = useState(false);
   const [isWishlistLoading, setIsWishlistLoading] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
@@ -77,10 +94,9 @@ const CourseCard = memo(function CourseCard({
   };
 
   const discountPercentage =
-    discount ||
-    (originalPrice && originalPrice > price
+    originalPrice && originalPrice > price
       ? Math.round(((originalPrice - price) / originalPrice) * 100)
-      : 0);
+      : 0;
 
   const STATUS_CONFIG: Record<CourseStatus, { label: string; className: string }> = {
     DRAFT: {
@@ -106,7 +122,7 @@ const CourseCard = memo(function CourseCard({
         >
           {!imageError ? (
             <Image
-              src={image}
+              src={thumbnailUrl || "/images/course-placeholder.png"}
               alt={title}
               fill
               sizes='(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw'
@@ -176,19 +192,17 @@ const CourseCard = memo(function CourseCard({
 
         <div className='absolute top-4 left-4 z-10'>
           <span
-            className={`${categoryColor} text-white text-sm  px-2 py-1.5 rounded-xl shadow-lg backdrop-blur-sm`}
+            className={` text-white text-sm  px-2 py-1.5 rounded-xl shadow-lg backdrop-blur-sm`}
           >
-            {category}
+            {category?.name}
           </span>
         </div>
 
-        <div className='absolute top-4 right-4 z-10 bg-white rounded-lg px-3 shadow-lg'>
+        <div className='absolute top-4 right-4 z-10 bg-white rounded-lg px-3 mr-8 shadow-lg'>
           <div className='flex items-center gap-1'>
-            <span className='text-orange-600 font-black text-md'>${price.toFixed(2)}</span>
+            <span className='text-orange-600 font-black text-md '>${price}</span>
             {originalPrice && originalPrice > price && (
-              <span className='text-gray-400 text-md line-through'>
-                ${originalPrice.toFixed(2)}
-              </span>
+              <span className='text-gray-400 text-md line-through'>${originalPrice}</span>
             )}
           </div>
         </div>

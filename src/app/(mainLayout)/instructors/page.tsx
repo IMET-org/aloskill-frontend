@@ -5,7 +5,7 @@
 import { PageHeading } from "@/components/shared/PageHeading.tsx";
 import { apiClient } from "@/lib/api/client.ts";
 import type { Instructor, InstructorListApiResponse } from "@/types/instructor.types.ts";
-import { Filter, Loader2, Search, Users } from "lucide-react";
+import { Loader2, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import InstructorCard from "./InstructorCard";
 import "./instructor.css";
@@ -111,10 +111,10 @@ export default function AllInstructorsPage() {
   return (
     <div className='min-h-screen bg-linear-to-br from-orange-50 via-purple-50 to-blue-50'>
       {/* Hero Section */}
-      <section className='relative py-16 md:py-20 overflow-hidden'>
+      <section className='relative py-6 md:py-20 overflow-hidden'>
         <div className='absolute inset-0 bg-linear-to-r from-purple-100/50 to-pink-100/50'></div>
 
-        <div className='relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center'>
+        <div className='relative max-w-7xl mx-auto px-4 text-center'>
           <PageHeading
             badge='Experts'
             title='Meet Our Instructors'
@@ -137,45 +137,6 @@ export default function AllInstructorsPage() {
               <div className='text-3xl font-bold text-[#074079]'>{filteredInstructors.length}</div>
               <div className='text-sm text-gray-600'>Showing</div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Search Section */}
-      <section className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 '>
-        <div className='bg-white rounded-xl shadow-lg p-6 animate-fade-in'>
-          <div className='flex items-center justify-between mb-4'>
-            <div className='flex items-center gap-2'>
-              <Filter className='w-5 h-5 text-[#074079]' />
-              <h3 className='text-lg font-bold text-gray-900'>Search Instructors</h3>
-            </div>
-            {searchQuery && (
-              <button
-                onClick={resetFilters}
-                className='text-sm text-[#DA7C36] hover:text-[#d15100] font-semibold transition-colors'
-              >
-                Clear Search
-              </button>
-            )}
-          </div>
-
-          {/* Search */}
-          <div className='relative'>
-            <Search className='absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400' />
-            <input
-              type='text'
-              placeholder='Search by name, expertise, or bio...'
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              className='w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#074079] focus:border-transparent outline-none transition-all'
-            />
-          </div>
-
-          {/* Results Count */}
-          <div className='mt-4 text-sm text-gray-600'>
-            Showing{" "}
-            <span className='font-semibold text-[#074079]'>{filteredInstructors.length}</span> of{" "}
-            <span className='font-semibold text-[#074079]'>{instructors.length}</span> instructors
           </div>
         </div>
       </section>
