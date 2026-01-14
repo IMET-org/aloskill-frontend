@@ -1,12 +1,12 @@
 "use client";
 
-import { type Course } from "@/app/(withoutSidebarLayout)/courses/allCourses.types";
+import type { CourseType } from "@/app/(withoutSidebarLayout)/courses/allCourses.types";
 import CourseCard from "@/app/(withoutSidebarLayout)/courses/CourseCard";
 import { BookOpen } from "lucide-react";
 import { memo } from "react";
 
 interface CourseGridProps {
-  courses: Course[];
+  courses: CourseType[];
   isLoading?: boolean;
   emptyStateMessage?: string;
   onEnroll?: (courseId: string | number) => void;
@@ -71,7 +71,7 @@ const CourseGrid = memo(function CourseGrid({
       {courses.map(course => (
         <CourseCard
           key={course.id}
-          {...course}
+          course={course}
           onEnroll={onEnroll}
           onAddToCart={onAddToCart}
           onAddToWishlist={onAddToWishlist}
