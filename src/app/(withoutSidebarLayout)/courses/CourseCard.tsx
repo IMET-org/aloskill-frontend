@@ -53,7 +53,7 @@ const CourseCard = memo(function CourseCard({
     avatar: createdBy.avatarUrl,
   };
 
-  const rating = 0; // backend doesn’t provide it
+  const rating = 0;
   const reviewCount = _count.reviews;
   const students = _count.enrollments;
 

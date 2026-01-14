@@ -12,7 +12,6 @@ import type { CourseType } from "../../(withoutSidebarLayout)/courses/allCourses
 export default function PopularCoursesSection() {
   const [courses, setCourses] = useState<CourseType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-
   const [cartItems, setCartItems] = useState<Set<string>>(new Set());
   const [wishlistItems, setWishlistItems] = useState<Set<string>>(new Set());
 
@@ -23,7 +22,7 @@ export default function PopularCoursesSection() {
     const fetchCourses = async () => {
       try {
         setIsLoading(true);
-        const response = await apiClient.get<CourseType[]>("/course/public/allCourses");
+        const response = await apiClient.get<CourseType[]>("/course/public/allCourses?isHome=true");
         console.log(response);
         setCourses(response.data ?? []);
       } catch (error) {
@@ -90,7 +89,7 @@ export default function PopularCoursesSection() {
             768: { visibleCount: 2 },
             1440: { visibleCount: 3 },
           }}
-          autoplay
+          autoplay={true}
           loop
           autoplayInterval={3000}
           showArrows

@@ -1,8 +1,8 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, PanInfo } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { type ReactNode, useEffect, useState } from "react";
+import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
 
 interface BreakpointConfig {
   visibleCount: number;
@@ -17,7 +17,7 @@ interface SliderProps {
   loop?: boolean;
   showDots?: boolean;
   showArrows?: boolean;
-  gap?: number; // gap in pixels
+  gap?: number;
 }
 
 export default function Slider({
@@ -29,94 +29,101 @@ export default function Slider({
   loop = false,
   showDots = true,
   showArrows = true,
-  gap = 16, // default 16px gap (px-2 = 8px on each side)
+  gap = 16,
 }: SliderProps) {
   const [currentVisible, setCurrentVisible] = useState(visibleCount);
   const [index, setIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const total = slides.length;
   const maxIndex = Math.max(total - currentVisible, 0);
 
-  // Handle responsive breakpoints
+  // Responsive logic
   useEffect(() => {
     const handleResize = () => {
       const width = window.innerWidth;
       let newCount = visibleCount;
-
       if (breakpoints) {
         const sortedBps = Object.keys(breakpoints)
           .map(Number)
           .sort((a, b) => a - b);
-
         for (const bp of sortedBps) {
-          if (width >= bp) {
-            newCount = breakpoints[bp]?.visibleCount ?? newCount;
-          }
+          if (width >= bp) newCount = breakpoints[bp]?.visibleCount ?? newCount;
         }
       }
-
       setCurrentVisible(newCount);
     };
-
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, [breakpoints, visibleCount]);
 
-  // Reset index if out of bounds after resize
   useEffect(() => {
-    if (index > maxIndex) {
-      setIndex(maxIndex);
-    }
+    if (index > maxIndex) setIndex(maxIndex);
   }, [maxIndex, index]);
+
+  const next = useCallback(() => {
+    setIndex(prev => (prev >= maxIndex ? (loop ? 0 : prev) : prev + 1));
+  }, [maxIndex, loop]);
+
+  const prev = useCallback(() => {
+    setIndex(prev => (prev <= 0 ? (loop ? maxIndex : 0) : prev - 1));
+  }, [maxIndex, loop]);
 
   // Autoplay
   useEffect(() => {
-    if (!autoplay || maxIndex === 0) return;
-
-    const timer = setInterval(() => {
-      setIndex(prev => {
-        if (prev >= maxIndex) {
-          return loop ? 0 : prev;
-        }
-        return prev + 1;
-      });
-    }, autoplayInterval);
-
+    if (!autoplay || maxIndex === 0 || isPaused) return;
+    const timer = setInterval(next, autoplayInterval);
     return () => clearInterval(timer);
-  }, [autoplay, autoplayInterval, loop, maxIndex]);
+  }, [autoplay, autoplayInterval, maxIndex, isPaused, next]);
 
-  const next = () => {
-    setIndex(prev => {
-      if (prev >= maxIndex) return loop ? 0 : prev;
-      return prev + 1;
-    });
+  // Drag Handler
+  const onDragEnd = (event: any, info: PanInfo) => {
+    const threshold = 50; // minimum distance to trigger slide change
+    const velocityThreshold = 500; // allow fast flicks to trigger slide change
+
+    if (info.offset.x < -threshold || info.velocity.x < -velocityThreshold) {
+      next();
+    } else if (info.offset.x > threshold || info.velocity.x > velocityThreshold) {
+      prev();
+    }
   };
 
-  const prev = () => {
-    setIndex(prev => {
-      if (prev <= 0) return loop ? maxIndex : 0;
-      return prev - 1;
-    });
-  };
-
-  // Calculate translation considering gap
   const slideWidth = 100 / currentVisible;
-  const translateX = -(index * slideWidth);
+  const movePercentage = index * (100 / currentVisible);
+  const gapOffset = (index * gap) / currentVisible;
 
   return (
-    <div className='relative w-full'>
+    <div
+      className='relative w-full group touch-pan-y'
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+      ref={containerRef}
+    >
       <div className='overflow-hidden'>
         <motion.div
-          className='flex'
+          className='flex cursor-grab active:cursor-grabbing'
           style={{ gap: `${gap}px` }}
-          animate={{ x: `${translateX}%` }}
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          // DRAG PROPS
+          drag='x'
+          dragConstraints={{ left: 0, right: 0 }}
+          dragElastic={0.2}
+          onDragStart={() => setIsPaused(true)}
+          onDragEnd={onDragEnd}
+          // ANIMATION PROPS
+          animate={{ x: `calc(-${movePercentage}% - ${gapOffset}px)` }}
+          transition={{
+            type: "spring",
+            stiffness: 150,
+            damping: 25,
+            mass: 1,
+          }}
         >
           {slides.map((slide, i) => (
             <div
               key={i}
-              className='shrink-0'
+              className='shrink-0 select-none' // prevents text/image highlighting while dragging
               style={{
                 width: `calc(${slideWidth}% - ${(gap * (currentVisible - 1)) / currentVisible}px)`,
               }}
@@ -127,13 +134,12 @@ export default function Slider({
         </motion.div>
       </div>
 
-      {/* Navigation Arrows */}
       {showArrows && maxIndex > 0 && (
         <>
           <button
             onClick={prev}
             disabled={!loop && index === 0}
-            className='absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white p-2 rounded-full shadow-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed'
+            className='absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white p-2 rounded-full shadow-lg transition-all disabled:opacity-0 opacity-0 group-hover:opacity-100 hidden md:block'
             aria-label='Previous slide'
           >
             <ChevronLeft className='w-5 h-5 text-gray-800' />
@@ -141,7 +147,7 @@ export default function Slider({
           <button
             onClick={next}
             disabled={!loop && index === maxIndex}
-            className='absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white p-2 rounded-full shadow-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed'
+            className='absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white p-2 rounded-full shadow-lg transition-all disabled:opacity-0 opacity-0 group-hover:opacity-100 hidden md:block'
             aria-label='Next slide'
           >
             <ChevronRight className='w-5 h-5 text-gray-800' />
@@ -149,7 +155,6 @@ export default function Slider({
         </>
       )}
 
-      {/* Indicator Dots */}
       {showDots && maxIndex > 0 && (
         <div className='flex justify-center gap-2 mt-4'>
           {Array.from({ length: maxIndex + 1 }).map((_, i) => (
