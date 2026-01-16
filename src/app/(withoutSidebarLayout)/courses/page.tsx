@@ -220,6 +220,13 @@ export default function AllCoursesPage() {
   const clearAllFilters = () => {
     setSearchQuery("");
     setSortBy("popular");
+    setFilteredQuery({
+      category: "",
+      level: "",
+      language: "",
+      rating: "",
+      priceRange: [0, 10000],
+    });
   };
 
   const hasActiveFilters =
@@ -600,39 +607,6 @@ function FilterSidebar({
             </div>
           </div>
 
-          <div className='space-y-3 px-1'>
-            <div className='relative'>
-              <input
-                type='range'
-                min='0'
-                max='100'
-                value={filteredQuery.priceRange[0]}
-                onChange={e =>
-                  setFilteredQuery(prev => ({
-                    ...prev,
-                    priceRange: [Number(e.target.value), prev.priceRange?.[1] ?? 100],
-                  }))
-                }
-                className='w-full h-2 bg-gradient-to-r from-orange-200 to-orange-300 rounded-full appearance-none cursor-pointer accent-orange-600 hover:accent-orange-700'
-              />
-            </div>
-            <div className='relative'>
-              <input
-                type='range'
-                min='0'
-                max='100'
-                value={filteredQuery.priceRange[1]}
-                onChange={e =>
-                  setFilteredQuery(prev => ({
-                    ...prev,
-                    priceRange: [prev.priceRange?.[0] ?? 0, Number(e.target.value)],
-                  }))
-                }
-                className='w-full h-2 bg-gradient-to-r from-orange-200 to-orange-300 rounded-full appearance-none cursor-pointer accent-orange-600 hover:accent-orange-700'
-              />
-            </div>
-          </div>
-
           <div className='flex gap-3'>
             <div className='flex-1'>
               <label className='text-xs font-medium text-gray-600 mb-1.5 block'>Min Price</label>
@@ -646,7 +620,7 @@ function FilterSidebar({
                   onChange={e =>
                     setFilteredQuery(prev => ({
                       ...prev,
-                      priceRange: [Number(e.target.value), prev.priceRange?.[1] ?? 100],
+                      priceRange: [Number(e.target.value), prev.priceRange?.[1] ?? 10000],
                     }))
                   }
                   className='w-full pl-7 pr-3 py-2.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 text-sm font-medium transition-all'
