@@ -13,6 +13,7 @@ import {
   X,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { courseDraftStorage } from "../../../lib/storage/courseDraftStorage.ts";
 import type { CourseType } from "./allCourses.types.ts";
 
 // Filter options
@@ -72,13 +73,20 @@ export default function AllCoursesPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [courses, setCourses] = useState<CourseType[]>([]);
   // Cart and wishlist
-  const [cartItems, setCartItems] = useState<Set<string | number>>(new Set());
+  // const [cartItems, setCartItems] = useState<Set<string | number>>(new Set());
+  const [cartItems, setCartItems] = useState<{courseId: string; quantity: number}[]>([]);
+  const [updateCart, setUpdateCart] = useState<boolean>(false);
   const [wishlistItems, setWishlistItems] = useState<Set<string | number>>(new Set());
 
   // Collapsible sections state
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
     new Set(["category", "rating", "level"])
   );
+
+  useEffect(() => {
+    const storedCartItems = courseDraftStorage.get<{courseId: string; quantity: number}[]>() || [];
+    setCartItems(storedCartItems);
+  }, [updateCart]);
 
   const toggleSection = (section: string) => {
     setExpandedSections(prev => {
@@ -168,17 +176,21 @@ export default function AllCoursesPage() {
   // ]);
 
   // Handlers
-  const handleAddToCart = useCallback((courseId: string | number) => {
-    setCartItems(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(courseId)) {
-        newSet.delete(courseId);
-      } else {
-        newSet.add(courseId);
-      }
-      return newSet;
-    });
-    
+  const handleAddToCart = useCallback((courseId: string) => {
+    // setCartItems(prev => {
+    //   const newSet = new Set(prev);
+    //   if (newSet.has(courseId)) {
+    //     newSet.delete(courseId);
+    //   } else {
+    //     newSet.add(courseId);
+    //   }
+    //   return newSet;
+    // });
+    const getStorageData = courseDraftStorage.get<{courseId: string; quantity: number}[]>() || [];
+    if (getStorageData?.find(item => item.courseId === courseId)) return;
+    getStorageData?.push({courseId, quantity: 1});
+    courseDraftStorage.save(getStorageData);
+    setUpdateCart(prev => !prev);
   }, []);
 
   const handleAddToWishlist = useCallback(async (courseId: string | number) => {
