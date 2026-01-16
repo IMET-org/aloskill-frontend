@@ -25,9 +25,7 @@ export interface Course {
 
   instructor: CourseInstructor;
 }
-export type CourseStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
-export type Language = "ENGLISH" | "BANGLA" | string;
-export type CourseLevel = "BEGINNER" | "INTERMEDIATE" | "ADVANCED" | "EXPERT" | string;
+
 export type CourseType = {
   id: string;
   title: string;
@@ -36,7 +34,7 @@ export type CourseType = {
   originalPrice: number;
   discountPrice: number | null;
 
-  status: CourseStatus;
+  status: string;
   createdAt: string;
   createdBy: {
     displayName: string;
@@ -66,7 +64,7 @@ export type CourseType = {
     reviews: number;
   };
 };
-
+export type CourseStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED" ;
 export type CourseCardProps = {
   course: CourseType;
 
@@ -124,6 +122,63 @@ export type CourseDetails = {
     totalDuration: string;
     totalFiles: number;
   };
+  ratingBreakdown: {
+    star: number;
+    count: number;
+    percentage: string;
+  }[];
+};
+export type CourseDetailsPublic = {
+  title: string;
+  description: string;
+  thumbnailUrl: string | null;
+  trailerUrl: string | null;
+  originalPrice: number;
+  discountPrice: number | null;
+  discountPercent: number | null;
+  isDiscountActive: boolean;
+  language: string;
+  level: string;
+  ratingAverage: number | null;
+  ratingCount: number;
+  enrollmentCount: number;
+  createdAt: string;
+  updatedAt: string;
+  category: string | undefined;
+  courseInstructors: {
+    instructorId: string;
+    bio: string;
+    expertise: string | null;
+    rating: number | null;
+    totalStudents: number;
+    totalCourses: number;
+    displayName: string;
+    avatarUrl: string | null;
+  }[];
+  reviews: {
+    rating: number;
+    body: string | null;
+    createdAt: string;
+    userDisplayName: string | undefined;
+    avatarUrl: string | null;
+  }[];
+  content: {
+    totalModules: number;
+    totalLessons: number;
+    totalDuration: number;
+    totalArticles: number;
+    totalFiles: number;
+  };
+  modules: {
+    title: string;
+    duration: number;
+    lessons: {
+      title: string;
+      duration: number | null;
+      type: string;
+      contentUrl: string | null;
+    }[];
+  }[];
   ratingBreakdown: {
     star: number;
     count: number;
