@@ -64,7 +64,7 @@ export default function AllCoursesPage() {
     level: "",
     language: "",
     rating: "",
-    priceRange: [0, 100],
+    priceRange: [0, 10000],
   });
   const [sortBy, setSortBy] = useState("popular");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
@@ -178,6 +178,7 @@ export default function AllCoursesPage() {
       }
       return newSet;
     });
+    
   }, []);
 
   const handleAddToWishlist = useCallback(async (courseId: string | number) => {
@@ -228,7 +229,7 @@ export default function AllCoursesPage() {
     filteredQuery.language !== "all" ||
     filteredQuery.rating !== "all" ||
     filteredQuery.priceRange[0] !== 0 ||
-    filteredQuery.priceRange[1] !== 100;
+    filteredQuery.priceRange[1] !== 10000;
 
   return (
     <div className='min-h-screen bg-gradient-to-br from-slate-50 via-white to-purple-50/30'>
