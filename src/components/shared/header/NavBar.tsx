@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import Logo from "./Logo.tsx";
@@ -27,7 +28,7 @@ interface HeaderProps {
 
 export default function NavBar({ onMenuToggle }: HeaderProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [cartCount, setCartCount] = useState(2);
+  const [cartCount, setCartCount] = useState(3);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   // const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [activeRole, setActiveRole] = useState<string>("STUDENT");
@@ -59,6 +60,8 @@ export default function NavBar({ onMenuToggle }: HeaderProps) {
         localStorage.setItem("activeRole", defaultRole);
       }
     }
+    // const getLocalData = courseDraftStorage.get();
+    // setCartCount(getLocalData.length || 0);
   }, [user]);
 
   const handleSignIn = () => {
@@ -244,14 +247,16 @@ export default function NavBar({ onMenuToggle }: HeaderProps) {
           {/* Right Actions */}
           <div className='flex items-center gap-3'>
             {/* Shopping Cart */}
-            <button className='relative p-2 hover:bg-gray-100 rounded-lg transition-colors group'>
-              <ShoppingCart className='w-6 h-6 text-gray-700 group-hover:text-orange-500 transition-colors' />
-              {cartCount > 0 && (
-                <span className='absolute -top-1 -right-1 w-5 h-5 bg-orange-500 text-white text-xs font-bold rounded-full flex items-center justify-center'>
-                  {cartCount}
-                </span>
-              )}
-            </button>
+            <Link href='/cart'>
+              <button className='relative p-2 hover:bg-gray-100 rounded-lg transition-colors group'>
+                <ShoppingCart className='w-6 h-6 text-gray-700 group-hover:text-orange-500 transition-colors' />
+                {cartCount > 0 && (
+                  <span className='absolute -top-1 -right-1 w-5 h-5 bg-orange-500 text-white text-xs font-bold rounded-full flex items-center justify-center'>
+                    {cartCount}
+                  </span>
+                )}
+              </button>
+            </Link>
 
             {/* Wishlist */}
             <button className='hidden sm:block p-2 hover:bg-gray-100 rounded-lg transition-colors group'>

@@ -1,39 +1,22 @@
-import type { CreateCourseData } from "@/app/(withoutSidebarLayout)/dashboard/instructor/create-course/[[...courseId]]/page";
-import { storageKeys } from "./keys";
-import { getItem, getStorage, removeItem, setItem } from "./storage";
+import { getItem, removeItem, setItem } from "./storage";
 
-export type CourseDraftStorage = Omit<CreateCourseData, "allCategory">;
+const storageKeys = {
+  theme: `lms:theme`,
+  sidebarState: `lms:sidebar`,
+  courseDraft: `lms:course:draft`,
+  editorLayout: `lms:editor:layout`,
+};
 
 export const courseDraftStorage = {
-  get(courseId: string): CourseDraftStorage | null {
-    return getItem<CourseDraftStorage>(storageKeys.courseDraft(courseId));
+  get<T>() {
+    return getItem<T>(storageKeys.courseDraft);
   },
 
-  getAllCourses(): CourseDraftStorage[] {
-    const storage = getStorage();
-    if (!storage) return [];
-
-    const courses: CourseDraftStorage[] = [];
-    const prefix = storageKeys.courseDraft("");
-
-    for (let i = 0; i < storage.length; i++) {
-      const key = storage.key(i);
-      if (key && key.startsWith(prefix)) {
-        const course = getItem<CourseDraftStorage>(key);
-        if (course) {
-          courses.push(course);
-        }
-      }
-    }
-
-    return courses;
+  save(draft: unknown): void {
+    setItem(storageKeys.courseDraft, draft);
   },
 
-  save(courseId: string, draft: CourseDraftStorage): void {
-    setItem(storageKeys.courseDraft(courseId), draft);
-  },
-
-  clear(courseId: string) {
-    removeItem(storageKeys.courseDraft(courseId));
+  clear() {
+    removeItem(storageKeys.courseDraft);
   },
 };

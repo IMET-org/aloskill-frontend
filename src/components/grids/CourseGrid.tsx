@@ -10,9 +10,10 @@ interface CourseGridProps {
   isLoading?: boolean;
   emptyStateMessage?: string;
   onEnroll?: (courseId: string | number) => void;
-  onAddToCart?: (courseId: string | number) => void;
+  onAddToCart?: (courseId: string) => void;
   onAddToWishlist?: (courseId: string | number) => void;
-  cartItems?: Set<string | number>;
+  // cartItems?: Set<string | number>;
+  cartItems?: {courseId: string; quantity: number}[];
   wishlistItems?: Set<string | number>;
 }
 
@@ -23,7 +24,8 @@ const CourseGrid = memo(function CourseGrid({
   onEnroll,
   onAddToCart,
   onAddToWishlist,
-  cartItems = new Set(),
+  cartItems = [],
+  // cartItems = new Set(),
   wishlistItems = new Set(),
 }: CourseGridProps) {
   if (isLoading) {
@@ -75,7 +77,8 @@ const CourseGrid = memo(function CourseGrid({
           onEnroll={onEnroll}
           onAddToCart={onAddToCart}
           onAddToWishlist={onAddToWishlist}
-          isInCart={cartItems.has(course.id)}
+          isInCart={cartItems.some(item => item.courseId === course.id)}
+          // isInCart={cartItems.has(course.id)}
           isInWishlist={wishlistItems.has(course.id)}
         />
       ))}

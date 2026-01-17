@@ -8,11 +8,12 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import CourseCard from "../../(withoutSidebarLayout)/courses/CourseCard";
 import type { CourseType } from "../../(withoutSidebarLayout)/courses/allCourses.types";
+import { courseAddToCartHandler } from "@/lib/course/utils.tsx";
 
 export default function PopularCoursesSection() {
   const [courses, setCourses] = useState<CourseType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [cartItems, setCartItems] = useState<Set<string>>(new Set());
+  const [cartItems, setCartItems] = useState<{courseId: string; quantity: number}[]>([]);
   const [wishlistItems, setWishlistItems] = useState<Set<string>>(new Set());
 
   const router = useRouter();
@@ -40,7 +41,8 @@ export default function PopularCoursesSection() {
   }, []);
 
   const handleAddToCart = useCallback((courseId: string) => {
-    console.log("Add to cart clicked:", courseId);
+    const cartItem = courseAddToCartHandler(courseId);
+    setCartItems(cartItem);
   }, []);
 
   const handleAddToWishlist = useCallback((courseId: string) => {
@@ -54,7 +56,7 @@ export default function PopularCoursesSection() {
       onEnroll={handleEnroll}
       onAddToCart={handleAddToCart}
       onAddToWishlist={handleAddToWishlist}
-      isInCart={cartItems.has(course.id)}
+      isInCart={cartItems.some(item => item.courseId === course.id)}
       isInWishlist={wishlistItems.has(course.id)}
     />
   ));
