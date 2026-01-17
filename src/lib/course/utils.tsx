@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { courseDraftStorage } from "../storage/courseDraftStorage.ts";
 
 export function FadeIn({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
   const [isVisible, setIsVisible] = useState(false);
@@ -16,7 +17,7 @@ export function FadeIn({ children, delay = 0 }: { children: React.ReactNode; del
     >
       {children}
     </div>
-  )
+  );
 }
 
 type CourseDescriptionParsed = {
@@ -49,4 +50,12 @@ export const parseCourseDescription = (rawData?: string | null): CourseDescripti
       requirements: [],
     };
   }
+};
+
+export const courseAddToCartHandler = (courseId: string) => {
+  const getStorageData = courseDraftStorage.get<{ courseId: string; quantity: number }[]>() || [];
+  if (getStorageData?.find(item => item.courseId === courseId)) return getStorageData;
+  getStorageData?.push({ courseId, quantity: 1 });
+  courseDraftStorage.save(getStorageData);
+  return getStorageData;
 };

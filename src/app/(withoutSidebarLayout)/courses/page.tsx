@@ -2,52 +2,12 @@
 import CourseGrid from "@/components/grids/CourseGrid";
 import { PageHeading } from "@/components/shared/PageHeading.tsx";
 import { apiClient } from "@/lib/api/client.ts";
-import {
-  ChevronRight,
-  Filter,
-  Grid,
-  LayoutList,
-  Search,
-  SlidersHorizontal,
-  Star,
-  X,
-} from "lucide-react";
+import { courseAddToCartHandler } from "@/lib/course/utils.tsx";
+import { ChevronRight, Filter, Grid, LayoutList, Search, SlidersHorizontal, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { courseDraftStorage } from "../../../lib/storage/courseDraftStorage.ts";
+import FilterSidebar from "./(FilterSection)/FilterSidebar.tsx";
 import type { CourseType } from "./allCourses.types.ts";
-
-// Filter options
-const CATEGORIES = [
-  { value: "", label: "All Categories", count: 125 },
-  { value: "development", label: "Development", count: 45 },
-  { value: "business", label: "Business", count: 32 },
-  { value: "finance-accounting", label: "Finance & Accounting", count: 28 },
-  { value: "technology", label: "Technology", count: 38 },
-  { value: "javascript", label: "Javascript", count: 25 },
-  { value: "marketing", label: "Marketing", count: 22 },
-  { value: "health-fitness", label: "Health & Fitness", count: 18 },
-];
-
-const LEVELS = [
-  { value: "", label: "All Levels", count: 125 },
-  { value: "beginner", label: "Beginner", count: 55 },
-  { value: "intermediate", label: "Intermediate", count: 42 },
-  { value: "advanced", label: "Advanced", count: 28 },
-];
-
-const LANGUAGES = [
-  { value: "", label: "All Languages", count: 125 },
-  { value: "english", label: "English", count: 98 },
-  { value: "bangla", label: "Bangla", count: 15 },
-];
-
-const RATINGS = [
-  { value: "", label: "All Ratings" },
-  { value: "4.5", label: "4.5 & up" },
-  { value: "4.0", label: "4.0 & up" },
-  { value: "3.5", label: "3.5 & up" },
-  { value: "3.0", label: "3.0 & up" },
-];
 
 const SORT_OPTIONS = [
   { value: "popular", label: "Most Popular" },
@@ -58,7 +18,6 @@ const SORT_OPTIONS = [
 ];
 
 export default function AllCoursesPage() {
-  // State management
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredQuery, setFilteredQuery] = useState({
     category: "",
@@ -72,19 +31,16 @@ export default function AllCoursesPage() {
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [courses, setCourses] = useState<CourseType[]>([]);
-  // Cart and wishlist
-  // const [cartItems, setCartItems] = useState<Set<string | number>>(new Set());
-  const [cartItems, setCartItems] = useState<{courseId: string; quantity: number}[]>([]);
+  const [cartItems, setCartItems] = useState<{ courseId: string; quantity: number }[]>([]);
   const [updateCart, setUpdateCart] = useState<boolean>(false);
   const [wishlistItems, setWishlistItems] = useState<Set<string | number>>(new Set());
-
-  // Collapsible sections state
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
     new Set(["category", "rating", "level"])
   );
 
   useEffect(() => {
-    const storedCartItems = courseDraftStorage.get<{courseId: string; quantity: number}[]>() || [];
+    const storedCartItems =
+      courseDraftStorage.get<{ courseId: string; quantity: number }[]>() || [];
     setCartItems(storedCartItems);
   }, [updateCart]);
 
@@ -176,20 +132,9 @@ export default function AllCoursesPage() {
   // ]);
 
   // Handlers
+
   const handleAddToCart = useCallback((courseId: string) => {
-    // setCartItems(prev => {
-    //   const newSet = new Set(prev);
-    //   if (newSet.has(courseId)) {
-    //     newSet.delete(courseId);
-    //   } else {
-    //     newSet.add(courseId);
-    //   }
-    //   return newSet;
-    // });
-    const getStorageData = courseDraftStorage.get<{courseId: string; quantity: number}[]>() || [];
-    if (getStorageData?.find(item => item.courseId === courseId)) return;
-    getStorageData?.push({courseId, quantity: 1});
-    courseDraftStorage.save(getStorageData);
+    courseAddToCartHandler(courseId);
     setUpdateCart(prev => !prev);
   }, []);
 
@@ -288,18 +233,6 @@ export default function AllCoursesPage() {
                 clearAllFilters={clearAllFilters}
                 handleFilterChange={handleFilterChange}
               />
-              {/* <FilterSidebar
-                expandedSections={expandedSections}
-                toggleSection={toggleSection}
-                selectedCategory={filteredQuery.category}
-                setSelectedCategory={category => setFilteredQuery({ ...filteredQuery, category })}
-                selectedLevel={filteredQuery.level}
-                setSelectedLevel={level => setFilteredQuery({ ...filteredQuery, level })}
-                selectedLanguage={filteredQuery.language}
-                setSelectedLanguage={language => setFilteredQuery({ ...filteredQuery, language })}
-                priceRange={priceRange}
-                setPriceRange={setPriceRange}
-              /> */}
             </div>
           </div>
         )}
@@ -442,285 +375,5 @@ export default function AllCoursesPage() {
 }
 
 // Filter Sidebar Component
-function FilterSidebar({
-  expandedSections,
-  toggleSection,
-  filteredQuery,
-  setFilteredQuery,
-  hasActiveFilters,
-  clearAllFilters,
-  handleFilterChange,
-}: FilterSidebarProps) {
-  return (
-    <div className='space-y-3'>
-      {/* Category */}
-      <FilterSection
-        title='CATEGORY'
-        isExpanded={expandedSections.has("category")}
-        onToggle={() => toggleSection("category")}
-      >
-        <div className='space-y-1'>
-          {CATEGORIES.map(cat => (
-            <label
-              key={cat.value}
-              className='flex items-center justify-between px-3 py-1 hover:bg-gradient-to-r hover:from-orange-50 hover:to-purple-50 rounded-lg cursor-pointer group transition-all'
-            >
-              <div className='flex items-center gap-3'>
-                <input
-                  type='radio'
-                  name='category'
-                  value={cat.value}
-                  checked={filteredQuery.category === cat.value}
-                  onChange={e => setFilteredQuery(prev => ({ ...prev, category: e.target.value }))}
-                  className='w-4 h-4 text-orange-600 focus:ring-orange-500 focus:ring-2'
-                />
-                <span className='text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors'>
-                  {cat.label}
-                </span>
-              </div>
-              <span className='text-xs font-semibold text-gray-400 bg-gray-100 px-2 py-1 rounded-md'>
-                {cat.count}
-              </span>
-            </label>
-          ))}
-        </div>
-      </FilterSection>
-
-      {/* Rating */}
-      <FilterSection
-        title='RATING'
-        isExpanded={expandedSections.has("rating")}
-        onToggle={() => toggleSection("rating")}
-      >
-        <div className='space-y-1.5'>
-          {RATINGS.map(rating => (
-            <label
-              key={rating.value}
-              className='flex items-center gap-3 px-3 py-1  hover:bg-gradient-to-r hover:from-orange-50 hover:to-purple-50 rounded-xl cursor-pointer group transition-all'
-            >
-              <input
-                type='radio'
-                name='rating'
-                value={rating.value}
-                checked={filteredQuery.rating === rating.value}
-                onChange={e => setFilteredQuery(prev => ({ ...prev, rating: e.target.value }))}
-                className='w-4 h-4 text-orange-600 focus:ring-orange-500 focus:ring-2'
-              />
-              <div className='flex items-center gap-2'>
-                {rating.value !== "all" && (
-                  <div className='flex items-center gap-0.5'>
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`w-4 h-4 ${
-                          i < Math.floor(parseFloat(rating.value))
-                            ? "text-yellow-400 fill-yellow-400"
-                            : "text-gray-300"
-                        }`}
-                      />
-                    ))}
-                  </div>
-                )}
-                <span className='text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors'>
-                  {rating.label}
-                </span>
-              </div>
-            </label>
-          ))}
-        </div>
-      </FilterSection>
-
-      {/* Level */}
-      <FilterSection
-        title='LEVEL'
-        isExpanded={expandedSections.has("level")}
-        onToggle={() => toggleSection("level")}
-      >
-        <div className='space-y-1.5'>
-          {LEVELS.map(level => (
-            <label
-              key={level.value}
-              className='flex items-center justify-between px-3 py-1  hover:bg-gradient-to-r hover:from-orange-50 hover:to-purple-50 rounded-xl cursor-pointer group transition-all'
-            >
-              <div className='flex items-center gap-3'>
-                <input
-                  type='radio'
-                  name='level'
-                  value={level.value}
-                  checked={filteredQuery.level === level.value}
-                  onChange={e => setFilteredQuery(prev => ({ ...prev, level: e.target.value }))}
-                  className='w-4 h-4 text-orange-600 focus:ring-orange-500 focus:ring-2'
-                />
-                <span className='text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors'>
-                  {level.label}
-                </span>
-              </div>
-              <span className='text-xs font-semibold text-gray-400 bg-gray-100 px-2 py-1 rounded-md'>
-                {level.count}
-              </span>
-            </label>
-          ))}
-        </div>
-      </FilterSection>
-
-      {/* Language */}
-      <FilterSection
-        title='LANGUAGE'
-        isExpanded={expandedSections.has("language")}
-        onToggle={() => toggleSection("language")}
-      >
-        <div className='space-y-1.5'>
-          {LANGUAGES.map(lang => (
-            <label
-              key={lang.value}
-              className='flex items-center justify-between px-3 py-1  hover:bg-gradient-to-r hover:from-orange-50 hover:to-purple-50 rounded-xl cursor-pointer group transition-all'
-            >
-              <div className='flex items-center gap-3'>
-                <input
-                  type='radio'
-                  name='language'
-                  value={lang.value}
-                  checked={filteredQuery.language === lang.value}
-                  onChange={e => setFilteredQuery(prev => ({ ...prev, language: e.target.value }))}
-                  className='w-4 h-4 text-orange-600 focus:ring-orange-500 focus:ring-2'
-                />
-                <span className='text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors'>
-                  {lang.label}
-                </span>
-              </div>
-              <span className='text-xs font-semibold text-gray-400 bg-gray-100 px-2 py-1 rounded-md'>
-                {lang.count}
-              </span>
-            </label>
-          ))}
-        </div>
-      </FilterSection>
-
-      {/* Price Range */}
-      <FilterSection
-        title='PRICE'
-        isExpanded={expandedSections.has("price")}
-        onToggle={() => toggleSection("price")}
-      >
-        <div className='space-y-5'>
-          <div className='flex items-center justify-between px-1'>
-            <div className='flex flex-col'>
-              <span className='text-xs text-gray-500 font-medium'>Min</span>
-              <span className='text-lg font-bold text-gray-900'>
-                ${filteredQuery.priceRange[0]}
-              </span>
-            </div>
-            <div className='h-px w-8 bg-gray-300'></div>
-            <div className='flex flex-col items-end'>
-              <span className='text-xs text-gray-500 font-medium'>Max</span>
-              <span className='text-lg font-bold text-gray-900'>
-                ${filteredQuery.priceRange[1]}
-              </span>
-            </div>
-          </div>
-
-          <div className='flex gap-3'>
-            <div className='flex-1'>
-              <label className='text-xs font-medium text-gray-600 mb-1.5 block'>Min Price</label>
-              <div className='relative'>
-                <span className='absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm font-medium'>
-                  $
-                </span>
-                <input
-                  type='number'
-                  value={filteredQuery.priceRange[0]}
-                  onChange={e =>
-                    setFilteredQuery(prev => ({
-                      ...prev,
-                      priceRange: [Number(e.target.value), prev.priceRange?.[1] ?? 10000],
-                    }))
-                  }
-                  className='w-full pl-7 pr-3 py-2.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 text-sm font-medium transition-all'
-                  placeholder='0'
-                />
-              </div>
-            </div>
-            <div className='flex-1'>
-              <label className='text-xs font-medium text-gray-600 mb-1.5 block'>Max Price</label>
-              <div className='relative'>
-                <span className='absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm font-medium'>
-                  $
-                </span>
-                <input
-                  type='number'
-                  value={filteredQuery.priceRange[1]}
-                  onChange={e =>
-                    setFilteredQuery(prev => ({
-                      ...prev,
-                      priceRange: [Number(e.target.value), prev.priceRange?.[1] ?? 100],
-                    }))
-                  }
-                  className='w-full pl-7 pr-3 py-2.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 text-sm font-medium transition-all'
-                  placeholder='100'
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </FilterSection>
-    </div>
-  );
-}
 
 // Filter Section Component
-interface FilterSectionProps {
-  title: string;
-  isExpanded: boolean;
-  onToggle: () => void;
-  children: React.ReactNode;
-  handleFilterChange?: (fieldName: string, value: string) => void;
-}
-
-interface FilterSidebarProps {
-  expandedSections: Set<string>;
-  toggleSection: (section: string) => void;
-  filteredQuery: {
-    category: string;
-    level: string;
-    language: string;
-    rating: string;
-    priceRange: number[];
-  };
-  setFilteredQuery: React.Dispatch<
-    React.SetStateAction<{
-      category: string;
-      level: string;
-      language: string;
-      rating: string;
-      priceRange: number[];
-    }>
-  >;
-  hasActiveFilters?: boolean;
-  clearAllFilters?: () => void;
-  handleFilterChange: (fieldName: string, value: string) => void;
-}
-
-function FilterSection({ title, isExpanded, onToggle, children }: FilterSectionProps) {
-  return (
-    <div className='border-b border-gray-100 pb-2 last:border-b-0'>
-      <button
-        onClick={onToggle}
-        className='w-full flex items-center justify-between  p-2  hover:bg-gray-50 rounded-xl transition-all group'
-      >
-        <h3 className='text-sm font-bold text-gray-600 tracking-wider uppercase group-hover:text-gray-900 transition-colors'>
-          {title}
-        </h3>
-        <div
-          className={`p-1.5 bg-gray-100 rounded-lg group-hover:bg-orange-100 transition-all ${isExpanded ? "rotate-90" : ""}`}
-        >
-          <ChevronRight
-            className={`w-3.5 h-3.5 text-gray-500 group-hover:text-orange-600 transition-all`}
-          />
-        </div>
-      </button>
-      {isExpanded && (
-        <div className='animate-in fade-in slide-in-from-top-2 duration-200'>{children}</div>
-      )}
-    </div>
-  );
-}
