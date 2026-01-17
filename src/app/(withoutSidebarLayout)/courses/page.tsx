@@ -8,6 +8,7 @@ import { useCallback, useEffect, useState } from "react";
 import { courseDraftStorage } from "../../../lib/storage/courseDraftStorage.ts";
 import FilterSidebar from "./(FilterSection)/FilterSidebar.tsx";
 import type { CourseType } from "./allCourses.types.ts";
+import { useSessionContext } from '../../contexts/SessionContext.tsx';
 
 const SORT_OPTIONS = [
   { value: "popular", label: "Most Popular" },
@@ -37,6 +38,8 @@ export default function AllCoursesPage() {
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
     new Set(["category", "rating", "level"])
   );
+
+    const {setCartUpdate} = useSessionContext();
 
   useEffect(() => {
     const storedCartItems =
@@ -136,7 +139,8 @@ export default function AllCoursesPage() {
   const handleAddToCart = useCallback((courseId: string) => {
     courseAddToCartHandler(courseId);
     setUpdateCart(prev => !prev);
-  }, []);
+    setCartUpdate?.(prev => !prev)
+  }, [setCartUpdate]);
 
   const handleAddToWishlist = useCallback(async (courseId: string | number) => {
     setWishlistItems(prev => {

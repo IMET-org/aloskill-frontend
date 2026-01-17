@@ -1,13 +1,14 @@
 "use client";
 
 import { AlertCircle, Award, BookOpen, Briefcase, CheckCircle2, LogIn, User } from "lucide-react";
-import { useSession } from "next-auth/react";
+// import { useSession } from "next-auth/react";
 import React, { useState } from "react";
 import InstructorStep0 from "./InstructorStep0.tsx";
 import InstructorStep1 from "./InstructorStep1.tsx";
 import InstructorStep2 from "./InstructorStep2.tsx";
 import InstructorStep3 from "./InstructorStep3.tsx";
 import InstructorStep4 from "./InstructorStep4.tsx";
+import { useSessionContext } from '../../contexts/SessionContext.tsx';
 
 export interface FormData {
   displayName: string;
@@ -37,7 +38,8 @@ export interface FormData {
 }
 
 const InstructorRegistrationForm = () => {
-  const { data } = useSession();
+  // const { data } = useSession();
+  const { user } = useSessionContext();
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [apiResponse, setApiResponse] = useState<{ status: "" | "Success" | "Error", message: string }>({ status: "", message: "" });
   const [instructorData, setInstructorData] = useState<FormData>({
@@ -46,7 +48,7 @@ const InstructorRegistrationForm = () => {
     gender: "",
     nationality: "",
     phoneNumber: "",
-    email: data?.user.email || "",
+    email: user?.email || "",
     password: undefined,
     address: "",
     city: "",

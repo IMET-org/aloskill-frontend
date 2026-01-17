@@ -1,7 +1,8 @@
 import { hindSiliguri, inter, playfair } from "@/styles/fonts.ts";
 import type { Metadata } from "next";
 import "./globals.css";
-import AuthProvider from "./providers/session-provider.tsx";
+// import AuthProvider from "./providers/session-provider.tsx";
+import { SessionProvider } from './contexts/SessionContext.tsx';
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://aloskill.com"),
@@ -73,9 +74,12 @@ export default function RootLayout({
           } as React.CSSProperties
         }
       >
-        <AuthProvider>
+        {/* <AuthProvider>
           <main>{children}</main>
-        </AuthProvider>
+        </AuthProvider> */}
+        <SessionProvider>
+          <main>{children}</main>
+        </SessionProvider>
       </body>
     </html>
   );

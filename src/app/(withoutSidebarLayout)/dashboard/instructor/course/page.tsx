@@ -2,23 +2,27 @@
 
 import type { CourseType } from "@/app/(withoutSidebarLayout)/courses/allCourses.types.ts";
 import CourseCard from "@/app/(withoutSidebarLayout)/courses/CourseCard.tsx";
-import { useSession } from "next-auth/react";
+// import { useSession } from "next-auth/react";
+import { Loader } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { apiClient } from "../../../../../lib/api/client";
+import { useSessionContext } from "../../../../contexts/SessionContext";
 
 const InstructorCoursePage = () => {
   const [apiError, setApiError] = useState<string>("");
   const [courses, setCourses] = useState<CourseType[]>([]);
-  const { data: sessionData } = useSession();
+  // const { data: sessionData } = useSession();
+  const { isLoading, user } = useSessionContext();
   const router = useRouter();
 
   useEffect(() => {
-    if (!sessionData?.user.id) return;
+    if (isLoading) return;
+    if (!user?.id) return;
     const getCourses = async () => {
       setApiError("");
       const coursesFromDB = await apiClient.get<CourseType[]>(
-        `/course/allCourses?userId=${sessionData?.user.id}`
+        `/course/allCourses?userId=${user?.id}`
       );
 
       try {
@@ -31,25 +35,20 @@ const InstructorCoursePage = () => {
           return;
         }
         setCourses(coursesFromDB.data);
-      } catch (e) {
+      } catch (_e) {
         setApiError("Something went wrong while fetching the courses.");
       }
     };
     getCourses();
-  }, [sessionData?.user.id]);
+  }, [user?.id, isLoading]);
 
-  // const calculateTotalDuration = (course: CourseType) => {
-  //   const totalSeconds = course.modules.reduce((acc, module) => {
-  //     const moduleSum = module.lessons.reduce((sum, lesson) => sum + (lesson.duration || 0), 0);
-  //     return acc + moduleSum;
-  //   }, 0);
-
-  //   const hours = Math.floor(totalSeconds / 3600);
-  //   const minutes = Math.floor((totalSeconds % 3600) / 60);
-
-  //   if (hours > 0) return `${hours}h ${minutes}m`;
-  //   return `${minutes}m`;
-  // };
+  if (isLoading) {
+    return (
+      <p className='text-md font-semibold text-gray-600 flex items-center gap-2'>
+        <Loader className='animate-spin' /> Loading...
+      </p>
+    );
+  }
 
   return (
     <div className='min-h-screen w-full px-4'>

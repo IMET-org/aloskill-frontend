@@ -9,6 +9,7 @@ import { useCallback, useEffect, useState } from "react";
 import CourseCard from "../../(withoutSidebarLayout)/courses/CourseCard";
 import type { CourseType } from "../../(withoutSidebarLayout)/courses/allCourses.types";
 import { courseAddToCartHandler } from "@/lib/course/utils.tsx";
+import { useSessionContext } from '../../contexts/SessionContext';
 
 export default function PopularCoursesSection() {
   const [courses, setCourses] = useState<CourseType[]>([]);
@@ -17,6 +18,7 @@ export default function PopularCoursesSection() {
   const [wishlistItems, setWishlistItems] = useState<Set<string>>(new Set());
 
   const router = useRouter();
+  const {setCartUpdate} = useSessionContext();
 
   // 🔹 Fetch courses from DB
   useEffect(() => {
@@ -43,7 +45,8 @@ export default function PopularCoursesSection() {
   const handleAddToCart = useCallback((courseId: string) => {
     const cartItem = courseAddToCartHandler(courseId);
     setCartItems(cartItem);
-  }, []);
+    setCartUpdate?.(prev => !prev);
+  }, [setCartUpdate]);
 
   const handleAddToWishlist = useCallback((courseId: string) => {
     console.log("Add to wishlist clicked:", courseId);

@@ -15,12 +15,14 @@ import {
   Settings,
   ShoppingCart,
 } from "lucide-react";
-import { useSession } from "next-auth/react";
+// import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import Logo from "./Logo.tsx";
+import { courseDraftStorage } from '../../../lib/storage/courseDraftStorage.ts';
+import { useSessionContext } from '../../../app/contexts/SessionContext.tsx';
 
 interface HeaderProps {
   onMenuToggle?: () => void;
@@ -28,7 +30,7 @@ interface HeaderProps {
 
 export default function NavBar({ onMenuToggle }: HeaderProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [cartCount, setCartCount] = useState(3);
+  const [cartCount, setCartCount] = useState(0);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   // const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [activeRole, setActiveRole] = useState<string>("STUDENT");
@@ -36,33 +38,33 @@ export default function NavBar({ onMenuToggle }: HeaderProps) {
   const router = useRouter();
 
   // NextAuth session
-  const { data: session, status } = useSession();
-  const isLoading = status === "loading";
-  const isAuthenticated = status === "authenticated";
-  const user = session?.user;
+  // const { data: session, status } = useSession();
+  // const isLoading = status === "loading";
+  // const isAuthenticated = status === "authenticated";
+  // const user = session?.user;
+
+  const { isCartUpdate, user, isLoading, isAuthenticated } = useSessionContext();
   const { logout, isLoggingOut, toast, setToast } = useLogout();
-  // Initialize active role from localStorage or user's first role
+
   useEffect(() => {
     if (user) {
       const roles = (user as any).role || [];
       const roleArray = Array.isArray(roles) ? roles : [roles];
       const normalizedRoles = roleArray.map((r: string) => r.toUpperCase());
 
-      // Try to get saved role from localStorage
       const savedRole = localStorage.getItem("activeRole");
 
       if (savedRole && normalizedRoles.includes(savedRole)) {
         setActiveRole(savedRole);
       } else {
-        // Default to instructor if available, otherwise student
         const defaultRole = normalizedRoles.includes("INSTRUCTOR") ? "INSTRUCTOR" : "STUDENT";
         setActiveRole(defaultRole);
         localStorage.setItem("activeRole", defaultRole);
       }
     }
-    // const getLocalData = courseDraftStorage.get();
-    // setCartCount(getLocalData.length || 0);
-  }, [user]);
+    const getLocalData = courseDraftStorage.get<{ courseId: string; quantity: number }[]>();
+    setCartCount(getLocalData?.length || 0);
+  }, [user, isCartUpdate]);
 
   const handleSignIn = () => {
     router.push("/auth/signin");
