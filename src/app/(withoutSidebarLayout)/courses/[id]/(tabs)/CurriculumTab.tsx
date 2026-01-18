@@ -1,6 +1,6 @@
+import { FadeIn } from "@/lib/course/utils.tsx";
 import { ChevronDown, Clock, Lock, Play } from "lucide-react";
 import type { CourseDetailsPublic } from "../../allCourses.types.ts";
-import { FadeIn } from "@/lib/course/utils.tsx";
 
 type CurriculumTabProps = {
   curriculum: CourseDetailsPublic["modules"];
@@ -86,7 +86,7 @@ export function CurriculumTab({
                       }}
                     >
                       <div className='flex items-center gap-2 sm:gap-3 flex-1 min-w-0'>
-                        {lesson.isFree ? (
+                        {lesson?.contentUrl ? (
                           <Play className='w-3 h-3 sm:w-4 sm:h-4 text-green-600 flex-shrink-0 group-hover:scale-125 transition-transform' />
                         ) : (
                           <Lock className='w-3 h-3 sm:w-4 sm:h-4 text-gray-400 flex-shrink-0' />
@@ -94,7 +94,7 @@ export function CurriculumTab({
                         <span className=' text-sm text-gray-700 group-hover:text-gray-900 truncate'>
                           {lesson.title}
                         </span>
-                        {lesson.isFree && (
+                        {lesson?.contentUrl && (
                           <span className='px-2 py-0.5 bg-green-100 text-green-700  font-semibold rounded whitespace-nowrap'>
                             Preview
                           </span>

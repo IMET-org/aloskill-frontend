@@ -1,5 +1,3 @@
-// app/instructors/[id]/page.tsx - FIXED VERSION
-
 "use client";
 
 import {
