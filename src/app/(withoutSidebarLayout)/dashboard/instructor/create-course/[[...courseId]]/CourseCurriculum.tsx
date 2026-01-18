@@ -11,7 +11,7 @@ import {
   Trash2,
   Upload,
 } from "lucide-react";
-import { useSession } from "next-auth/react";
+// import { useSession } from "next-auth/react";
 import { type ChangeEvent, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as tus from "tus-js-client";
@@ -19,6 +19,7 @@ import CourseFooter from "./CourseFooter.tsx";
 import CourseModal from "./CourseModal.tsx";
 import StepHeader from "./StepHeader.tsx";
 import { type CourseLesson, type CourseModule, type CreateCourseData } from "./page.tsx";
+import { useSessionContext } from '../../../../../contexts/SessionContext.tsx';
 
 type ExtendedCourseLesson = CourseLesson & {
   expanded?: boolean;
@@ -51,7 +52,8 @@ export default function CourseCurriculum({
   const [uploadError, setUploadError] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [uploadPercentage, setUploadPercentage] = useState<string>("");
-  const { data: sessionData } = useSession();
+  // const { data: sessionData } = useSession();
+  const { user } = useSessionContext();
 
   const [sections, setSections] = useState<ExtendedCourseModule[]>([
     {
@@ -342,7 +344,7 @@ export default function CourseCurriculum({
     setLoading(true);
     setUploadError("");
     setUploadPercentage("");
-    if (!sessionData?.user?.id) {
+    if (!user?.id) {
       setUploadError("User not authenticated.");
       setUploadPercentage("");
       setLoading(false);
@@ -356,7 +358,7 @@ export default function CourseCurriculum({
         expires: number;
         libraryId: string;
         collectionId: string;
-      }>(`/course/bunny-signature?fileName=${file.name}&collectionName=${sessionData?.user?.id}`);
+      }>(`/course/bunny-signature?fileName=${file.name}&collectionName=${user?.id}`);
 
       if (!backendResponse.success || !backendResponse.data) {
         return { name: "", url: "" };
@@ -425,7 +427,7 @@ export default function CourseCurriculum({
   const uploadFileToBunny = async (file: File[]): Promise<Array<{ name: string; url: string }>> => {
     setLoading(true);
     setUploadError("");
-    if (!sessionData?.user?.id) {
+    if (!user?.id) {
       setUploadError("User not authenticated.");
       setLoading(false);
       return [{ name: "", url: "" }];
@@ -438,7 +440,7 @@ export default function CourseCurriculum({
           formData.append("file", f);
 
           const response = await apiClient.postFormData<string>(
-            `/course/file-upload?folder=${sessionData.user.id}`,
+            `/course/file-upload?folder=${user?.id}`,
             formData
           );
 

@@ -1,9 +1,10 @@
 "use client";
 
+import { useSessionContext } from "@/app/contexts/SessionContext.tsx";
 import BorderGradientButton from "@/components/buttons/BorderGradientButton.tsx";
 import GradientButton from "@/components/buttons/GradientButton.tsx";
 import { apiClient } from "@/lib/api/client.ts";
-import { FadeIn, parseCourseDescription } from "@/lib/course/utils.tsx";
+import { courseAddToCartHandler, FadeIn, parseCourseDescription } from "@/lib/course/utils.tsx";
 import {
   Award,
   Calendar,
@@ -43,7 +44,7 @@ export default function CourseDetailPage() {
   const [isInWishlist, setIsInWishlist] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [course, setCourse] = useState<CourseDetailsPublic>();
-
+  const { setCartUpdate } = useSessionContext();
   useEffect(() => {
     const fetchCourses = async () => {
       try {
@@ -86,7 +87,21 @@ export default function CourseDetailPage() {
       return next;
     });
   };
+  const getRemainingDays = (endDate: string | Date): number => {
+    const now = new Date();
+    const end = new Date(endDate);
 
+    // If date is invalid or already expired
+    if (isNaN(end.getTime()) || end <= now) return 0;
+
+    const diffMs = end.getTime() - now.getTime();
+    return Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+  };
+
+  const handleAddToCart = (courseId: string) => {
+    courseAddToCartHandler(courseId);
+    setCartUpdate?.(prev => !prev);
+  };
   if (isLoading) {
     return (
       <div className='flex items-center justify-center min-h-screen'>
@@ -331,21 +346,38 @@ export default function CourseDetailPage() {
                   {/* Price */}
                   <div className='p-4 sm:p-6 bg-gradient-to-br from-orange-50 via-white to-purple-50'>
                     <div className='flex items-baseline gap-2 sm:gap-3 mb-3 sm:mb-4 flex-wrap'>
-                      <span className='text-xl font-bold text-[#074079]'>
-                        ${course?.discountPrice}
-                      </span>
-                      <span className='text-xl text-gray-400 line-through'>
-                        ${course?.originalPrice}
-                      </span>
-                      <span className='px-2 py-1 bg-red-500 text-white rounded  font-bold'>
-                        {course?.discountPercent}% OFF
-                      </span>
+                      {course?.discountPrice ? (
+                        <>
+                          <span className='text-xl font-bold text-orange-dark'>
+                            ${course?.discountPrice}
+                          </span>
+                          <span className='text-xl text-gray-400 line-through'>
+                            ${course?.originalPrice}
+                          </span>
+                          <span className='px-2 py-1 bg-orange-dark  text-white rounded  font-bold'>
+                            {course?.discountPercent}% OFF
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <span className='text-xl text-orange-dark font-bold'>
+                            ${course?.originalPrice}
+                          </span>
+                        </>
+                      )}
                     </div>
 
-                    <div className='flex items-center gap-2  text-sm text-red-600 mb-3 sm:mb-4'>
-                      <Clock className='w-4 h-4 flex-shrink-0' />
-                      <span className='font-semibold'>2 days left at this price!</span>
-                    </div>
+                    {course?.discountPrice && (
+                      <div className='flex items-center gap-2  text-sm text-red-600 mb-3 sm:mb-4'>
+                        <Clock className='w-4 h-4 flex-shrink-0' />
+                        <span className='font-semibold'>
+                          {" "}
+                          {getRemainingDays(course?.discountEndDate as string)} day
+                          {getRemainingDays(course?.discountEndDate as string) !== 1 && "s"} left at
+                          this price!
+                        </span>
+                      </div>
+                    )}
 
                     <div className='space-y-2 sm:space-y-3'>
                       {/* Add to Cart */}
@@ -354,7 +386,7 @@ export default function CourseDetailPage() {
                         icon={ShoppingCart}
                         iconPosition='right'
                         className='w-full'
-                        // onClick={handleAddToCart}
+                        onClick={() => handleAddToCart(course?.id as string)}
                       >
                         Add To Cart
                       </GradientButton>

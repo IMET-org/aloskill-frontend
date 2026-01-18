@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CloudUpload, ImageIcon, Loader, Play, Plus, Trash, Upload } from "lucide-react";
-import { useSession } from "next-auth/react";
+// import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { type ChangeEvent, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -10,6 +10,7 @@ import { apiClient } from "../../../../../../lib/api/client.ts";
 import CourseFooter from "./CourseFooter.tsx";
 import { type CreateCourseData } from "./page.tsx";
 import StepHeader from "./StepHeader.tsx";
+import { useSessionContext } from '../../../../../contexts/SessionContext.tsx';
 
 type CourseDescriptionForm = {
   trailerUrl?: string;
@@ -140,7 +141,8 @@ function AdvanceInformation({
     expiresAt: number;
     videoId: string;
   } | null>(null);
-  const { data: sessionData } = useSession();
+  // const { data: sessionData } = useSession();
+  const { user } = useSessionContext();
   const {
     register,
     unregister,
@@ -272,7 +274,7 @@ function AdvanceInformation({
     setLoading(true);
     setUploadError("");
     setUploadPercentage("");
-    if (!sessionData?.user?.id) {
+    if (!user?.id) {
       setUploadError("User not authenticated.");
       setUploadPercentage("");
       setLoading(false);
@@ -286,7 +288,7 @@ function AdvanceInformation({
         expires: number;
         libraryId: string;
         collectionId: string;
-      }>(`/course/bunny-signature?fileName=${file.name}&collectionName=${sessionData?.user?.id}`);
+      }>(`/course/bunny-signature?fileName=${file.name}&collectionName=${user?.id}`);
 
       if (!backendResponse.success || !backendResponse.data) {
         return { name: "", url: "" };
@@ -380,7 +382,7 @@ function AdvanceInformation({
   const uploadFileToBunny = async (file: File): Promise<{ name: string; url: string }> => {
     setImageUploadLoading(true);
     setUploadError("");
-    if (!sessionData?.user?.id) {
+    if (!user?.id) {
       setUploadError("User not authenticated.");
       setImageUploadLoading(false);
       return { name: "", url: "" };
@@ -397,7 +399,7 @@ function AdvanceInformation({
       formData.append("file", file);
 
       const response = await apiClient.postFormData<string>(
-        `/course/file-upload?folder=${sessionData.user.id}`,
+        `/course/file-upload?folder=${user.id}`,
         formData
       );
 

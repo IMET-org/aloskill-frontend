@@ -4,7 +4,6 @@ import GradientButton from "@/components/buttons/GradientButton";
 import { PageHeading } from "@/components/shared/PageHeading";
 import type { ContactFormData } from "@/lib/schema-validations/contact.schema.ts";
 import { contactFormSchema } from "@/lib/schema-validations/contact.schema.ts";
-
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, CheckCircle2, MessageCircle, Phone, Send, Sparkles } from "lucide-react";
 import { useState } from "react";
@@ -359,7 +358,7 @@ export default function ContactSection() {
 
               <h3 className='text-xl font-bold text-white mb-3'>Email Us</h3>
               <p className='text-white/90 text-sm mb-6 leading-relaxed'>
-                Prefer email? Drop us a line and we'll respond promptly.
+                Prefer email? Drop us a line and we will respond promptly.
               </p>
               <button className='px-6 py-2 bg-white text-orange-600 rounded-lg hover:bg-gray-50 transition-all duration-300 font-bold text-sm shadow-lg hover:shadow-xl'>
                 Send Email

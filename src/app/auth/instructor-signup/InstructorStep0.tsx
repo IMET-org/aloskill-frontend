@@ -1,12 +1,13 @@
 import { apiClient } from "@/lib/api/client.ts";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff } from "lucide-react";
-import { useSession } from "next-auth/react";
+// import { useSession } from "next-auth/react";
 import { useState, type Dispatch, type SetStateAction } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import z from "zod";
 import InstructorRegistrationFooterAction from "./InstructorRegistrationFooterAction.tsx";
 import type { FormData } from "./page.tsx";
+import { useSessionContext } from '../../contexts/SessionContext.tsx';
 
 type registerForm = {
   email: string;
@@ -25,11 +26,12 @@ const InstructorStep0 = ({
   instructorData: FormData;
   setInstructorData: Dispatch<SetStateAction<FormData>>;
 }) => {
-  const { data } = useSession();
+  // const { data } = useSession();
+  const { user } = useSessionContext();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
-  const isLoggedIn = !!data?.user.email;
+  const isLoggedIn = !!user?.email;
 
   const InstructorRegisterSchema = z
     .object({
@@ -105,7 +107,7 @@ const InstructorStep0 = ({
             </label>
             <input
               {...register("email")}
-              disabled={data?.user.email ? true : false}
+              disabled={user?.email ? true : false}
               type='text'
               defaultValue={instructorData.email}
               placeholder='Enter Your Email'
@@ -125,7 +127,7 @@ const InstructorStep0 = ({
               <input
                 {...register("password")}
                 type={showPassword ? "text" : "password"}
-                disabled={data?.user.email ? true : false}
+                disabled={user?.email ? true : false}
                 placeholder='••••••••'
                 className={`w-full text-sm px-3 py-2 rounded border focus:ring-1 focus:ring-orange focus:border-transparent focus:outline-none transition placeholder:text-sm resize-none ${errors.password ? "border-red-200 bg-red-50" : "border-gray-200"}`}
               />
@@ -151,7 +153,7 @@ const InstructorStep0 = ({
               <input
                 {...register("confirmPassword")}
                 type={showConfirm ? "text" : "password"}
-                disabled={data?.user.email ? true : false}
+                disabled={user?.email ? true : false}
                 placeholder='••••••••'
                 className={`w-full text-sm px-3 py-2 rounded border focus:ring-1 focus:ring-orange focus:border-transparent focus:outline-none transition placeholder:text-sm resize-none ${errors.confirmPassword ? "border-red-200 bg-red-50" : "border-gray-200"}`}
               />

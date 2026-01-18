@@ -1,5 +1,3 @@
-// app/instructors/page.tsx - FIXED VERSION
-
 "use client";
 
 import { PageHeading } from "@/components/shared/PageHeading.tsx";

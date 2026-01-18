@@ -1,4 +1,5 @@
 "use client";
+import { useSessionContext } from "@/app/contexts/SessionContext.tsx";
 import { ArrowLeft, Minus, Plus, ShoppingCart, Tag, X } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
@@ -20,6 +21,7 @@ export default function ShoppingCartPage() {
     []
   );
   const [couponCode, setCouponCode] = useState("");
+  const { setCartUpdate } = useSessionContext();
 
   useEffect(() => {
     const storedCart = courseDraftStorage.get<{ courseId: string; quantity: number }[]>();
@@ -67,6 +69,7 @@ export default function ShoppingCartPage() {
       courseDraftStorage.save(updatedItems);
       return updatedItems;
     });
+    setCartUpdate?.(prev => !prev);
     setCartItems(items => items.filter(item => item.id !== id));
   };
 

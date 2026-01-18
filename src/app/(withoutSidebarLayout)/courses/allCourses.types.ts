@@ -64,7 +64,7 @@ export type CourseType = {
     reviews: number;
   };
 };
-export type CourseStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED" ;
+export type CourseStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
 export type CourseCardProps = {
   course: CourseType;
 
@@ -129,6 +129,7 @@ export type CourseDetails = {
   }[];
 };
 export type CourseDetailsPublic = {
+  id: string;
   title: string;
   description: string;
   thumbnailUrl: string | null;
@@ -137,6 +138,7 @@ export type CourseDetailsPublic = {
   discountPrice: number | null;
   discountPercent: number | null;
   isDiscountActive: boolean;
+  discountEndDate: string | null;
   language: string;
   level: string;
   ratingAverage: number | null;

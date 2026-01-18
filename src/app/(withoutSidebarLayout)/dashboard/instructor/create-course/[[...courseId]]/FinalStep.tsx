@@ -2,7 +2,7 @@ import { useDebounce } from "@/hooks/useDebounce.ts";
 import { apiClient } from "@/lib/api/client.ts";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Search, UserCircleIcon, X } from "lucide-react";
-import { useSession } from "next-auth/react";
+// import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -11,6 +11,7 @@ import { z } from "zod";
 import CourseFooter from "./CourseFooter.tsx";
 import { type CreateCourseData } from "./page.tsx";
 import StepHeader from "./StepHeader.tsx";
+import { useSessionContext } from '../../../../../contexts/SessionContext.tsx';
 
 const CoursePriceAndInstructorSchema = z
   .object({
@@ -97,7 +98,8 @@ const FinalStep = ({
   setCourseUploadError: React.Dispatch<React.SetStateAction<string>>;
   isParamsExisting: boolean;
 }) => {
-  const { data: session } = useSession();
+  // const { data: session } = useSession();
+  const { user } = useSessionContext();
   const [paymentSelection, setPaymentSelection] = useState<"paid" | "free">("paid");
   const [query, setQuery] = useState<string>("");
   const [dataSaveMode, setDataSaveMode] = useState<
@@ -193,7 +195,7 @@ const FinalStep = ({
     const { originalPrice, discountPrice } = data;
     const { allCategory: _allCategory, ...restCourseData } = courseData;
     const courseSaveToDB = await apiClient.post(
-      `/course/create-course?user=${session?.user.email}`,
+      `/course/create-course?user=${user?.email}`,
       {
         ...restCourseData,
         originalPrice: Number(originalPrice),
@@ -264,7 +266,7 @@ const FinalStep = ({
     }
     if (dataSaveMode === "update") {
       const backendData = await apiClient.patch(
-        `/course/editOrUpdate-course?user=${session?.user.email}`,
+        `/course/editOrUpdate-course?user=${user?.email}`,
         {
           ...restCourseData,
           originalPrice: Number(originalPrice),
@@ -291,7 +293,7 @@ const FinalStep = ({
     }
     if (dataSaveMode === "updateAndPublish") {
       const backendData = await apiClient.patch(
-        `/course/editOrUpdate-course?user=${session?.user.email}`,
+        `/course/editOrUpdate-course?user=${user?.email}`,
         {
           ...restCourseData,
           originalPrice: Number(originalPrice),
