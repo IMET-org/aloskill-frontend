@@ -1,7 +1,20 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, X } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { apiClient } from "../../../../lib/api/client";
+import { courseDraftStorage } from "../../../../lib/storage/courseDraftStorage";
+
+type Courses = {
+  id: string;
+  category: string | undefined;
+  discountPrice: number;
+  title: string;
+  originalPrice: number;
+  thumbnailUrl: string | null;
+}[];
 
 export default function CheckoutPage() {
   const [formData, setFormData] = useState({
@@ -24,30 +37,63 @@ export default function CheckoutPage() {
     orderNotes: "",
   });
 
-  const orderItems = [
-    {
-      id: 1,
-      name: "Canon EOS 1500D DSLR Camera Body+ 18-...",
-      quantity: 1,
-      price: 579,
-      image: "https://images.unsplash.com/photo-1606980707315-f84c086787cf?w=200&h=200&fit=crop",
-    },
-    {
-      id: 2,
-      name: "Wired Over-Ear Gaming Headphones with U...",
-      quantity: 3,
-      price: 220,
-      image: "https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=200&h=200&fit=crop",
-    },
-  ];
+  const [cartItems, setCartItems] = useState<Courses>([]);
+  const [storedCartItems, setStoredCartItems] = useState<{ courseId: string; quantity: number }[]>(
+    []
+  );
 
-  const subTotal = 320;
-  const shipping = 0;
-  const discount = 24;
-  const tax = 61.99;
-  const total = 357.99;
+  const params = useParams();
+  const courseId = params["slug"]?.[0];
 
-  const handleInputChange = e => {
+  const fetchCourseData = async (storedCart: { courseId: string; quantity: number }[]) => {
+    const response = await apiClient.post<Courses>(
+      "/course/get-cart-courses",
+      storedCart.map(course => course.courseId)
+    );
+    if (!response.success) {
+      setCartItems([]);
+      return;
+    }
+    setCartItems(response.data || []);
+  };
+
+  useEffect(() => {
+    if (courseId) {
+      setStoredCartItems([{ courseId, quantity: 1 }]);
+      fetchCourseData([{ courseId, quantity: 1 }]);
+      return;
+    }
+    const storedCart = courseDraftStorage.get<{ courseId: string; quantity: number }[]>();
+    if (!storedCart || storedCart.length === 0) {
+      setCartItems([]);
+      return;
+    }
+    setStoredCartItems(storedCart);
+
+    fetchCourseData(storedCart);
+  }, [courseId]);
+
+  const subtotal = cartItems.reduce(
+    (sum, item) =>
+      sum +
+      (item.discountPrice ? item.discountPrice : item.originalPrice) *
+        (storedCartItems.find(ci => ci.courseId === item.id)?.quantity || 1),
+    0
+  );
+
+  const tax = subtotal * 0.05;
+  const total = subtotal + tax;
+
+  const removeItem = (id: string) => {
+    setStoredCartItems(items => {
+      const updatedItems = items.filter(item => item.courseId !== id);
+      courseDraftStorage.save(updatedItems);
+      return updatedItems;
+    });
+    setCartItems(items => items.filter(item => item.id !== id));
+  };
+
+  const handleInputChange = (e: any) => {
     const { name, value, type, checked } = e.target;
     setFormData({
       ...formData,
@@ -69,7 +115,7 @@ export default function CheckoutPage() {
   ];
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-orange-50 via-purple-50 to-blue-50'>
+    <div className='min-h-screen bg-linear-to-br from-orange-50 via-purple-50 to-blue-50'>
       {/* Header */}
       <header className='bg-white shadow-sm animate-slide-down'>
         <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6'>
@@ -366,25 +412,34 @@ export default function CheckoutPage() {
 
               {/* Order Items */}
               <div className='space-y-4 mb-6'>
-                {orderItems.map(item => (
+                {cartItems.map(item => (
                   <div
                     key={item.id}
                     className='flex gap-3 hover:bg-gray-50 p-2 rounded-lg transition-colors duration-200'
                   >
                     <Image
-                      width={100}
-                      height={100}
-                      src={item.image}
-                      alt={item.name}
+                      width={80}
+                      height={80}
+                      src={item.thumbnailUrl || ""}
+                      alt='Course Thumbnail'
                       className='w-16 h-16 object-cover rounded-lg'
                     />
                     <div className='flex-1 min-w-0'>
-                      <p className='text-sm text-gray-800 line-clamp-2 mb-1'>{item.name}</p>
+                      <p className='text-sm text-gray-800 line-clamp-2 mb-1'>{item.title}</p>
                       <p className='text-sm text-gray-600'>
-                        {item.quantity} x{" "}
-                        <span className='text-[#DA7C36] font-semibold'>${item.price}</span>
+                        {storedCartItems.find(ci => ci.courseId === item.id)?.quantity || 1} x
+                        <span className='text-[#DA7C36] font-semibold'>
+                          ${item.discountPrice ? item.discountPrice : item.originalPrice}
+                        </span>
                       </p>
                     </div>
+                    <button
+                      onClick={() => removeItem(item.id)}
+                      className='text-gray-400 hover:text-red-500 transition-colors duration-200 self-start'
+                      aria-label='Remove item'
+                    >
+                      <X className='w-5 h-5' />
+                    </button>
                   </div>
                 ))}
               </div>
@@ -393,16 +448,16 @@ export default function CheckoutPage() {
               <div className='space-y-3 border-t border-gray-200 pt-4'>
                 <div className='flex justify-between text-gray-700'>
                   <span>Sub-total</span>
-                  <span className='font-semibold'>${subTotal}</span>
+                  <span className='font-semibold'>${subtotal}</span>
                 </div>
                 <div className='flex justify-between text-gray-700'>
                   <span>Shipping</span>
                   <span className='font-semibold text-green-600'>Free</span>
                 </div>
-                <div className='flex justify-between text-gray-700'>
+                {/* <div className='flex justify-between text-gray-700'>
                   <span>Discount</span>
-                  <span className='font-semibold'>${discount}</span>
-                </div>
+                  <span className='font-semibold'>$5</span>
+                </div> */}
                 <div className='flex justify-between text-gray-700'>
                   <span>Tax</span>
                   <span className='font-semibold'>${tax.toFixed(2)}</span>
@@ -416,7 +471,8 @@ export default function CheckoutPage() {
               {/* Place Order Button */}
               <button
                 onClick={handleSubmit}
-                className='w-full mt-6 py-4 bg-gradient-to-r from-[#DA7C36] to-[#d15100] text-white rounded-lg font-bold text-base hover:shadow-lg hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2'
+                disabled={cartItems.length === 0}
+                className='w-full mt-6 py-4 bg-linear-to-r from-[#DA7C36] to-[#d15100] text-white rounded-lg font-bold text-base hover:shadow-lg hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed'
               >
                 PLACE ORDER
                 <ArrowRight className='w-5 h-5' />

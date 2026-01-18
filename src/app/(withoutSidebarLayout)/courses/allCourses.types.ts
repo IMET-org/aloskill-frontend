@@ -67,8 +67,7 @@ export type CourseType = {
 export type CourseStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
 export type CourseCardProps = {
   course: CourseType;
-
-  onEnroll?: (courseId: string) => void;
+  
   onAddToCart?: (courseId: string) => void;
   onAddToWishlist?: (courseId: string) => Promise<void> | void;
 

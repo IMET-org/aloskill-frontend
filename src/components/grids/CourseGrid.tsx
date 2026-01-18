@@ -9,7 +9,6 @@ interface CourseGridProps {
   courses: CourseType[];
   isLoading?: boolean;
   emptyStateMessage?: string;
-  onEnroll?: (courseId: string | number) => void;
   onAddToCart?: (courseId: string) => void;
   onAddToWishlist?: (courseId: string | number) => void;
   // cartItems?: Set<string | number>;
@@ -21,7 +20,6 @@ const CourseGrid = memo(function CourseGrid({
   courses,
   isLoading = false,
   emptyStateMessage = "No courses available at the moment.",
-  onEnroll,
   onAddToCart,
   onAddToWishlist,
   cartItems = [],
@@ -74,7 +72,6 @@ const CourseGrid = memo(function CourseGrid({
         <CourseCard
           key={course.id}
           course={course}
-          onEnroll={onEnroll}
           onAddToCart={onAddToCart}
           onAddToWishlist={onAddToWishlist}
           isInCart={cartItems.some(item => item.courseId === course.id)}

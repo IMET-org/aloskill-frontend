@@ -39,7 +39,7 @@ export default function AllCoursesPage() {
     new Set(["category", "rating", "level"])
   );
 
-    const {setCartUpdate} = useSessionContext();
+  const {setCartUpdate} = useSessionContext();
 
   useEffect(() => {
     const storedCartItems =
@@ -153,11 +153,6 @@ export default function AllCoursesPage() {
       return newSet;
     });
     await new Promise(resolve => setTimeout(resolve, 300));
-  }, []);
-
-  const handleEnroll = useCallback((courseId: string | number) => {
-    console.log(`Enrolling in course: ${courseId}`);
-    // Navigate to checkout or show modal
   }, []);
 
   useEffect(() => {
@@ -363,7 +358,6 @@ export default function AllCoursesPage() {
               <CourseGrid
                 courses={courses}
                 isLoading={isLoading}
-                onEnroll={handleEnroll}
                 onAddToCart={handleAddToCart}
                 onAddToWishlist={handleAddToWishlist}
                 cartItems={cartItems}
