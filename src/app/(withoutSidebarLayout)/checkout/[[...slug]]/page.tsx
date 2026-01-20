@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { ArrowRight, X } from "lucide-react";
 import Image from "next/image";
@@ -6,6 +5,7 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { apiClient } from "../../../../lib/api/client";
 import { courseDraftStorage } from "../../../../lib/storage/courseDraftStorage";
+import { useSessionContext } from "../../../contexts/SessionContext";
 
 type Courses = {
   id: string;
@@ -17,30 +17,14 @@ type Courses = {
 }[];
 
 export default function CheckoutPage() {
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    companyName: "",
-    address: "",
-    country: "",
-    regionState: "",
-    city: "",
-    zipCode: "",
-    email: "",
-    phoneNumber: "",
-    shipToDifferent: false,
-    paymentMethod: "debit-credit",
-    cardName: "",
-    cardNumber: "",
-    expiryDate: "",
-    cvc: "",
-    orderNotes: "",
-  });
+  const [paymentMethod, setPaymentMethod] = useState<string>("bkash");
 
   const [cartItems, setCartItems] = useState<Courses>([]);
   const [storedCartItems, setStoredCartItems] = useState<{ courseId: string; quantity: number }[]>(
     []
   );
+
+  const { user } = useSessionContext();
 
   const params = useParams();
   const courseId = params["slug"]?.[0];
@@ -73,6 +57,21 @@ export default function CheckoutPage() {
     fetchCourseData(storedCart);
   }, [courseId]);
 
+  const createOrder = async () => {
+    if (!user) return;
+    const orderResponse = await apiClient.post("/order/create-payment", {
+      courseIds: courseId ? [courseId] : storedCartItems.map(item => item.courseId),
+      paymentMethod,
+      user: user.id
+    });
+    if (!orderResponse.success) {
+      alert("Failed to create order. Please try again.");
+      return;
+    }
+    console.log(orderResponse.data);
+    alert("Order created successfully! Proceeding to payment...");
+  };
+
   const subtotal = cartItems.reduce(
     (sum, item) =>
       sum +
@@ -93,25 +92,12 @@ export default function CheckoutPage() {
     setCartItems(items => items.filter(item => item.id !== id));
   };
 
-  const handleInputChange = (e: any) => {
-    const { name, value, type, checked } = e.target;
-    setFormData({
-      ...formData,
-      [name]: type === "checkbox" ? checked : value,
-    });
-  };
-
-  const handleSubmit = () => {
-    console.log("Order submitted:", formData);
-    alert("Order placed successfully!");
-  };
-
   const paymentMethods = [
-    { id: "cash", icon: "💵", label: "Cash on Delivery" },
-    { id: "venmo", icon: "V", label: "Venmo", bgColor: "bg-blue-100" },
-    { id: "paypal", icon: "P", label: "Paypal", bgColor: "bg-blue-200" },
-    { id: "amazon", icon: "a", label: "Amazon Pay", bgColor: "bg-gray-800 text-white" },
-    { id: "debit-credit", icon: "💳", label: "Debit/Credit Card" },
+    { id: "bkash", icon: "B", label: "Bkash" },
+    { id: "nagad", icon: "N", label: "Nagad", bgColor: "bg-blue-100" },
+    { id: "qcash", icon: "Q", label: "Qcash", bgColor: "bg-blue-200" },
+    { id: "card", icon: "C", label: "Card", bgColor: "bg-gray-800 text-white" },
+    { id: "others", icon: "O", label: "Others" },
   ];
 
   return (
@@ -130,185 +116,27 @@ export default function CheckoutPage() {
         <div className='grid grid-cols-1 lg:grid-cols-3 gap-8'>
           {/* Left Section - Billing & Payment */}
           <div className='lg:col-span-2 space-y-6'>
-            {/* Billing Information */}
-            <div className='bg-white rounded-xl shadow-md p-6 sm:p-8 animate-fade-in'>
-              <h2 className='text-xl font-bold text-[#074079] mb-6'>Billing Information</h2>
-
-              <div className='space-y-4'>
-                {/* Name Fields */}
-                <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-                  <div>
-                    <label className='block text-sm font-medium text-gray-700 mb-2'>
-                      User name
-                    </label>
-                    <input
-                      type='text'
-                      name='firstName'
-                      placeholder='First name'
-                      value={formData.firstName}
-                      onChange={handleInputChange}
-                      className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#DA7C36] focus:border-transparent transition-all duration-200'
-                    />
-                  </div>
-                  <div className='flex items-end'>
-                    <input
-                      type='text'
-                      name='lastName'
-                      placeholder='Last name'
-                      value={formData.lastName}
-                      onChange={handleInputChange}
-                      className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#DA7C36] focus:border-transparent transition-all duration-200'
-                    />
-                  </div>
-                </div>
-
-                {/* Company Name */}
-                <div>
-                  <label className='block text-sm font-medium text-gray-700 mb-2'>
-                    Company Name <span className='text-gray-400'>(Optional)</span>
-                  </label>
-                  <input
-                    type='text'
-                    name='companyName'
-                    value={formData.companyName}
-                    onChange={handleInputChange}
-                    className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#DA7C36] focus:border-transparent transition-all duration-200'
-                  />
-                </div>
-
-                {/* Address */}
-                <div>
-                  <label className='block text-sm font-medium text-gray-700 mb-2'>Address</label>
-                  <input
-                    type='text'
-                    name='address'
-                    value={formData.address}
-                    onChange={handleInputChange}
-                    className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#DA7C36] focus:border-transparent transition-all duration-200'
-                  />
-                </div>
-
-                {/* Location Fields */}
-                <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
-                  <div>
-                    <label className='block text-sm font-medium text-gray-700 mb-2'>Country</label>
-                    <select
-                      name='country'
-                      value={formData.country}
-                      onChange={handleInputChange}
-                      className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#DA7C36] focus:border-transparent transition-all duration-200 bg-white'
-                    >
-                      <option value=''>Select...</option>
-                      <option value='us'>United States</option>
-                      <option value='uk'>United Kingdom</option>
-                      <option value='bd'>Bangladesh</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className='block text-sm font-medium text-gray-700 mb-2'>
-                      Region/State
-                    </label>
-                    <select
-                      name='regionState'
-                      value={formData.regionState}
-                      onChange={handleInputChange}
-                      className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#DA7C36] focus:border-transparent transition-all duration-200 bg-white'
-                    >
-                      <option value=''>Select...</option>
-                      <option value='dhaka'>Dhaka</option>
-                      <option value='ny'>New York</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className='block text-sm font-medium text-gray-700 mb-2'>City</label>
-                    <input
-                      type='text'
-                      name='city'
-                      value={formData.city}
-                      onChange={handleInputChange}
-                      className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#DA7C36] focus:border-transparent transition-all duration-200'
-                    />
-                  </div>
-                  <div>
-                    <label className='block text-sm font-medium text-gray-700 mb-2'>Zip Code</label>
-                    <input
-                      type='text'
-                      name='zipCode'
-                      value={formData.zipCode}
-                      onChange={handleInputChange}
-                      className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#DA7C36] focus:border-transparent transition-all duration-200'
-                    />
-                  </div>
-                </div>
-
-                {/* Contact Fields */}
-                <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-                  <div>
-                    <label className='block text-sm font-medium text-gray-700 mb-2'>Email</label>
-                    <input
-                      type='email'
-                      name='email'
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#DA7C36] focus:border-transparent transition-all duration-200'
-                    />
-                  </div>
-                  <div>
-                    <label className='block text-sm font-medium text-gray-700 mb-2'>
-                      Phone Number
-                    </label>
-                    <input
-                      type='tel'
-                      name='phoneNumber'
-                      value={formData.phoneNumber}
-                      onChange={handleInputChange}
-                      className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#DA7C36] focus:border-transparent transition-all duration-200'
-                    />
-                  </div>
-                </div>
-
-                {/* Checkbox */}
-                <div className='flex items-center gap-2 pt-2'>
-                  <input
-                    type='checkbox'
-                    id='shipDifferent'
-                    name='shipToDifferent'
-                    checked={formData.shipToDifferent}
-                    onChange={handleInputChange}
-                    className='w-4 h-4 text-[#DA7C36] border-gray-300 rounded focus:ring-[#DA7C36]'
-                  />
-                  <label
-                    htmlFor='shipDifferent'
-                    className='text-sm text-gray-700'
-                  >
-                    Ship into different address
-                  </label>
-                </div>
-              </div>
-            </div>
-
             {/* Payment Option */}
             <div
               className='bg-white rounded-xl shadow-md p-6 sm:p-8 animate-fade-in'
               style={{ animationDelay: "100ms" }}
             >
-              <h2 className='text-xl font-bold text-[#074079] mb-6'>Payment Option</h2>
-
+              <h2 className='text-lg font-bold text-[#074079] mb-6'>Payment Option</h2>
               {/* Payment Methods */}
-              <div className='grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6'>
+              <div className='grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-4'>
                 {paymentMethods.map(method => (
                   <button
                     key={method.id}
                     type='button'
-                    onClick={() => setFormData({ ...formData, paymentMethod: method.id })}
-                    className={`p-4 rounded-lg border-2 transition-all duration-300 flex flex-col items-center gap-2 hover:scale-105 ${
-                      formData.paymentMethod === method.id
+                    onClick={() => setPaymentMethod(method.id)}
+                    className={`p-2 rounded border transition-all duration-300 flex flex-col items-center cursor-pointer hover:scale-105 ${
+                      paymentMethod === method.id
                         ? "border-[#DA7C36] bg-orange-50 shadow-md"
                         : "border-gray-200 hover:border-gray-300"
                     }`}
                   >
                     <div
-                      className={`text-2xl ${formData.paymentMethod === method.id ? "scale-110" : ""} transition-transform duration-300 ${method.bgColor || ""} rounded-full p-2`}
+                      className={`text-xl ${paymentMethod === method.id ? "scale-110" : ""} transition-transform duration-300`}
                     >
                       {method.icon}
                     </div>
@@ -320,7 +148,7 @@ export default function CheckoutPage() {
               </div>
 
               {/* Card Details */}
-              {formData.paymentMethod === "debit-credit" && (
+              {/* {formData.paymentMethod === "card" && (
                 <div className='space-y-4 animate-fade-in-up'>
                   <div>
                     <label className='block text-sm font-medium text-gray-700 mb-2'>
@@ -377,11 +205,11 @@ export default function CheckoutPage() {
                     </div>
                   </div>
                 </div>
-              )}
+              )} */}
             </div>
 
             {/* Additional Information */}
-            <div
+            {/* <div
               className='bg-white rounded-xl shadow-md p-6 sm:p-8 animate-fade-in'
               style={{ animationDelay: "200ms" }}
             >
@@ -399,7 +227,7 @@ export default function CheckoutPage() {
                   className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#DA7C36] focus:border-transparent transition-all duration-200 resize-none'
                 />
               </div>
-            </div>
+            </div> */}
           </div>
 
           {/* Right Section - Order Summary */}
@@ -415,7 +243,7 @@ export default function CheckoutPage() {
                 {cartItems.map(item => (
                   <div
                     key={item.id}
-                    className='flex gap-3 hover:bg-gray-50 p-2 rounded-lg transition-colors duration-200'
+                    className='flex gap-3 items-center hover:bg-gray-50 p-2 rounded-lg transition-colors duration-200'
                   >
                     <Image
                       width={80}
@@ -435,7 +263,7 @@ export default function CheckoutPage() {
                     </div>
                     <button
                       onClick={() => removeItem(item.id)}
-                      className='text-gray-400 hover:text-red-500 transition-colors duration-200 self-start'
+                      className='text-gray-400 hover:text-orange transition-colors duration-200 cursor-pointer'
                       aria-label='Remove item'
                     >
                       <X className='w-5 h-5' />
@@ -468,13 +296,15 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
+              {/* Payment Options */}
+
               {/* Place Order Button */}
               <button
-                onClick={handleSubmit}
+                onClick={createOrder}
                 disabled={cartItems.length === 0}
-                className='w-full mt-6 py-4 bg-linear-to-r from-[#DA7C36] to-[#d15100] text-white rounded-lg font-bold text-base hover:shadow-lg hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed'
+                className='w-full mt-6 py-3 bg-linear-to-r from-[#DA7C36] to-[#d15100] text-white rounded-lg font-bold text-base hover:shadow-lg hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed'
               >
-                PLACE ORDER
+                PAY WITH {paymentMethod.toUpperCase()}
                 <ArrowRight className='w-5 h-5' />
               </button>
             </div>
