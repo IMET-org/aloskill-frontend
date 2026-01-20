@@ -4,7 +4,12 @@ import { useSessionContext } from "@/app/contexts/SessionContext.tsx";
 import BorderGradientButton from "@/components/buttons/BorderGradientButton.tsx";
 import GradientButton from "@/components/buttons/GradientButton.tsx";
 import { apiClient } from "@/lib/api/client.ts";
-import { courseAddToCartHandler, FadeIn, parseCourseDescription } from "@/lib/course/utils.tsx";
+import {
+  courseAddToCartHandler,
+  FadeIn,
+  getFileIdFromUrl,
+  parseCourseDescription,
+} from "@/lib/course/utils.tsx";
 import {
   Award,
   Calendar,
@@ -44,6 +49,12 @@ export default function CourseDetailPage() {
   const [isInWishlist, setIsInWishlist] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [course, setCourse] = useState<CourseDetailsPublic>();
+  const [videoData, setVideoData] = useState<{
+    libraryId: string;
+    token: string;
+    expiresAt: number;
+    videoId: string;
+  } | null>(null);
   const { setCartUpdate } = useSessionContext();
   useEffect(() => {
     const fetchCourses = async () => {
@@ -62,6 +73,32 @@ export default function CourseDetailPage() {
     };
     fetchCourses();
   }, [courseId]);
+
+  useEffect(() => {
+    if (!course?.trailerUrl) {
+      return;
+    }
+    try {
+      const getVideoData = async () => {
+        const getVideoFromBunny = await apiClient.post<{
+          libraryId: string;
+          token: string;
+          videoId: string;
+          expiresAt: number;
+        }>("/course/get-video-url", {
+          filePath: getFileIdFromUrl(course?.trailerUrl as string),
+          duration: 10,
+        });
+        if (!getVideoFromBunny.success) {
+          return;
+        }
+        if (getVideoFromBunny.data) {
+          setVideoData(getVideoFromBunny.data);
+        }
+      };
+      getVideoData();
+    } catch (_error: unknown) {}
+  }, [course?.trailerUrl]);
 
   const courseDescriptionParsed = parseCourseDescription(course?.description);
 
@@ -221,12 +258,20 @@ export default function CourseDetailPage() {
               <FadeIn delay={200}>
                 <div className='relative rounded-md overflow-hidden shadow-xl group'>
                   <div className='relative aspect-video'>
-                    <Image
+                    {videoData && (
+                      <iframe
+                        className='w-full h-full'
+                        src={`https://iframe.mediadelivery.net/embed/${videoData.libraryId}/${videoData.videoId}?token=${videoData.token}&expires=${videoData.expiresAt}`}
+                        allow='encrypted-media; autoplay'
+                        allowFullScreen
+                      />
+                    )}
+                    {/* <Image
                       src={course?.thumbnailUrl || "/course-placeholder.jpg"}
                       alt={course?.title || "Course Preview"}
                       fill
                       className='object-cover group-hover:scale-105 transition-transform duration-700'
-                    />
+                    /> */}
                     <div className='absolute inset-0 bg-gradient-to-t from-black/60 to-transparent' />
                     <div className='absolute inset-0 flex items-center justify-center'>
                       <button className='w-16 h-16 sm:w-20 sm:h-20 bg-white rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-all duration-300 group-hover:bg-[#da7c36]'>
@@ -323,12 +368,14 @@ export default function CourseDetailPage() {
                 <div className='hidden lg:block mb-6'>
                   <div className='relative rounded-md overflow-hidden shadow-xl group'>
                     <div className='relative aspect-video'>
-                      <Image
-                        src={course?.thumbnailUrl || "/course-placeholder.jpg"}
-                        alt={course?.title || "Course Preview"}
-                        fill
-                        className='object-cover group-hover:scale-105 transition-transform duration-700'
-                      />
+                      {videoData && (
+                        <iframe
+                          className='w-full h-full'
+                          src={`https://iframe.mediadelivery.net/embed/${videoData.libraryId}/${videoData.videoId}?token=${videoData.token}&expires=${videoData.expiresAt}`}
+                          allow='encrypted-media; autoplay'
+                          allowFullScreen
+                        />
+                      )}
                       <div className='absolute inset-0 bg-gradient-to-t from-black/60 to-transparent' />
                       <div className='absolute inset-0 flex items-center justify-center'>
                         <button className='w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-all duration-300 group-hover:bg-[#da7c36]'>
@@ -392,13 +439,14 @@ export default function CourseDetailPage() {
                       </GradientButton>
 
                       {/* Buy Now */}
-                      <BorderGradientButton
-                        className='w-full h-14 text-lg font-bold'
-                        icon={CreditCard}
-                        // onClick={handleBuyNow}
-                      >
-                        Buy Now
-                      </BorderGradientButton>
+                      <Link href={`/checkout/${course?.id}`}>
+                        <BorderGradientButton
+                          className='w-full h-14 text-lg font-bold'
+                          icon={CreditCard}
+                        >
+                          Buy Now
+                        </BorderGradientButton>
+                      </Link>
                     </div>
 
                     {/* Money-back guarantee */}

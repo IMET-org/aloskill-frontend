@@ -59,3 +59,14 @@ export const courseAddToCartHandler = (courseId: string) => {
   courseDraftStorage.save(getStorageData);
   return getStorageData;
 };
+
+export const getFileIdFromUrl = (url: string) => {
+  try {
+    const pathname = new URL(url).pathname;
+    const parts = pathname.split("/");
+    return parts.pop() || parts.pop();
+  } catch (_error: unknown) {
+    console.error("Invalid URL provided");
+    return "";
+  }
+};

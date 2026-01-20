@@ -1,6 +1,6 @@
 "use client";
 import BorderGradientButton from "@/components/buttons/BorderGradientButton.tsx";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 import { ArrowRightIcon, Award, BookOpen, Send, Sparkles, Star, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -8,7 +8,6 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import GradientButton from "../../../components/buttons/GradientButton.tsx";
 import "./HeroSection.module.css";
-
 const avatars = [
   "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&q=80",
   "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80",
@@ -40,7 +39,7 @@ const containerVariants = {
       delayChildren: 0.2,
     },
   },
-};
+} as const;
 
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -52,9 +51,9 @@ const itemVariants = {
       ease: [0.4, 0, 0.2, 1],
     },
   },
-};
+} as const;
 
-const floatingVariants = {
+const floatingVariants: Variants = {
   animate: {
     y: [0, -20, 0],
     transition: {
@@ -63,7 +62,7 @@ const floatingVariants = {
       ease: "easeInOut",
     },
   },
-};
+} as const;
 
 const scaleVariants = {
   hover: {
@@ -73,7 +72,7 @@ const scaleVariants = {
       ease: [0.33, 0.66, 0.66, 1],
     },
   },
-};
+} as const;
 
 export default function HeroSection() {
   const [loading, setLoading] = useState(false);

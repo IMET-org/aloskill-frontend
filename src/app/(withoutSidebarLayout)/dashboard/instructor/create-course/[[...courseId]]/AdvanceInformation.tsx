@@ -11,6 +11,7 @@ import CourseFooter from "./CourseFooter.tsx";
 import { type CreateCourseData } from "./page.tsx";
 import StepHeader from "./StepHeader.tsx";
 import { useSessionContext } from '../../../../../contexts/SessionContext.tsx';
+import { getFileIdFromUrl } from "@/lib/course/utils.tsx";
 
 type CourseDescriptionForm = {
   trailerUrl?: string;
@@ -151,16 +152,7 @@ function AdvanceInformation({
     formState: { errors, isSubmitting },
   } = useForm<CourseDescriptionForm>({ resolver: zodResolver(CourseDescriptionSchema) });
 
-  const getFileIdFromUrl = (url: string) => {
-    try {
-      const pathname = new URL(url).pathname;
-      const parts = pathname.split("/");
-      return parts.pop() || parts.pop();
-    } catch (_error: unknown) {
-      console.error("Invalid URL provided");
-      return "";
-    }
-  };
+  
 
   useEffect(() => {
     if (!courseData.trailerUrl) {
