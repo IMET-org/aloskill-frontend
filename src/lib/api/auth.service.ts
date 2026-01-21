@@ -1,28 +1,55 @@
-// lib/api/auth.service.ts
-
-import { tokenManager, type UserData } from "../auth/token";
+import type { UserRole, UserStatus } from "@/types/next-auth.js";
 import { apiClient } from "./client";
 
 // === INTERFACES ===
 export interface RegisterPayload {
-  firstName: string;
-  lastName: string;
+  displayName: string;
   email: string;
-  password: string;
+  gender: "MALE" | "FEMALE";
+  password?: string;
   phoneNumber?: string;
-  role?: "STUDENT" | "INSTRUCTOR";
-  bio?: string;
+  bio?: string | undefined;
+  googleId?: string;
+  avatarUrl?: string | null;
 }
 
 export interface LoginPayload {
   email: string;
-  password: string;
+  password?: string;
+  googleId?: string;
+}
+
+export interface UserData {
+  id: string;
+  email: string;
+  displayName: string;
+  role: UserRole[];
+  status: UserStatus;
+  isEmailVerified: boolean;
+  profilePicture?: string | null;
+  accessToken: string;
 }
 
 export interface AuthResponse {
-  user: UserData;
+  id: string;
+  email: string;
+  displayName: string;
+  role: UserRole[];
+  status: UserStatus;
+  isEmailVerified: boolean;
+  profilePicture?: string | null;
   accessToken: string;
   refreshToken: string;
+}
+
+export interface InstructorResponse {
+  id: string;
+  email: string;
+  status: UserStatus;
+  role: string[];
+  displayName: string | undefined;
+  profilePicture: string | null;
+  redirectToVerificationPage: boolean;
 }
 
 export interface VerifyEmailPayload {
@@ -37,23 +64,23 @@ export interface ForgotPasswordPayload {
 export interface ResetPasswordPayload {
   id: string;
   token: string;
-  oldPassword: string;
-  newPassword: string;
+  password: string;
+  confirmPassword: string;
+  // newPassword: string;
 }
 
 // === AUTH SERVICE ===
 export const authService = {
+  // Current user data (cached in memory)
+  currentUser: null as UserData | null,
+
   // Register new user
   async register(payload: RegisterPayload) {
     const response = await apiClient.post<AuthResponse>("/auth/register", payload);
 
     if (response.success && response.data) {
-      // Store tokens and user data
-      tokenManager.setAuth(
-        response.data.accessToken,
-        response.data.refreshToken,
-        response.data.user
-      );
+      // Store user data in memory
+      this.currentUser = response.data;
     }
 
     return response;
@@ -64,12 +91,7 @@ export const authService = {
     const response = await apiClient.post<AuthResponse>("/auth/login", payload);
 
     if (response.success && response.data) {
-      // Store tokens and user data
-      tokenManager.setAuth(
-        response.data.accessToken,
-        response.data.refreshToken,
-        response.data.user
-      );
+      this.currentUser = response.data;
     }
 
     return response;
@@ -86,56 +108,42 @@ export const authService = {
     const response = await apiClient.post<AuthResponse>("/auth/google", payload);
 
     if (response.success && response.data) {
-      tokenManager.setAuth(
-        response.data.accessToken,
-        response.data.refreshToken,
-        response.data.user
-      );
+      this.currentUser = response.data;
     }
 
     return response;
   },
 
-  // Logout
-  async logout() {
-    const refreshToken = tokenManager.getRefreshToken();
+  // === Logout from current device ===
+  async logoutCurrentDevice(refreshToken?: string) {
+    const headers: Record<string, string> = {};
 
     if (refreshToken) {
-      // Call backend to invalidate token
-      await apiClient.post("/auth/logout", { refreshToken });
+      headers["Authorization"] = `Bearer ${refreshToken}`;
     }
 
-    // Clear local storage
-    tokenManager.clearAuth();
+    return apiClient.post("/auth/logout", undefined, headers);
   },
 
-  // Logout from all devices
-  async logoutAllDevices() {
-    const user = tokenManager.getUserData();
+  // === Logout from all devices ===
+  async logoutAllDevices(refreshToken?: string) {
+    const headers: Record<string, string> = {};
 
-    if (user) {
-      await apiClient.post("/auth/logout-all", { email: user.email });
+    if (refreshToken) {
+      headers["Authorization"] = `Bearer ${refreshToken}`;
     }
-
-    tokenManager.clearAuth();
+    return apiClient.post("/auth/logout-all", undefined, headers);
   },
 
-  // Refresh access token
-  async refreshToken() {
-    const refreshToken = tokenManager.getRefreshToken();
-
-    if (!refreshToken) {
-      throw new Error("No refresh token available");
-    }
-
-    const response = await apiClient.post<{
-      accessToken: string;
-      refreshToken: string;
-    }>("/auth/refresh", { refreshToken });
-
+  // Refresh access token (automatic via cookies)
+  async refreshToken(token: string) {
+    const response = await apiClient.post<AuthResponse>(
+      "/auth/refresh",
+      {},
+      { Authorization: `Bearer ${token}` }
+    );
     if (response.success && response.data) {
-      tokenManager.setAccessToken(response.data.accessToken);
-      tokenManager.setRefreshToken(response.data.refreshToken);
+      this.currentUser = response.data;
     }
 
     return response;
@@ -143,49 +151,53 @@ export const authService = {
 
   // Verify email
   async verifyEmail(payload: VerifyEmailPayload) {
-    const response = await apiClient.post("/auth/verify", {
-      body: payload,
-    });
-
-    return response;
+    return await apiClient.post("/auth/verify", payload);
   },
 
   // Forgot password
   async forgotPassword(payload: ForgotPasswordPayload) {
-    const response = await apiClient.post("/auth/forgot-password", {
-      body: payload,
-    });
-
-    return response;
+    return await apiClient.post("/auth/forgot-password", payload);
   },
 
   // Reset password
   async resetPassword(payload: ResetPasswordPayload) {
-    const response = await apiClient.post(
-      `/auth/reset-password?id=${payload.id}&token=${payload.token}`,
-      {
-        body: {
-          oldPassword: payload.oldPassword,
-          newPassword: payload.newPassword,
-        },
-      }
-    );
-
-    return response;
+    return await apiClient.post(`/auth/reset-password?id=${payload.id}&token=${payload.token}`, {
+      password: payload.password,
+      confirmPassword: payload.confirmPassword,
+    });
   },
 
-  // Get current user (from token)
-  getCurrentUser(): UserData | null {
-    return tokenManager.getUserData();
+  // Get current user (from cache or fetch from backend)
+  async getCurrentUser(): Promise<UserData | null> {
+    // Return cached user if available
+    if (this.currentUser) {
+      return this.currentUser;
+    }
+
+    // Fetch from backend using cookie authentication
+    try {
+      const response = await apiClient.get<AuthResponse>("/auth/me");
+
+      if (response.success && response.data) {
+        this.currentUser = response.data;
+        return this.currentUser;
+      }
+    } catch (_error) {
+      // console.error("Failed to fetch current user:", error);
+    }
+
+    return null;
   },
 
   // Check if user is authenticated
-  isAuthenticated(): boolean {
-    return tokenManager.isAuthenticated();
+  async isAuthenticated(): Promise<boolean> {
+    // Try to get current user
+    const user = await this.getCurrentUser();
+    return user !== null;
   },
 
-  // Check if token needs refresh
-  needsRefresh(): boolean {
-    return tokenManager.needsRefresh();
+  // Clear cached user data (call this on app load if needed)
+  clearCache() {
+    this.currentUser = null;
   },
 };

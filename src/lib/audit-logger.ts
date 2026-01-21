@@ -1,4 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
+import { config } from "@/config/env.ts";
 import type { NextRequest } from "next/server";
 
 export interface AuditLog {
@@ -78,7 +79,7 @@ export class AuditLogger {
       riskLevel: "high",
       details: {
         error: error["message"],
-        stack: process.env.NODE_ENV === "development" ? error["stack"] : undefined,
+        stack: config.NODE_ENV === "development" ? error["stack"] : undefined,
       },
       responseStatus: 500,
     });

@@ -1,3 +1,4 @@
+import { config } from "@/config/env.ts";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
@@ -6,15 +7,15 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   typedRoutes: true,
   productionBrowserSourceMaps: false,
-  compiler: {
-    removeConsole: process.env.NODE_ENV === "production",
-    reactRemoveProperties:
-      process.env.NODE_ENV === "production"
-        ? {
-            properties: ["^data-testid$"], // Remove test attributes in prod
-          }
-        : false,
-  },
+  // compiler: {
+  //   removeConsole: config.NODE_ENV === "production",
+  //   reactRemoveProperties:
+  //     config.NODE_ENV === "production"
+  //       ? {
+  //           properties: ["^data-testid$"], // Remove test attributes in prod
+  //         }
+  //       : false,
+  // },
 
   // === Image Optimizations ===
   images: {
@@ -25,11 +26,32 @@ const nextConfig: NextConfig = {
         hostname: "images.unsplash.com",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "api.dicebear.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "aloskill-course-storage-pullzone.b-cdn.net",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "securepay.sslcommerz.com",
+        pathname: "/**",
+      },
     ],
 
     unoptimized: false,
     dangerouslyAllowSVG: false,
-    contentSecurityPolicy: `default-src 'self'; script-src 'none'; sandbox;`,
+    // contentSecurityPolicy: `default-src 'self'; script-src 'none'; sandbox;`,
+    contentSecurityPolicy: `default-src 'self'; script-src 'self'; sandbox;`,
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     minimumCacheTTL: 60 * 60 * 24, // 24 hours
@@ -53,6 +75,13 @@ const nextConfig: NextConfig = {
   // === Security Headers ===
   async headers() {
     return [
+      // {
+      //   source: '/api/:path*',
+      //   headers: [
+      //     { key: 'Access-Control-Allow-Credentials', value: 'true' },
+      //     { key: 'Access-Control-Allow-Origin', value: process.env["NEXT_PUBLIC_BACKEND_API_URL"] },
+      //   ],
+      // },
       {
         source: "/(.*)",
         headers: securityHeaders,
@@ -91,7 +120,7 @@ const nextConfig: NextConfig = {
   // Disable redirects in production unless explicitly defined
   async redirects() {
     const productionRedirects =
-      process.env.NODE_ENV === "production"
+      config.NODE_ENV === "production"
         ? []
         : [
             {
@@ -105,25 +134,70 @@ const nextConfig: NextConfig = {
   },
 
   // === API Security ===
-  async rewrites() {
-    // No rewrites to external domains in production
-    if (process.env.NODE_ENV === "production") {
-      return [];
-    }
+  // async rewrites() {
+  //   // No rewrites to external domains in production
+  //   if (config.NODE_ENV === "production") {
+  //     return [];
+  //   }
 
+  //   return [
+  //     {
+  //       source: "/api/users/:path*",
+  //       destination: "http://localhost:5000/api/users/:path*",
+  //     },
+  //     {
+  //       source: "/api/courses/:path*",
+  //       destination: "http://localhost:5000/api/courses/:path*",
+  //     },
+
+  //     {
+  //       source: "/sitemap.xml",
+  //       destination: "/api/sitemap",
+  //     },
+  //   ];
+  // },
+  // async rewrites() {
+  //   if (config.NODE_ENV === "production") {
+  //     return [];
+  //   }
+
+  //   return [
+  //     // ✅ Auth API proxy
+  //     {
+  //       source: "/api/v1/auth/:path*", // Let NextAuth and backend both use same route
+  //       destination: "http://localhost:5000/api/v1/auth/:path*",
+  //     },
+
+  //     // ✅ Other backend routes
+  //     {
+  //       source: "/api/v1/users/:path*",
+  //       destination: "http://localhost:5000/api/v1/users/:path*",
+  //     },
+  //     {
+  //       source: "/api/v1/courses/:path*",
+  //       destination: "http://localhost:5000/api/v1/courses/:path*",
+  //     },
+
+  //     // ✅ Sitemap (Next.js API)
+  //     {
+  //       source: "/sitemap.xml",
+  //       destination: "/api/sitemap",
+  //     },
+  //   ];
+  // },
+  async rewrites() {
     return [
       {
-        source: "/sitemap.xml",
-        destination: "/api/sitemap",
+        source: "/api/v1/:path*",
+        destination: "http://localhost:5000/api/v1/:path*",
       },
     ];
   },
-
   // === Environment Variables ===
   env: {
     APP_VERSION: process.env["npm_package_version"],
     BUILD_TIME: new Date().toISOString(),
-    BACKEND_URL: process.env["BACKEND_URL"] || "http://localhost:3001",
+    BACKEND_URL: config.BACKEND_API_URL || "http://localhost:5000/api/v1",
   },
 
   // === Webpack Optimizations ===
@@ -143,30 +217,79 @@ const nextConfig: NextConfig = {
   // },
 };
 
+// const securityHeaders = [
+//   // Content Security Policy
+//   {
+//     key: "Content-Security-Policy",
+//     value: `
+//     default-src 'self';
+//     script-src 'self' 'unsafe-inline' ${config.NODE_ENV === "development" ? "'unsafe-eval'" : ""};
+//     style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+//     img-src 'self' data: https: blob:;
+//     font-src 'self' https://fonts.gstatic.com;
+//     connect-src 'self' http://localhost:5000 https://vitals.vercel-insights.com;
+//     frame-ancestors 'none';
+//     frame-src 'none';
+//     object-src 'none';
+//     base-uri 'self';
+//     form-action 'self';
+//     upgrade-insecure-requests;
+//   `
+//       .replace(/\s{2,}/g, " ")
+//       .trim(),
+//   },
+//   // "connect-src 'self' https://your-api.com https://checkout.sslcommerz.com wss://your-websocket.com",
+//   // XSS Protection
+//   {
+//     key: "X-XSS-Protection",
+//     value: "1; mode=block",
+//   },
+//   // MIME Type Sniffing Protection
+//   {
+//     key: "X-Content-Type-Options",
+//     value: "nosniff",
+//   },
+//   // Frame Options
+//   {
+//     key: "X-Frame-Options",
+//     value: "DENY",
+//   },
+//   // Referrer Policy
+//   {
+//     key: "Referrer-Policy",
+//     value: "strict-origin-when-cross-origin",
+//   },
+//   // Permissions Policy
+//   {
+//     key: "Permissions-Policy",
+//     value: "camera=(), microphone=(), geolocation=(), interest-cohort=()",
+//   },
+// ];
 const securityHeaders = [
   // Content Security Policy
   {
     key: "Content-Security-Policy",
     value: `
-      default-src 'self';
-      script-src 'self' 'unsafe-eval' 'unsafe-inline' ${
-        process.env.NODE_ENV === "development" ? "'unsafe-eval'" : ""
-      };
-      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-      img-src 'self' data: https: blob:;
-      font-src 'self' https://fonts.gstatic.com;
-      connect-src 'self' https://vitals.vercel-insights.com;
-      frame-ancestors 'none';
-      frame-src 'none',
-      object-src 'none',
-      base-uri 'self';
-      form-action 'self';
-      upgrade-insecure-requests;
-    `
+    default-src 'self';
+    script-src 'self' 'unsafe-inline' ${config.NODE_ENV === "development" ? "'unsafe-eval'" : ""} http://assets.mediadelivery.net;
+    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+    img-src 'self' data: https: blob:;
+    font-src 'self' https://fonts.gstatic.com;
+    connect-src 'self' ${
+      config.NODE_ENV === "development"
+        ? "http://localhost:5000"
+        : process.env["NEXT_PUBLIC_API_URL"] || ""
+    } https://vitals.vercel-insights.com https://video.bunnycdn.com;
+    frame-ancestors 'none';
+    frame-src https://iframe.mediadelivery.net;
+    object-src 'none';
+    base-uri 'self';
+    form-action 'self';
+    ${config.NODE_ENV === "production" ? "upgrade-insecure-requests;" : ""}
+  `
       .replace(/\s{2,}/g, " ")
       .trim(),
   },
-  // "connect-src 'self' https://your-api.com https://checkout.sslcommerz.com wss://your-websocket.com",
   // XSS Protection
   {
     key: "X-XSS-Protection",
@@ -193,8 +316,7 @@ const securityHeaders = [
     value: "camera=(), microphone=(), geolocation=(), interest-cohort=()",
   },
 ];
-
-if (process.env.NODE_ENV === "production") {
+if (config.NODE_ENV === "production") {
   securityHeaders.push({
     key: "Strict-Transport-Security",
     value: "max-age=63072000; includeSubDomains; preload",
@@ -202,6 +324,11 @@ if (process.env.NODE_ENV === "production") {
 }
 
 const apiSecurityHeaders = [
+  {
+    key: "Content-Security-Policy",
+    value:
+      "default-src 'self'; connect-src 'self' http://localhost:5000/ https://vitals.vercel-insights.com;",
+  },
   {
     key: "X-Content-Type-Options",
     value: "nosniff",

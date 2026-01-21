@@ -1,70 +1,62 @@
-/* eslint-disable no-console */
 
+
+import { config as envConfig } from "@/config/env";
+import { authService } from "@/lib/api/auth.service.ts";
+import { type UserRole } from "@/types/next-auth.js";
+import { jwtDecode } from "jwt-decode";
 import NextAuth, { type NextAuthOptions, type User } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 
-// Extend the Session type to include custom user properties
-declare module "next-auth" {
-  interface Session {
-    user: {
-      id: string;
-      email: string;
-      firstName: string;
-      lastName: string;
-      role: UserRole;
-      status: UserStatus;
-      isEmailVerified: boolean;
-      profilePicture?: string | null;
-      accessToken: string;
-      refreshToken: string;
-      name?: string | null;
-      image?: string | null;
-    };
-    accessToken: string;
-    refreshToken: string;
-    error?: string;
+type RefreshResponseType = ReturnType<typeof authService.refreshToken>;
+type RefreshResolvedType = Awaited<RefreshResponseType>;
+
+const refreshCache = new Map<
+  string,
+  {
+    promise: RefreshResponseType;
+    timestamp: number;
+    result?: RefreshResolvedType;
   }
-}
+>();
+const REFRESH_CACHE_TTL_MS = 3000;
 
-// Type definitions
+const getRefreshedTokens = async (refreshToken: string): Promise<RefreshResolvedType> => {
+  const now = Date.now();
+  const existing = refreshCache.get(refreshToken);
 
-export enum UserRole {
-  STUDENT = "STUDENT",
-  INSTRUCTOR = "INSTRUCTOR",
-  ADMIN = "ADMIN",
-}
-export enum UserStatus {
-  ACTIVE = "ACTIVE",
-  INACTIVE = "INACTIVE",
-  SUSPENDED = "SUSPENDED",
-  PENDING_VERIFICATION = "PENDING_VERIFICATION",
-}
-interface BackendUser {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  role: UserRole;
-  status: UserStatus;
-  isEmailVerified: boolean;
-  profilePicture?: string;
-  accessToken: string;
-  refreshToken: string;
-}
+  if (existing) {
+    if (existing.result && now - existing.timestamp < REFRESH_CACHE_TTL_MS) {
+      return existing.result;
+    }
 
-interface ExtendedUser extends User {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  role: UserRole;
-  status: UserStatus;
-  isEmailVerified: boolean;
-  profilePicture?: string;
-  accessToken: string;
-  refreshToken: string;
-}
+    return existing.promise;
+  }
+
+  const promise = authService.refreshToken(refreshToken);
+  refreshCache.set(refreshToken, { promise, timestamp: now });
+
+  try {
+    const result = await promise;
+    refreshCache.set(refreshToken, {
+      promise: Promise.resolve(result),
+      timestamp: Date.now(),
+      result,
+    });
+
+    return result;
+  } catch (error) {
+    refreshCache.delete(refreshToken);
+    throw error;
+  } finally {
+    setTimeout(() => {
+      const entry = refreshCache.get(refreshToken);
+      if (entry && Date.now() - entry.timestamp >= REFRESH_CACHE_TTL_MS) {
+        refreshCache.delete(refreshToken);
+      }
+    }, REFRESH_CACHE_TTL_MS);
+  }
+};
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -75,47 +67,37 @@ export const authOptions: NextAuthOptions = {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials): Promise<ExtendedUser | null> {
+      async authorize(credentials, req): Promise<User | null> {
+        // console.log("Credials Request : ", req);
         if (!credentials?.email || !credentials?.password) {
           throw new Error("Email and password required");
         }
 
+        const { email, password } = credentials;
+
+        const apiRes = await authService.login({ email, password });
+
+        if (!apiRes.success) {
+          throw new Error(apiRes.message);
+        }
+
+        const user = apiRes.data;
+
+        if (!user) {
+          throw new Error(apiRes.message || "Authentication failed");
+        }
+
         try {
-          const response = await fetch(`${process.env["BACKEND_API_URL"]}/auth/login`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              email: credentials.email,
-              password: credentials.password,
-            }),
-          });
-
-          const data = await response.json();
-
-          if (!response.ok) {
-            throw new Error(data.message || "Invalid credentials");
-          }
-
-          const user: BackendUser = data.data;
-
           return {
             id: user.id,
             email: user.email,
-            name: `${user.firstName} ${user.lastName}`,
-            firstName: user.firstName,
-            lastName: user.lastName,
+            name: user.displayName,
             role: user.role,
-            status: user.status,
-            isEmailVerified: user.isEmailVerified,
-            profilePicture: user.profilePicture,
+            profilePicture: user.profilePicture as string,
             accessToken: user.accessToken,
             refreshToken: user.refreshToken,
-            image: user.profilePicture,
-          } as ExtendedUser;
+          };
         } catch (error: unknown) {
-          console.error("Login error:", error);
           if (error instanceof Error) {
             throw new Error(error.message || "Authentication failed");
           }
@@ -125,8 +107,8 @@ export const authOptions: NextAuthOptions = {
     }),
 
     GoogleProvider({
-      clientId: process.env["GOOGLE_CLIENT_ID"] as string,
-      clientSecret: process.env["GOOGLE_CLIENT_SECRET"] as string,
+      clientId: envConfig.GOOGLE_CLIENT_ID,
+      clientSecret: envConfig.GOOGLE_CLIENT_SECRET,
       authorization: {
         params: {
           prompt: "consent",
@@ -139,92 +121,123 @@ export const authOptions: NextAuthOptions = {
 
   session: {
     strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30 days
+    maxAge: 7 * 24 * 60 * 60,
+    updateAge: 15 * 60,
+  },
+
+  jwt: {
+    maxAge: 15 * 60,
   },
 
   pages: {
     signIn: "/auth/signin",
-    signOut: "/auth/signout",
     error: "/auth/error",
-    verifyRequest: "/auth/verify-email",
-    newUser: "/onboarding",
   },
 
   callbacks: {
-    async jwt({ token, user, account, trigger, session }) {
-      if (user) {
-        const extendedUser = user as ExtendedUser;
+    async signIn({ user, account, profile }) {
+      if (account?.provider !== "google") return true;
 
-        token["id"] = extendedUser.id;
-        token.email = extendedUser.email;
-        token["firstName"] = extendedUser.firstName;
-        token["lastName"] = extendedUser.lastName;
-        token["role"] = extendedUser.role;
-        token["status"] = extendedUser.status;
-        token["isEmailVerified"] = extendedUser.isEmailVerified;
-        token["profilePicture"] = extendedUser.profilePicture;
-        token["accessToken"] = extendedUser.accessToken;
-        token["refreshToken"] = extendedUser.refreshToken;
-      }
-      // http://localhost:3000/api/auth/callback/google
-      if (account?.provider === "google") {
-        try {
-          const response = await fetch(`${process.env["BACKEND_API_URL"]}/auth/google`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              googleId: account.providerAccountId,
-              email: token.email,
-              firstName: token.name?.split(" ")[0] || "",
-              lastName: token.name?.split(" ").slice(1).join(" ") || "",
-              profilePicture: token.picture,
-            }),
+      try {
+        const userFromDB = await authService.login({
+          email: user.email,
+          googleId: profile?.sub as string,
+        });
+
+        let result;
+        if (!userFromDB.success) {
+          const registerResponse = await authService.register({
+            displayName: profile?.name || "",
+            email: user.email,
+            phoneNumber: "01332446466",
+            gender: "MALE",
+            googleId: profile?.sub || account.providerAccountId || "",
+            avatarUrl: user?.image ?? null,
           });
 
-          const data = await response.json();
-          const backendUser: BackendUser = data.data;
+          if (!registerResponse.success) {
+            result = {
+              success: false,
+              message: `Registration failed for ${user.email}`,
+              data: null,
+            };
+            return "/auth/error?error=AutoRegisterFailed";
+          }
 
-          token["id"] = backendUser.id;
-          token["role"] = backendUser.role;
-          token["status"] = backendUser.status;
-          token["isEmailVerified"] = backendUser.isEmailVerified;
-          token["accessToken"] = backendUser.accessToken;
-          token["refreshToken"] = backendUser.refreshToken;
-        } catch (error) {
-          console.error("Google auth backend error:", error);
+          result = registerResponse.data;
+        } else {
+          result = userFromDB.data;
+        }
+
+        if (result) {
+          user.id = result.id;
+          user.email = result.email;
+          user.role = result.role;
+          user.name = result.displayName;
+          user.profilePicture = result.profilePicture ?? "";
+          user.accessToken = result.accessToken;
+          user.refreshToken = result.refreshToken;
+
+          return true;
+        }
+
+        // console.error(`Backend login/register failed for ${user.email}`);
+        return "/auth/error?error=GoogleAuthFailed";
+      } catch (_error) {
+        // console.error("Error during Google sign-in:", error);
+        return "/auth/error?error=VerificationFailed";
+      }
+    },
+
+    async jwt({ token, user, account }) {
+      if (token["accessToken"]) {
+        const decodedToken = jwtDecode(token["accessToken"] as string);
+        if (decodedToken.exp) {
+          token["accessTokenExpires"] = decodedToken.exp * 1000;
+        } else {
+          token["accessTokenExpires"] = Date.now() + 15 * 60 * 1000;
         }
       }
-
-      if (trigger === "update" && session) {
-        return { ...token, ...session };
+      if (user && account) {
+        token["id"] = user.id;
+        token["accessToken"] = user.accessToken;
+        token["refreshToken"] = user.refreshToken;
+        token["name"] = user.name as string;
+        token["email"] = user.email as string;
+        token["role"] = user.role;
+        token["profilePicture"] = user.profilePicture;
       }
 
-      const now = Math.floor(Date.now() / 1000);
-      const tokenIat = typeof token["iat"] === "number" ? token["iat"] : now;
-      const tokenAge = now - tokenIat;
+      // Check if access token needs refresh (with 1-minute buffer)
+      const shouldRefresh =
+        token["accessTokenExpires"] && Date.now() > Number(token["accessTokenExpires"]) - 60 * 1000;
 
-      if (tokenAge > 23 * 60 * 60) {
+      if (shouldRefresh) {
         try {
-          const response = await fetch(`${process.env["BACKEND_API_URL"]}/auth/refresh`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              refreshToken: token["refreshToken"],
-            }),
-          });
+          const refreshTokenValue = token["refreshToken"] as string;
+          const refreshResponse = await getRefreshedTokens(refreshTokenValue);
 
-          if (response.ok) {
-            const data = await response.json();
-            token["accessToken"] = data.data.accessToken;
-            token["refreshToken"] = data.data.refreshToken;
+          if (refreshResponse.success) {
+            token["accessToken"] = refreshResponse.data?.accessToken;
+            token["refreshToken"] = refreshResponse.data?.refreshToken;
+
+            const decodedNewToken = jwtDecode(token["accessToken"] as string);
+            if (decodedNewToken.exp) {
+              token["accessTokenExpires"] = decodedNewToken.exp * 1000;
+            } else {
+              token["accessTokenExpires"] = Date.now() + 15 * 60 * 1000;
+            }
+          } else {
+            token["error"] = "RefreshAccessTokenError";
+            return {
+              ...token,
+              error: "RefreshAccessTokenError",
+              accessToken: null,
+            };
           }
         } catch (error) {
-          console.error("Token refresh failed:", error);
-          return { ...token, error: "RefreshAccessTokenError" };
+          // console.error("Error refreshing access token:", error);
+          token["error"] = "RefreshAccessTokenError";
         }
       }
 
@@ -232,35 +245,18 @@ export const authOptions: NextAuthOptions = {
     },
 
     async session({ session, token }) {
-      if (token) {
-        if (!session.user) {
-          session.user = {
-            id: "",
-            email: "",
-            firstName: "",
-            lastName: "",
-            role: UserRole.STUDENT,
-            status: UserStatus.ACTIVE,
-            isEmailVerified: false,
-            accessToken: "",
-            refreshToken: "",
-            name: null,
-            image: null,
-            profilePicture: null,
-          };
-        }
-
-        session.user.id = token["id"] as string;
-        session.user.email = token.email as string;
-        session.user.firstName = token["firstName"] as string;
-        session.user.lastName = token["lastName"] as string;
-        session.user.role = token["role"] as UserRole;
-        session.user.status = token["status"] as UserStatus;
-        session.user.isEmailVerified = token["isEmailVerified"] as boolean;
-        session.user.profilePicture = token["profilePicture"] as string | null;
+      if (token && session.user) {
+        session.user = {
+          ...session.user,
+          id: token["id"] as string,
+          role: token["role"] as [UserRole],
+          profilePicture:
+            typeof token["profilePicture"] === "string" ? token["profilePicture"] : null,
+        };
         session.accessToken = token["accessToken"] as string;
-        session.refreshToken = token["refreshToken"] as string;
-        session.error = token["error"] as string;
+        if (token["error"]) {
+          session.error = (token["error"] as string) || null;
+        }
       }
 
       return session;
@@ -274,50 +270,17 @@ export const authOptions: NextAuthOptions = {
   },
 
   events: {
-    async signIn({ user, account, isNewUser }) {
-      console.log(`✅ User ${user.email} signed in via ${account?.provider}`);
-
-      if (account?.provider !== "credentials") {
-        try {
-          await fetch(`${process.env["BACKEND_API_URL"]}/auth/track-login`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              userId: user.id,
-              provider: account?.provider,
-              isNewUser,
-            }),
-          });
-        } catch (error) {
-          console.error("Failed to track login:", error);
-        }
-      }
+    async signIn({ user, account }) {
+      // console.log(`✅ User ${user.email} signed in via ${account?.provider}`);
     },
 
     async signOut({ token }) {
-      console.log(`👋 User ${token?.email} signed out`);
-
-      if (token?.["refreshToken"]) {
-        try {
-          await fetch(`${process.env["BACKEND_API_URL"]}/auth/logout`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              refreshToken: token["refreshToken"],
-            }),
-          });
-        } catch (error) {
-          console.error("Failed to logout from backend:", error);
-        }
-      }
+      // console.log("signOut method triggered", token);
     },
   },
+  secret: envConfig.NEXTAUTH_SECRET,
 
-  debug: process.env.NODE_ENV === "development",
+  // debug: envConfig.NODE_ENV === "development",
 };
 
 const handler = NextAuth(authOptions);
