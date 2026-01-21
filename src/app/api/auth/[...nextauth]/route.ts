@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+
 
 import { config as envConfig } from "@/config/env";
 import { authService } from "@/lib/api/auth.service.ts";
@@ -68,7 +68,7 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials, req): Promise<User | null> {
-        console.log("Credials Request : ", req);
+        // console.log("Credials Request : ", req);
         if (!credentials?.email || !credentials?.password) {
           throw new Error("Email and password required");
         }
@@ -181,10 +181,10 @@ export const authOptions: NextAuthOptions = {
           return true;
         }
 
-        console.error(`Backend login/register failed for ${user.email}`);
+        // console.error(`Backend login/register failed for ${user.email}`);
         return "/auth/error?error=GoogleAuthFailed";
-      } catch (error) {
-        console.error("Error during Google sign-in:", error);
+      } catch (_error) {
+        // console.error("Error during Google sign-in:", error);
         return "/auth/error?error=VerificationFailed";
       }
     },
@@ -236,7 +236,7 @@ export const authOptions: NextAuthOptions = {
             };
           }
         } catch (error) {
-          console.error("Error refreshing access token:", error);
+          // console.error("Error refreshing access token:", error);
           token["error"] = "RefreshAccessTokenError";
         }
       }
@@ -271,11 +271,11 @@ export const authOptions: NextAuthOptions = {
 
   events: {
     async signIn({ user, account }) {
-      console.log(`✅ User ${user.email} signed in via ${account?.provider}`);
+      // console.log(`✅ User ${user.email} signed in via ${account?.provider}`);
     },
 
     async signOut({ token }) {
-      console.log("signOut method triggered", token);
+      // console.log("signOut method triggered", token);
     },
   },
   secret: envConfig.NEXTAUTH_SECRET,

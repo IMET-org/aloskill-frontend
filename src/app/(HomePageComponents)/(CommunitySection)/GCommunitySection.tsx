@@ -149,7 +149,7 @@ const GCommunitySection = () => {
           </div>
           <div className='flex justify-center items-center'>
             <BorderGradientButton
-              onClick={() => console.log("Clicked")}
+              // onClick={() => console.log("Clicked")}
               className='mt-12'
             >
               Join the Community

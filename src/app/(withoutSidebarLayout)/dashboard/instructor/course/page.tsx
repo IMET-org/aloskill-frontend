@@ -65,9 +65,7 @@ const InstructorCoursePage = () => {
                 dashboardActions={{
                   onView: id => router.push(`/dashboard/instructor/course/${id}`),
                   onEdit: id => router.push(`/dashboard/instructor/create-course/${id}`),
-                  onDelete: id => {
-                    console.log("delete: ", id);
-                  },
+                  onDelete: id => router.push(`/dashboard/instructor/create-course/${id}`)
                 }}
               />
             ))}

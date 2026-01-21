@@ -142,8 +142,8 @@ const FinalStep = ({
           | []
         >(`/course/instructors?instructor=${debouncedQuery}`);
         setResults(data.data ?? []);
-      } catch (error) {
-        console.error(error);
+      } catch (_error) {
+        // console.error(error);
       }
     }
     fetchInstructors();
@@ -164,7 +164,7 @@ const FinalStep = ({
     const isExists = fields.some(item => item.instructorId === userId);
 
     if (isExists) {
-      console.warn("Instructor already added");
+      // console.warn("Instructor already added");
       return;
     }
 
@@ -244,7 +244,7 @@ const FinalStep = ({
             : "Unknown error occurred";
         setCourseUploadError(message);
       }
-      console.log("Response from DB : ", backendData);
+      // console.log("Response from DB : ", backendData);
       if (backendData.success) {
         redirect("/dashboard/instructor/course");
       }
@@ -259,7 +259,7 @@ const FinalStep = ({
             : "Unknown error occurred";
         setCourseUploadError(message);
       }
-      console.log("Response from DB : ", backendData);
+      // console.log("Response from DB : ", backendData);
       if (backendData.success) {
         redirect("/dashboard/instructor/course");
       }
@@ -286,7 +286,7 @@ const FinalStep = ({
             : "Unknown error occurred";
         setCourseUploadError(message);
       }
-      console.log("Response from DB for update: ", backendData);
+      // console.log("Response from DB for update: ", backendData);
       if (backendData.success) {
         redirect("/dashboard/instructor/course");
       }
@@ -313,12 +313,12 @@ const FinalStep = ({
             : "Unknown error occurred";
         setCourseUploadError(message);
       }
-      console.log("Response from DB for update: ", backendData);
+      // console.log("Response from DB for update: ", backendData);
       if (backendData.success) {
         redirect("/dashboard/instructor/course");
       }
     }
-    console.log("courseData : ", courseData, "data : ", data);
+    // console.log("courseData : ", courseData, "data : ", data);
   };
 
   return (

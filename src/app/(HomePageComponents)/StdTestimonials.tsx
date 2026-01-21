@@ -1,7 +1,7 @@
 "use client";
 
 import SectionHeader from "@/components/sections/SectionHeader.tsx";
-import { ArrowUpRight, Quote, Star, TrendingUp } from "lucide-react";
+import { ArrowUpRight, Quote, TrendingUp } from "lucide-react";
 import Image from "next/image";
 
 const testimonials = [
@@ -64,7 +64,10 @@ export default function StdTestimonials() {
       <div className='mx-auto max-w-7xl px-6'>
         {/* Header */}
         <div className='mb-20 max-w-3xl'>
-          <SectionHeader title="Results that speak for themselves." badge="Student Testimonials" />
+          <SectionHeader
+            title='Results that speak for themselves.'
+            badge='Student Testimonials'
+          />
           {/* <div className='mb-4 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-bold uppercase tracking-widest text-indigo-600 shadow-sm '>
             <Star className='h-3 w-3 fill-current' />
             Client Outcomes
@@ -90,9 +93,7 @@ export default function StdTestimonials() {
             >
               <div
                 className={`relative h-full overflow-hidden rounded-lg border bg-white p-8 transition-shadow hover:shadow-xl  ${
-                  t.highlight
-                    ? "border-transparent"
-                    : "border-slate-200 "
+                  t.highlight ? "border-transparent" : "border-slate-200 "
                 }`}
               >
                 {/* Background Pattern for Highlighted Cards */}
@@ -108,9 +109,7 @@ export default function StdTestimonials() {
                 {/* The Review Text */}
                 <p
                   className={`relative z-10 text-md font-medium leading-relaxed ${
-                    t.highlight
-                      ? "text-slate-900 "
-                      : "text-slate-600 "
+                    t.highlight ? "text-slate-900 " : "text-slate-600 "
                   }`}
                 >
                   {t.content}
@@ -155,9 +154,7 @@ export default function StdTestimonials() {
               <TrendingUp className='h-6 w-6 text-white ' />
             </div>
             <h3 className='text-2xl font-bold'>Ready to be our next success story?</h3>
-            <p className='mt-2 text-slate-400 '>
-              Join the companies scaling with our tech.
-            </p>
+            <p className='mt-2 text-slate-400 '>Join the companies scaling with our tech.</p>
             <button className='group mt-8 flex w-full items-center justify-center gap-2 rounded-lg bg-white py-4 text-sm font-bold text-slate-900 transition hover:bg-indigo-50 '>
               Start Project
               <ArrowUpRight className='h-4 w-4 transition-transform group-hover:-translate-y-1 group-hover:translate-x-1' />

@@ -32,8 +32,8 @@ class ApiClient {
 
       const data = await response.json();
       return data;
-    } catch (error) {
-      console.error("API request error:", error);
+    } catch (_error) {
+      // console.error("API request error:", error);
       return {
         success: false,
         message: "Network error. Please check your connection.",
@@ -74,8 +74,8 @@ class ApiClient {
       });
       const data = await response.json();
       return data;
-    } catch (error) {
-      console.error("API request error:", error);
+    } catch (_error) {
+      // console.error("API request error:", error);
       return { success: false, message: "Network error." };
     }
   }

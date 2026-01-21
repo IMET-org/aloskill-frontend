@@ -53,8 +53,8 @@ export default function VerifyEmailPage() {
             response.message || "Verification failed. The link may have expired or is invalid."
           );
         }
-      } catch (error) {
-        console.error("Verification error:", error);
+      } catch (_error) {
+        // console.error("Verification error:", error);
         setStatus("error");
         setMessage("An unexpected error occurred. Please try again or contact support.");
       }

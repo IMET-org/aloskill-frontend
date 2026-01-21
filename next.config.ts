@@ -41,6 +41,11 @@ const nextConfig: NextConfig = {
         hostname: "aloskill-course-storage-pullzone.b-cdn.net",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "securepay.sslcommerz.com",
+        pathname: "/**",
+      },
     ],
 
     unoptimized: false,

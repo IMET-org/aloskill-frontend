@@ -1,3 +1,4 @@
+"use client";
 import {
   CheckCircle,
   ChevronLeft,
@@ -16,7 +17,7 @@ import { useState } from "react";
 const LMSVideoPlayer = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [activeSection, setActiveSection] = useState(1);
-  const [completedLectures, setCompletedLectures] = useState([0, 1]);
+  // const [completedLectures, setCompletedLectures] = useState([0, 1]);
 
   const courseSections = [
     {

@@ -6,9 +6,9 @@ import { courseAddToCartHandler } from "@/lib/course/utils.tsx";
 import { ChevronRight, Filter, Grid, LayoutList, Search, SlidersHorizontal, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { courseDraftStorage } from "../../../lib/storage/courseDraftStorage.ts";
+import { useSessionContext } from "../../contexts/SessionContext.tsx";
 import FilterSidebar from "./(FilterSection)/FilterSidebar.tsx";
 import type { CourseType } from "./allCourses.types.ts";
-import { useSessionContext } from '../../contexts/SessionContext.tsx';
 
 const SORT_OPTIONS = [
   { value: "popular", label: "Most Popular" },
@@ -39,7 +39,7 @@ export default function AllCoursesPage() {
     new Set(["category", "rating", "level"])
   );
 
-    const {setCartUpdate} = useSessionContext();
+  const { setCartUpdate } = useSessionContext();
 
   useEffect(() => {
     const storedCartItems =
@@ -136,11 +136,14 @@ export default function AllCoursesPage() {
 
   // Handlers
 
-  const handleAddToCart = useCallback((courseId: string) => {
-    courseAddToCartHandler(courseId);
-    setUpdateCart(prev => !prev);
-    setCartUpdate?.(prev => !prev)
-  }, [setCartUpdate]);
+  const handleAddToCart = useCallback(
+    (courseId: string) => {
+      courseAddToCartHandler(courseId);
+      setUpdateCart(prev => !prev);
+      setCartUpdate?.(prev => !prev);
+    },
+    [setCartUpdate]
+  );
 
   const handleAddToWishlist = useCallback(async (courseId: string | number) => {
     setWishlistItems(prev => {
@@ -155,11 +158,6 @@ export default function AllCoursesPage() {
     await new Promise(resolve => setTimeout(resolve, 300));
   }, []);
 
-  const handleEnroll = useCallback((courseId: string | number) => {
-    console.log(`Enrolling in course: ${courseId}`);
-    // Navigate to checkout or show modal
-  }, []);
-
   useEffect(() => {
     const fetchCourses = async () => {
       try {
@@ -167,10 +165,10 @@ export default function AllCoursesPage() {
         const response = await apiClient.get<CourseType[]>(
           `/course/public/allCourses?category=${filteredQuery.category}&level=${filteredQuery.level}&language=${filteredQuery.language}&rating=${filteredQuery.rating}&priceMin=${filteredQuery.priceRange[0]}&priceMax=${filteredQuery.priceRange[1]}`
         );
-        console.log(response);
+        // console.log(response);
         setCourses(response.data ?? []);
-      } catch (error) {
-        console.error("Failed to fetch popular courses", error);
+      } catch (_error) {
+        // console.error("Failed to fetch popular courses", error);
       } finally {
         setIsLoading(false);
       }
@@ -363,7 +361,6 @@ export default function AllCoursesPage() {
               <CourseGrid
                 courses={courses}
                 isLoading={isLoading}
-                onEnroll={handleEnroll}
                 onAddToCart={handleAddToCart}
                 onAddToWishlist={handleAddToWishlist}
                 cartItems={cartItems}

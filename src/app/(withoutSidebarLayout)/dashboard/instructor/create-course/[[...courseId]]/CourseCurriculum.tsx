@@ -15,11 +15,11 @@ import {
 import { type ChangeEvent, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as tus from "tus-js-client";
+import { useSessionContext } from "../../../../../contexts/SessionContext.tsx";
 import CourseFooter from "./CourseFooter.tsx";
 import CourseModal from "./CourseModal.tsx";
 import StepHeader from "./StepHeader.tsx";
 import { type CourseLesson, type CourseModule, type CreateCourseData } from "./page.tsx";
-import { useSessionContext } from '../../../../../contexts/SessionContext.tsx';
 
 type ExtendedCourseLesson = CourseLesson & {
   expanded?: boolean;
@@ -527,8 +527,8 @@ export default function CourseCurriculum({
                 return module;
               }),
             }));
-          } catch (error) {
-            console.error("Error uploading video:", error);
+          } catch (_error) {
+            // console.error("Error uploading video:", error);
           }
           return;
         }
@@ -560,8 +560,8 @@ export default function CourseCurriculum({
                 return module;
               }),
             }));
-          } catch (error) {
-            console.error("Error uploading file:", error);
+          } catch (_error) {
+            // console.error("Error uploading file:", error);
           }
           return;
         }
@@ -851,8 +851,10 @@ export default function CourseCurriculum({
       const lesson = selectedModule?.lessons.find(l => l.position === lectureId);
 
       if (lesson?.contentUrl?.url) {
-        const deletedResult = await apiClient.delete("/course/delete-video", { videoUrl: lesson.contentUrl.url });
-        if(!deletedResult.success){
+        const deletedResult = await apiClient.delete("/course/delete-video", {
+          videoUrl: lesson.contentUrl.url,
+        });
+        if (!deletedResult.success) {
           return;
         }
       }

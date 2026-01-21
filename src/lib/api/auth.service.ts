@@ -182,8 +182,8 @@ export const authService = {
         this.currentUser = response.data;
         return this.currentUser;
       }
-    } catch (error) {
-      console.error("Failed to fetch current user:", error);
+    } catch (_error) {
+      // console.error("Failed to fetch current user:", error);
     }
 
     return null;

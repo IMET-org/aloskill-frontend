@@ -94,8 +94,8 @@ const BasicInformaton = ({
       } else {
         return false;
       }
-    } catch (error) {
-      console.error("Error checking slug uniqueness:", error);
+    } catch (_error) {
+      // console.error("Error checking slug uniqueness:", error);
       setSlugError("Error checking slug");
       return false;
     }
@@ -206,8 +206,8 @@ const BasicInformaton = ({
           | []
         >(`/course/tags?tag=${debouncedQuery}`);
         setResults(data.data ?? []);
-      } catch (error) {
-        console.error(error);
+      } catch (_error) {
+        // console.error(error);
       }
     }
     fetchTags();
@@ -227,7 +227,7 @@ const BasicInformaton = ({
         shouldValidate: true,
       });
     } else {
-      console.warn("Tag already exists");
+      // console.warn("Tag already exists");
     }
   };
 

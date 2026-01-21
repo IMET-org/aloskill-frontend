@@ -7,7 +7,7 @@ interface GlobalErrorProps {
 }
 
 export default function GlobalError({ error, reset }: GlobalErrorProps) {
-  console.error(error);
+  // console.error(error);
 
   return (
     <ErrorPage

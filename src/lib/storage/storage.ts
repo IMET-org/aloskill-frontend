@@ -10,10 +10,7 @@ export const getStorage = (): Storage | null => {
   }
 };
 
-export function setItem<T>(
-  key: string,
-  value: T,
-): void {
+export function setItem<T>(key: string, value: T): void {
   const storage = getStorage();
   if (!storage) return;
 

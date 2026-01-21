@@ -2,6 +2,7 @@
 import { useSessionContext } from "@/app/contexts/SessionContext.tsx";
 import { ArrowLeft, Minus, Plus, ShoppingCart, Tag, X } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { apiClient } from "../../lib/api/client";
 import { courseDraftStorage } from "../../lib/storage/courseDraftStorage";
@@ -36,6 +37,7 @@ export default function ShoppingCartPage() {
         "/course/get-cart-courses",
         storedCart.map(course => course.courseId)
       );
+      // console.log("response", response);
       if (!response.success) {
         setCartItems([]);
         return;
@@ -84,7 +86,7 @@ export default function ShoppingCartPage() {
   const total = subtotal + tax;
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-orange-50 via-purple-50 to-blue-50'>
+    <div className='min-h-screen bg-linear-to-br from-orange-50 via-purple-50 to-blue-50'>
       {/* Header */}
       <header className='bg-white shadow-sm sticky top-0 z-50 animate-fade-in'>
         <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4'>
@@ -211,13 +213,15 @@ export default function ShoppingCartPage() {
 
             {/* Action Buttons */}
             <div className='flex flex-col sm:flex-row gap-4 pt-4 animate-fade-in'>
-              <button className='flex items-center justify-center gap-2 px-6 py-3 border-2 border-[#DA7C36] text-[#DA7C36] rounded-lg hover:bg-[#DA7C36] hover:text-white transition-all duration-300 font-medium'>
-                <ArrowLeft className='w-5 h-5' />
-                RETURN TO SHOP
-              </button>
+              <Link href='/courses'>
+                <button className='flex items-center justify-center gap-2 px-6 py-3 border-2 border-[#DA7C36] text-[#DA7C36] rounded-lg hover:bg-[#DA7C36] hover:text-white transition-all duration-300 font-medium'>
+                  <ArrowLeft className='w-5 h-5' />
+                  RETURN TO SHOP
+                </button>
+              </Link>
               <button
                 onClick={handleUpdateCart}
-                className='flex items-center justify-center gap-2 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-all duration-300 font-medium'
+                className='flex items-center justify-center gap-2 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-all duration-300 font-medium cursor-pointer'
               >
                 UPDATE CART
               </button>
@@ -271,22 +275,27 @@ export default function ShoppingCartPage() {
               </div>
 
               {/* Checkout Button */}
-              <button className='w-full py-4 bg-gradient-to-r from-[#DA7C36] to-[#d15100] text-white rounded-lg font-bold text-base hover:shadow-lg hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2'>
-                Proceed to Checkout
-                <svg
-                  className='w-5 h-5'
-                  fill='none'
-                  stroke='currentColor'
-                  viewBox='0 0 24 24'
+              <Link href='/checkout'>
+                <button
+                  disabled={cartItems.length === 0}
+                  className='w-full py-4 bg-linear-to-r from-[#DA7C36] to-[#d15100] text-white rounded-lg font-bold text-base hover:shadow-lg hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed'
                 >
-                  <path
-                    strokeLinecap='round'
-                    strokeLinejoin='round'
-                    strokeWidth={2}
-                    d='M17 8l4 4m0 0l-4 4m4-4H3'
-                  />
-                </svg>
-              </button>
+                  Proceed to Checkout
+                  <svg
+                    className='w-5 h-5'
+                    fill='none'
+                    stroke='currentColor'
+                    viewBox='0 0 24 24'
+                  >
+                    <path
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      strokeWidth={2}
+                      d='M17 8l4 4m0 0l-4 4m4-4H3'
+                    />
+                  </svg>
+                </button>
+              </Link>
             </div>
           </div>
         </div>

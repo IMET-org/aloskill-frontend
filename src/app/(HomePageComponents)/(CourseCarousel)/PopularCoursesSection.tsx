@@ -3,33 +3,33 @@
 import SectionHeader from "@/components/sections/SectionHeader";
 import Slider from "@/components/slider/Slider";
 import { apiClient } from "@/lib/api/client";
+import { courseAddToCartHandler } from "@/lib/course/utils.tsx";
 import { Pencil } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import CourseCard from "../../(withoutSidebarLayout)/courses/CourseCard";
 import type { CourseType } from "../../(withoutSidebarLayout)/courses/allCourses.types";
-import { courseAddToCartHandler } from "@/lib/course/utils.tsx";
-import { useSessionContext } from '../../contexts/SessionContext';
+import { useSessionContext } from "../../contexts/SessionContext";
 
 export default function PopularCoursesSection() {
   const [courses, setCourses] = useState<CourseType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [cartItems, setCartItems] = useState<{courseId: string; quantity: number}[]>([]);
-  const [wishlistItems, setWishlistItems] = useState<Set<string>>(new Set());
+  const [cartItems, setCartItems] = useState<{ courseId: string; quantity: number }[]>([]);
+  const [wishlistItems] = useState<Set<string>>(new Set());
 
   const router = useRouter();
-  const {setCartUpdate} = useSessionContext();
+  const { setCartUpdate } = useSessionContext();
 
   // 🔹 Fetch courses from DB
   useEffect(() => {
     const fetchCourses = async () => {
       try {
         setIsLoading(true);
-        const response = await apiClient.get<CourseType[]>("/course/public/allCourses?isHome=true");
-        console.log(response);
+        const response = await apiClient.get<CourseType[]>("/course/public/allCourses");
+        // const response = await apiClient.get<CourseType[]>("/course/public/allCourses?isHome=true");
         setCourses(response.data ?? []);
-      } catch (error) {
-        console.error("Failed to fetch popular courses", error);
+      } catch (_error) {
+        // console.error("Failed to fetch popular courses", error);
       } finally {
         setIsLoading(false);
       }
@@ -38,27 +38,29 @@ export default function PopularCoursesSection() {
     fetchCourses();
   }, []);
 
-  const handleEnroll = useCallback((courseId: string) => {
-    console.log("Enroll clicked:", courseId);
-  }, []);
+  // const handleEnroll = useCallback((courseId: string) => {
+  //   console.log("Enroll clicked:", courseId);
+  // }, []);
 
-  const handleAddToCart = useCallback((courseId: string) => {
-    const cartItem = courseAddToCartHandler(courseId);
-    setCartItems(cartItem);
-    setCartUpdate?.(prev => !prev);
-  }, [setCartUpdate]);
+  const handleAddToCart = useCallback(
+    (courseId: string) => {
+      const cartItem = courseAddToCartHandler(courseId);
+      setCartItems(cartItem);
+      setCartUpdate?.(prev => !prev);
+    },
+    [setCartUpdate]
+  );
 
-  const handleAddToWishlist = useCallback((courseId: string) => {
-    console.log("Add to wishlist clicked:", courseId);
-  }, []);
+  // const handleAddToWishlist = useCallback((courseId: string) => {
+  //   // console.log("Add to wishlist clicked:", courseId);
+  // }, []);
 
   const courseSlides = courses.map(course => (
     <CourseCard
       key={course.id}
       course={course}
-      onEnroll={handleEnroll}
       onAddToCart={handleAddToCart}
-      onAddToWishlist={handleAddToWishlist}
+      // onAddToWishlist={handleAddToWishlist}
       isInCart={cartItems.some(item => item.courseId === course.id)}
       isInWishlist={wishlistItems.has(course.id)}
     />

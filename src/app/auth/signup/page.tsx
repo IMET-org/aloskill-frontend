@@ -1,4 +1,4 @@
-// /* eslint-disable @typescript-eslint/no-explicit-any */
+
 // "use client";
 
 // import { authService } from "@/lib/api/auth.service";
@@ -583,7 +583,7 @@
 //     </div>
 //   );
 // }
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use client";
 
 import { authService } from "@/lib/api/auth.service";
@@ -702,8 +702,8 @@ export default function SignupPage() {
       setTimeout(() => {
         router.push("/auth/verification-sent");
       }, 2000);
-    } catch (error) {
-      console.error("Signup error:", error);
+    } catch (_error) {
+      // console.error("Signup error:", error);
       setApiError("An unexpected error occurred. Please try again.");
     }
   };

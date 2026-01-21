@@ -19,7 +19,6 @@ import type { CourseCardProps, CourseStatus } from "./allCourses.types.ts";
 
 const CourseCard = memo(function CourseCard({
   course,
-  onEnroll,
   onAddToCart,
   onAddToWishlist,
   isInCart = false,
@@ -74,8 +73,8 @@ const CourseCard = memo(function CourseCard({
     setIsWishlistLoading(true);
     try {
       await onAddToWishlist(id);
-    } catch (error) {
-      console.error("Failed to update wishlist:", error);
+    } catch (_error) {
+      // console.error("Failed to update wishlist:", error);
     } finally {
       setIsWishlistLoading(false);
     }
@@ -85,12 +84,6 @@ const CourseCard = memo(function CourseCard({
     e.preventDefault();
     e.stopPropagation();
     onAddToCart?.(id);
-  };
-
-  const handleEnroll = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    onEnroll?.(id);
   };
 
   const discountPercentage =
@@ -158,7 +151,7 @@ const CourseCard = memo(function CourseCard({
               >
                 {dashboardActions.onView && (
                   <button
-                    onClick={() => dashboardActions.onView!(id)}
+                    onClick={() => dashboardActions.onView?.(id)}
                     className='w-full px-4 py-2 text-left text-sm text-orange-600 hover:bg-orange-50 flex items-center gap-2'
                   >
                     <Eye className='w-4 h-4' />
@@ -168,7 +161,7 @@ const CourseCard = memo(function CourseCard({
 
                 {dashboardActions.onEdit && (
                   <button
-                    onClick={() => dashboardActions.onEdit!(id)}
+                    onClick={() => dashboardActions.onEdit?.(id)}
                     className='w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2'
                   >
                     <Edit className='w-4 h-4' />
@@ -178,7 +171,7 @@ const CourseCard = memo(function CourseCard({
 
                 {dashboardActions.onDelete && (
                   <button
-                    onClick={() => dashboardActions.onDelete!(id)}
+                    onClick={() => dashboardActions.onDelete?.(id)}
                     className='w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2'
                   >
                     <Trash2 className='w-4 h-4' />
@@ -251,9 +244,9 @@ const CourseCard = memo(function CourseCard({
             {dashboardActions && (
               <div className='px-4 pt-3'>
                 <span
-                  className={`inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full ${STATUS_CONFIG[status].className}`}
+                  className={`inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full ${STATUS_CONFIG[status as CourseStatus].className}`}
                 >
-                  {STATUS_CONFIG[status].label}
+                  {STATUS_CONFIG[status as CourseStatus].label}
                 </span>
               </div>
             )}
@@ -328,14 +321,14 @@ const CourseCard = memo(function CourseCard({
                 </button>
               )}
 
-              {onEnroll && (
+              <Link href={`/checkout/${id}`}>
                 <button
-                  onClick={handleEnroll}
+                  type='button'
                   className='px-4 py-1 bg-linear-to-r from-orange-500 to-orange-600 text-white rounded-lg text-md font-semibold hover:from-orange-600 hover:to-orange-700 transition-all shadow-md hover:shadow-lg whitespace-nowrap'
                 >
                   Enroll
                 </button>
-              )}
+              </Link>
             </div>
           </div>
         </div>

@@ -1,6 +1,6 @@
 import { useDebounce } from "@/hooks/useDebounce.ts";
 import { Star } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import FilterSection from "./FilterSection.tsx";
 
 interface FilterSidebarProps {
@@ -65,22 +65,24 @@ function FilterSidebar({
   filteredQuery,
   setFilteredQuery,
 }: FilterSidebarProps) {
-  const handleFilterChange = (
-    field: keyof typeof filteredQuery,
-    value: string | number | number[]
-  ) => {
-    setFilteredQuery(prev => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
+  const handleFilterChange = useCallback(
+    (field: keyof typeof filteredQuery, value: string | number | number[]) => {
+      setFilteredQuery(prev => ({
+        ...prev,
+        [field]: value,
+      }));
+    },
+    [setFilteredQuery]
+  );
+
   const [minPrice, setMinPrice] = useState<number>(filteredQuery.priceRange[0] ?? 0);
   const [maxPrice, setMaxPrice] = useState<number>(filteredQuery.priceRange[1] ?? 100000);
   const debouncedMin = useDebounce(minPrice, 400);
   const debouncedMax = useDebounce(maxPrice, 400);
+
   useEffect(() => {
     handleFilterChange("priceRange", [debouncedMin, debouncedMax]);
-  }, [debouncedMin, debouncedMax]);
+  }, [handleFilterChange, debouncedMin, debouncedMax]);
 
   return (
     <div className='space-y-3'>

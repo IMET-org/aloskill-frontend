@@ -113,8 +113,8 @@ function InstructorCard({
 
               {/* Display students count */}
               <div className='text-white text-sm font-semibold'>
-                {instructor.totalStudents && instructor.totalStudents > 0
-                  ? `${instructor.totalStudents.toLocaleString()}+ Students`
+                {instructor.totalCourses > 0
+                  ? `${instructor.totalCourses.toLocaleString()}+ Students`
                   : "New Instructor"}
               </div>
 

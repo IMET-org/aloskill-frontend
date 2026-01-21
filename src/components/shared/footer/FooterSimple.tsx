@@ -50,23 +50,6 @@ const footerLinks = {
   ],
 };
 
-const paymentMethods = [
-  {
-    name: "Visa",
-    image: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/visa/visa-original.svg",
-  },
-  { name: "Mastercard", image: "https://cdn.worldvectorlogo.com/logos/mastercard-2.svg" },
-  {
-    name: "American Express",
-    image: "https://cdn.worldvectorlogo.com/logos/american-express-1.svg",
-  },
-  { name: "PayPal", image: "https://cdn.worldvectorlogo.com/logos/paypal-3.svg" },
-  { name: "Stripe", image: "https://cdn.worldvectorlogo.com/logos/stripe-4.svg" },
-  { name: "Apple Pay", image: "https://cdn.worldvectorlogo.com/logos/apple-pay-logo.svg" },
-  { name: "Google Pay", image: "https://cdn.worldvectorlogo.com/logos/google-pay-2.svg" },
-  { name: "Alipay", image: "https://cdn.worldvectorlogo.com/logos/alipay.svg" },
-];
-
 export default function ModernFooter() {
   const currentYear = new Date().getFullYear();
 
@@ -244,54 +227,18 @@ export default function ModernFooter() {
 
         {/* Payment Methods */}
         <div className='border-t border-gray-200/60 py-6 sm:py-8'>
-          <div className='flex flex-col lg:flex-row items-center justify-between gap-6'>
-            <div className='flex flex-col items-center lg:items-start gap-4 sm:gap-6 w-full lg:w-auto'>
-              <span className='text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wider'>
-                Secure Payment
-              </span>
-              <div className='flex flex-wrap items-center justify-center lg:justify-start gap-2 sm:gap-3'>
-                {paymentMethods.map((method, index) => (
-                  <div
-                    key={index}
-                    className='w-12 h-8 sm:w-14 sm:h-10 bg-white rounded-lg border border-gray-200 flex items-center justify-center p-1.5 sm:p-2 hover:shadow-md hover:border-gray-300 transition-all duration-200 hover:-translate-y-0.5'
-                    title={method.name}
-                  >
-                    <Image
-                      width={32}
-                      height={32}
-                      src={method.image}
-                      alt={method.name}
-                      className='w-full h-full object-contain'
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <a
-              href='https://www.sslcommerz.com'
-              target='_blank'
-              rel='noopener noreferrer'
-              className='inline-block'
-            >
-              <div className='bg-gradient-to-r from-gray-800 to-gray-900 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-xl text-xs sm:text-sm font-semibold hover:shadow-lg transition-all duration-300 hover:scale-105'>
-                <div className='flex items-center gap-2'>
-                  <svg
-                    className='w-3 h-3 sm:w-4 sm:h-4'
-                    fill='currentColor'
-                    viewBox='0 0 20 20'
-                  >
-                    <path
-                      fillRule='evenodd'
-                      d='M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z'
-                      clipRule='evenodd'
-                    />
-                  </svg>
-                  <span>Verified by SSLCommerz</span>
-                </div>
-              </div>
-            </a>
-          </div>
+          <a
+            target='_blank'
+            href='https://www.sslcommerz.com/'
+            title='SSLCommerz'
+          >
+            <Image
+              width={1200}
+              height={100}
+              alt='SSLCommerz'
+              src='https://securepay.sslcommerz.com/public/image/SSLCommerz-Pay-With-logo-All-Size-01.png'
+            />
+          </a>
         </div>
 
         {/* Bottom Bar */}
