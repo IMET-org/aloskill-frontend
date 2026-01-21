@@ -19,7 +19,7 @@ const CourseDetailPage = () => {
         setApiError("");
 
         const response = await apiClient.get<CourseDetails>(`/course/course/${id}`);
-        console.log("response: ", response);
+        // console.log("response: ", response);
         if (!response.success || !response.data) {
           setApiError(response.message || "Something went wrong!");
           return;
@@ -100,8 +100,8 @@ const CourseDetailPage = () => {
       iconColor: "text-gray-700",
     },
   ];
-  console.log("course details", courseDetails);
-  console.log(courseDetails.thumbnailUrl);
+  // console.log("course details", courseDetails);
+  // console.log(courseDetails.thumbnailUrl);
   return (
     <div className='min-h-screen'>
       {/* Breadcrumb Navigation */}
@@ -390,7 +390,7 @@ const CourseDetailPage = () => {
               </a>
             </div>
             <div className='p-4 text-gray-700'>
-              {courseDetails.overview || "No overview available."}
+              {courseDetails.objective || "No overview available."}
             </div>
           </div>
         </div>

@@ -1,6 +1,3 @@
-/* eslint-disable no-console */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { config as envConfig } from "@/config/env";
 import { getToken, type JWT } from "next-auth/jwt";
 import { withAuth } from "next-auth/middleware";
@@ -69,10 +66,7 @@ export default withAuth(
       pathname.startsWith("/auth") ||
       pathname.startsWith("/courses") ||
       pathname.startsWith("/instructors") ||
-      pathname.startsWith("/about") ||
-      pathname.startsWith("/cart") ||
-      pathname.startsWith("/checkout") ||
-      pathname.startsWith("/watch-video")
+      pathname.startsWith("/about")
     ) {
       return NextResponse.next();
     }
@@ -368,10 +362,8 @@ export default withAuth(
           path.startsWith("/auth") ||
           path.startsWith("/courses") ||
           path.startsWith("/about") ||
-          path.startsWith("/cart") ||
           path.startsWith("/products") ||
-          path.startsWith("/instructors") ||
-          path.startsWith("/checkout");
+          path.startsWith("/instructors");
 
         if (isPublicRoute) {
           return true;
@@ -764,7 +756,7 @@ async function handleThreatResponse(threatScan: any, request: NextRequest, audit
       break;
     case "low":
       // Log only
-      console.log("Low level threat detected:", threatScan);
+
       break;
   }
 }
@@ -834,7 +826,6 @@ async function updateSessionActivity(token: any, request: NextRequest) {
   try {
     // In production: Update user session in database with current timestamp
     // Mock: Log activity
-    console.log(`Session activity updated for user ${token.userId} at ${new Date().toISOString()}`);
     // token.lastActivity = Date.now(); // Update token if using JWT
   } catch (error) {
     console.error("Error updating session activity:", error);
@@ -1009,9 +1000,7 @@ async function trackVideoAccess(
 ) {
   try {
     const clientIP = getClientIP(request);
-    console.log(
-      `Video access tracked: User ${userId}, Video ${videoId}, Course ${courseId}, IP ${clientIP}`
-    );
+
     // In production: Store in analytics database
   } catch (error) {
     console.error("Error tracking video access:", error);

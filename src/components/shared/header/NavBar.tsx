@@ -20,9 +20,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { useSessionContext } from "../../../app/contexts/SessionContext.tsx";
+import { courseDraftStorage } from "../../../lib/storage/courseDraftStorage.ts";
 import Logo from "./Logo.tsx";
-import { courseDraftStorage } from '../../../lib/storage/courseDraftStorage.ts';
-import { useSessionContext } from '../../../app/contexts/SessionContext.tsx';
 
 interface HeaderProps {
   onMenuToggle?: () => void;
@@ -77,10 +77,10 @@ export default function NavBar({ onMenuToggle }: HeaderProps) {
       callbackUrl: "/",
       onSuccess: () => {
         setIsDropdownOpen(false);
-        console.log("Logged out successfully");
+        // console.log("Logged out successfully");
       },
-      onError: error => {
-        console.error("Logout error:", error);
+      onError: _error => {
+        // console.error("Logout error:", error);
         setIsDropdownOpen(false);
       },
     });

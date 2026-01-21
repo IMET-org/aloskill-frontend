@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { authService } from "@/lib/api/auth.service.ts";
 import { getToken } from "next-auth/jwt";
 import { NextResponse } from "next/server";
@@ -18,8 +18,8 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     logoutAll = !!body.logoutAll;
-  } catch (e) {
-    console.error("Failed to parse request body:", e);
+  } catch (_e) {
+    // console.error("Failed to parse request body:", e);
   }
   const token = await getToken({
     req: request as any,
@@ -41,8 +41,8 @@ export async function POST(request: Request) {
     } else {
       await logoutCurrentDevice(refreshToken);
     }
-  } catch (error) {
-    console.error(`Backend Revocation Failed:`, error);
+  } catch (_error) {
+    // console.error(`Backend Revocation Failed:`, error);
   }
   return NextResponse.json({ success: true, message: "Revocation processed." }, { status: 200 });
 }

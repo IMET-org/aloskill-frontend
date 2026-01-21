@@ -1,7 +1,7 @@
 "use client";
 import { ArrowRight, X } from "lucide-react";
 import Image from "next/image";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { apiClient } from "../../../../lib/api/client";
 import { courseDraftStorage } from "../../../../lib/storage/courseDraftStorage";
@@ -23,7 +23,7 @@ export default function CheckoutPage() {
   const [storedCartItems, setStoredCartItems] = useState<{ courseId: string; quantity: number }[]>(
     []
   );
-
+  const router = useRouter();
   const { user } = useSessionContext();
 
   const params = useParams();
@@ -59,16 +59,22 @@ export default function CheckoutPage() {
 
   const createOrder = async () => {
     if (!user) return;
-    const orderResponse = await apiClient.post("/order/create-payment", {
-      courseIds: courseId ? [courseId] : storedCartItems.map(item => item.courseId),
-      paymentMethod,
-      user: user.id
-    });
+    const orderResponse = await apiClient.post<{ gatewayPageURL: string; orderId: string }>(
+      "/order/create-payment",
+      {
+        courseIds: courseId ? [courseId] : storedCartItems.map(item => item.courseId),
+        paymentMethod,
+        user: user.id,
+      }
+    );
     if (!orderResponse.success) {
       alert("Failed to create order. Please try again.");
       return;
     }
-    console.log(orderResponse.data);
+    // console.log(orderResponse.data);
+    if (orderResponse.data) {
+      router.push(orderResponse.data.gatewayPageURL);
+    }
     alert("Order created successfully! Proceeding to payment...");
   };
 

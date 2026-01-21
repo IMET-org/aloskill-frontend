@@ -101,7 +101,7 @@ export default function FAQStickyStack() {
           >
             <h3 className='text-3xl font-bold'>Have a different question?</h3>
             <p className='max-w-md text-slate-400 '>
-              We're transparent about our process. Let's hop on a call and clear things up.
+              We&apos;re transparent about our process. Let&apos;s hop on a call and clear things up.
             </p>
             <a
               href='#contact'

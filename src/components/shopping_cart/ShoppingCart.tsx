@@ -37,7 +37,7 @@ export default function ShoppingCartPage() {
         "/course/get-cart-courses",
         storedCart.map(course => course.courseId)
       );
-      console.log("response", response);
+      // console.log("response", response);
       if (!response.success) {
         setCartItems([]);
         return;

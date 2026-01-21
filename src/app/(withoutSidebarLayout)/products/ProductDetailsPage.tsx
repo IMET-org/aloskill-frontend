@@ -16,6 +16,7 @@ import {
   Star,
   Truck,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import React, { useState } from "react";
 
@@ -166,7 +167,9 @@ const ProductDetailsPage: React.FC<ProductDetailsPageProps> = ({ product }) => {
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                     >
-                      <img
+                      <Image
+                        width={100}
+                        height={100}
                         src={img}
                         alt={`Thumbnail ${idx + 1}`}
                         className='w-full h-full object-cover'

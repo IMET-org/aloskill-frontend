@@ -1,6 +1,5 @@
 "use client";
 
-import AuthButton from "@/components/shared/buttons/AuthButton";
 import { apiClient } from "@/lib/api/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, CheckCircle2, Loader2, Mail } from "lucide-react";
@@ -42,8 +41,8 @@ export default function ResendVerificationPage() {
       } else {
         setApiError(response.message || "Failed to resend verification email. Please try again.");
       }
-    } catch (error) {
-      console.error("Resend verification error:", error);
+    } catch (_error) {
+      // console.error("Resend verification error:", error);
       setApiError("An unexpected error occurred. Please try again.");
     }
   };
@@ -67,18 +66,18 @@ export default function ResendVerificationPage() {
                 The verification link will expire in 24 hours.
               </p>
             </div>
-            <AuthButton
+            {/* <AuthButton
               onClick={() => router.push("/auth/signin")}
               className='mt-4 w-full shadow-lg'
             >
               Back to Sign In
-            </AuthButton>
-            {/* <button
+            </AuthButton> */}
+            <button
               onClick={() => router.push("/auth/signin")}
               className='w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg'
             >
               Back to Sign In
-            </button> */}
+            </button>
           </div>
         </div>
       </div>
@@ -149,7 +148,7 @@ export default function ResendVerificationPage() {
             </div>
 
             {/* Submit Button */}
-            <AuthButton
+            {/* <AuthButton
               type='submit'
               disabled={isSubmitting}
               className='mt-4 w-full  disabled:opacity-50 disabled:cursor-not-allowed shadow-lg'
@@ -162,8 +161,8 @@ export default function ResendVerificationPage() {
               ) : (
                 "Send Verification Email"
               )}
-            </AuthButton>
-            {/* <button
+            </AuthButton> */}
+            <button
               type='submit'
               disabled={isSubmitting}
               className='w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg'
@@ -176,7 +175,7 @@ export default function ResendVerificationPage() {
               ) : (
                 "Send Verification Email"
               )}
-            </button> */}
+            </button>
           </form>
 
           {/* Footer Links */}

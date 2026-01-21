@@ -73,8 +73,8 @@ const CourseCard = memo(function CourseCard({
     setIsWishlistLoading(true);
     try {
       await onAddToWishlist(id);
-    } catch (error) {
-      console.error("Failed to update wishlist:", error);
+    } catch (_error) {
+      // console.error("Failed to update wishlist:", error);
     } finally {
       setIsWishlistLoading(false);
     }
@@ -151,7 +151,7 @@ const CourseCard = memo(function CourseCard({
               >
                 {dashboardActions.onView && (
                   <button
-                    onClick={() => dashboardActions.onView!(id)}
+                    onClick={() => dashboardActions.onView?.(id)}
                     className='w-full px-4 py-2 text-left text-sm text-orange-600 hover:bg-orange-50 flex items-center gap-2'
                   >
                     <Eye className='w-4 h-4' />
@@ -161,7 +161,7 @@ const CourseCard = memo(function CourseCard({
 
                 {dashboardActions.onEdit && (
                   <button
-                    onClick={() => dashboardActions.onEdit!(id)}
+                    onClick={() => dashboardActions.onEdit?.(id)}
                     className='w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2'
                   >
                     <Edit className='w-4 h-4' />
@@ -171,7 +171,7 @@ const CourseCard = memo(function CourseCard({
 
                 {dashboardActions.onDelete && (
                   <button
-                    onClick={() => dashboardActions.onDelete!(id)}
+                    onClick={() => dashboardActions.onDelete?.(id)}
                     className='w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2'
                   >
                     <Trash2 className='w-4 h-4' />

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use client";
 
 import { authService } from "@/lib/api/auth.service";
@@ -69,7 +69,7 @@ export default function ResetPasswordPage() {
         setApiError(res?.message || "Failed to reset password");
       }
     } catch (err: any) {
-      console.error("reset error:", err);
+      // console.error("reset error:", err);
       setApiError(err?.message || "An unexpected error occurred.");
     }
   };

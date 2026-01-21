@@ -57,7 +57,7 @@ export default function ContactSection() {
         setSubmitStatus({ type: null, message: "" });
       }, 5000);
     } catch (error) {
-      console.error("Form submission error:", error);
+      // console.error("Form submission error:", error);
       setSubmitStatus({
         type: "error",
         message: error instanceof Error ? error.message : "Something went wrong. Please try again.",

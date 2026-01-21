@@ -1,6 +1,6 @@
 "use client";
 import BorderGradientButton from "@/components/buttons/BorderGradientButton.tsx";
-import { motion, Variants } from "framer-motion";
+import { motion, type Variants } from "framer-motion";
 import { ArrowRightIcon, Award, BookOpen, Send, Sparkles, Star, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";

@@ -1,4 +1,4 @@
-// hooks/useLogout.ts
+
 "use client";
 
 import { getSession, signOut } from "next-auth/react";

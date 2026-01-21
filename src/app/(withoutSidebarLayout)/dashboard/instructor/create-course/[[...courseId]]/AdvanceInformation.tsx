@@ -1,17 +1,17 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CloudUpload, ImageIcon, Loader, Play, Plus, Trash, Upload } from "lucide-react";
 // import { useSession } from "next-auth/react";
+import { getFileIdFromUrl } from "@/lib/course/utils.tsx";
 import Image from "next/image";
 import { type ChangeEvent, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as tus from "tus-js-client";
 import z from "zod";
 import { apiClient } from "../../../../../../lib/api/client.ts";
+import { useSessionContext } from "../../../../../contexts/SessionContext.tsx";
 import CourseFooter from "./CourseFooter.tsx";
 import { type CreateCourseData } from "./page.tsx";
 import StepHeader from "./StepHeader.tsx";
-import { useSessionContext } from '../../../../../contexts/SessionContext.tsx';
-import { getFileIdFromUrl } from "@/lib/course/utils.tsx";
 
 type CourseDescriptionForm = {
   trailerUrl?: string;
@@ -151,8 +151,6 @@ function AdvanceInformation({
     setValue,
     formState: { errors, isSubmitting },
   } = useForm<CourseDescriptionForm>({ resolver: zodResolver(CourseDescriptionSchema) });
-
-  
 
   useEffect(() => {
     if (!courseData.trailerUrl) {
@@ -428,8 +426,8 @@ function AdvanceInformation({
               setVideoPreview(objectUrl);
             }
             setValue("trailerUrl", uploadResult.url);
-          } catch (error) {
-            console.error("Error uploading video:", error);
+          } catch (_error) {
+            // console.error("Error uploading video:", error);
           }
           return;
         }
@@ -445,8 +443,8 @@ function AdvanceInformation({
               ...prev,
               thumbnailUrl: uploadResult.url,
             }));
-          } catch (error) {
-            console.error("Error uploading file:", error);
+          } catch (_error) {
+            // console.error("Error uploading file:", error);
           }
           return;
         }

@@ -67,7 +67,7 @@ export type CourseType = {
 export type CourseStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
 export type CourseCardProps = {
   course: CourseType;
-  
+
   onAddToCart?: (courseId: string) => void;
   onAddToWishlist?: (courseId: string) => Promise<void> | void;
 
@@ -85,6 +85,7 @@ export type CourseDetails = {
   title: string;
   originalPrice: number;
   discountPrice: number | null;
+  objective: string | null;
   isDiscountActive: boolean;
   currency: string | null;
   enrollmentCount: number;
@@ -184,6 +185,34 @@ export type CourseDetailsPublic = {
     star: number;
     count: number;
     percentage: string;
+  }[];
+};
+export type CourseDetailsPrivate = {
+  title: string;
+  createdAt: string;
+  updatedAt: string;
+  content: {
+    totalLessons: number;
+    totalDuration: string;
+  };
+  modules: {
+    isExpanded: boolean;
+    position: number;
+    title: string;
+    duration: number;
+    lessons: {
+      postion: number;
+      title: string;
+      description: string | null;
+      notes: string | null;
+      duration: number | null;
+      type: string;
+      contentUrl: string | null;
+      files: {
+        name: string;
+        url: string;
+      }[];
+    }[];
   }[];
 };
 export interface FilterOption {

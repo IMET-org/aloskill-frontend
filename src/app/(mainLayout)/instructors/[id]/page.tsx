@@ -95,8 +95,8 @@ export default function InstructorDetailsPage() {
         } else {
           setError(response.message || "Failed to fetch instructor");
         }
-      } catch (err) {
-        console.error("Error fetching instructor:", err);
+      } catch (_err) {
+        // console.error("Error fetching instructor:", err);
         setError("An unexpected error occurred");
       } finally {
         setLoading(false);

@@ -11,7 +11,6 @@ import { InstructorsSectionAdvanced } from "@/app/(HomePageComponents)/Instructo
 import { WhyLearnSectionAnimated } from "@/app/(HomePageComponents)/WhyLearnSectionAnimated";
 
 import BackToTop from "@/components/shared/BackToTop";
-import Newsletter from "@/components/shared/footer/Newsletter";
 import MobileMenu from "@/components/shared/menu/MobileMenu";
 import TabletDrawer from "@/components/shared/menu/TabletDrawer";
 import { useState } from "react";
@@ -26,34 +25,21 @@ export default function HomePage() {
 
   return (
     <>
-      {/* Page Sections */}
-      {/* <div className='block xl:hidden mt-6'>
-        <RightSidebar />
-      </div> */}
-
       <HeroSection />
-
-      {/* <SidebarAdBanner /> */}
       <StatsSection />
       <CategoriesSectionAnimated />
       <WhyLearnSectionAnimated />
-      {/* <FeaturedCoursesCarousel courses={courses} /> */}
       <PopularCoursesSection />
-      {/* <CourseCarousel /> */}
       <DiscoverBooksSectionCarousel />
       <InstructorsSectionAdvanced />
       <StdTestimonials />
       <ProcessPerfect />
       <FAQStickyStack />
       <TestimonialSlider />
-      {/* <CommunitySection /> */}
       <GCommunitySection />
       <CertificateSectionSimple />
       <ContactSection />
-      {/* <ConsultationSection /> */}
-      <Newsletter />
-
-      {/* Mobile/Tablet Components (Page-specific) */}
+      {/* <Newsletter /> */}
       <MobileMenu
         isOpen={isMobileMenuOpen}
         onClose={() => setIsMobileMenuOpen(false)}

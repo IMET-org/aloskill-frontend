@@ -43,8 +43,8 @@ export default function AllInstructorsPage() {
         } else {
           setError(response.message || "Failed to fetch instructors");
         }
-      } catch (err) {
-        console.error("Error fetching instructors:", err);
+      } catch (_err) {
+        // console.error("Error fetching instructors:", err);
         setError("An unexpected error occurred");
       } finally {
         setLoading(false);

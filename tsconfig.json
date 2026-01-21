@@ -43,7 +43,7 @@
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
     "exactOptionalPropertyTypes": false,
-
+    
     /* Completeness */
     "skipLibCheck": true,
     "incremental": true,

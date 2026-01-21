@@ -1,6 +1,7 @@
+
 "use client";
 
-import { motion, PanInfo } from "framer-motion";
+import { motion, type PanInfo } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
 

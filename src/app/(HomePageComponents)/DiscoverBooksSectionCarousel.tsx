@@ -115,11 +115,11 @@ export function DiscoverBooksSectionCarousel() {
    * TODO: Integrate with cart state management (Context/Redux/Zustand)
    * @param bookId - The ID of the book to add
    */
-  const handleAddToCart = (bookId: number) => {
-    console.log("Added to cart:", bookId);
-    // TODO: Implement cart functionality
-    // Example: addToCart(mockBooks.find(b => b.id === bookId));
-  };
+  // const handleAddToCart = (bookId: number) => {
+  //   console.log("Added to cart:", bookId);
+  //   // TODO: Implement cart functionality
+  //   // Example: addToCart(mockBooks.find(b => b.id === bookId));
+  // };
 
   /* ------------------ RENDER ------------------ */
 
@@ -154,7 +154,7 @@ export function DiscoverBooksSectionCarousel() {
                 book={book}
                 isInWishlist={wishlist.includes(book.id)}
                 onToggleWishlist={toggleWishlist}
-                onAddToCart={handleAddToCart}
+                // onAddToCart={handleAddToCart}
               />
             ))}
           </div>

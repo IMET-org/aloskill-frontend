@@ -22,7 +22,7 @@ export default function ProductNotFound() {
           <h1 className='text-6xl font-bold text-[var(--color-text-dark)]'>404</h1>
           <h2 className='text-3xl font-bold text-[var(--color-text-dark)]'>Product Not Found</h2>
           <p className='text-gray-600 text-lg'>
-            We couldn't find the book you're looking for. It might have been removed, or the link
+            We couldn&apos;t find the book you&apos;re looking for. It might have been removed, or the link
             might be incorrect.
           </p>
         </div>

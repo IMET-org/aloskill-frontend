@@ -63,10 +63,10 @@ export default function CourseDetailPage() {
         const response = await apiClient.get<CourseDetailsPublic>(
           `/course/public/viewCourse/${courseId}`
         );
-        console.log("response", response);
+        // console.log("response", response);
         setCourse(response.data);
-      } catch (error) {
-        console.error("Failed to fetch popular courses", error);
+      } catch (_error) {
+        // console.error("Failed to fetch popular courses", error);
       } finally {
         setIsLoading(false);
       }

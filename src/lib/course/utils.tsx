@@ -66,7 +66,7 @@ export const getFileIdFromUrl = (url: string) => {
     const parts = pathname.split("/");
     return parts.pop() || parts.pop();
   } catch (_error: unknown) {
-    console.error("Invalid URL provided");
+    // console.error("Invalid URL provided");
     return "";
   }
 };

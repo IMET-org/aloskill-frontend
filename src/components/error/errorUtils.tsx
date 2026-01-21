@@ -295,9 +295,9 @@ export async function logError(errorData: ErrorLogData): Promise<void> {
       }),
     });
     if (!res.ok) {
-      console.error("Failed to log error:", res.statusText);
+      // console.error("Failed to log error:", res.statusText);
     }
-  } catch (err) {
-    console.error("Error logging failed:", err);
+  } catch (_err) {
+    // console.error("Error logging failed:", err);
   }
 }

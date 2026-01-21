@@ -1,7 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use client";
 
-import AuthButton from "@/components/shared/buttons/AuthButton";
 import { authService } from "@/lib/api/auth.service";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, CheckCircle2, Loader2, Mail } from "lucide-react";
@@ -40,7 +39,7 @@ export default function ForgotPasswordPage() {
         setApiError(res?.message || "Failed to send password reset email.");
       }
     } catch (err: any) {
-      console.error("forgot password error:", err);
+      // console.error("forgot password error:", err);
       setApiError(err?.message || "An unexpected error occurred.");
     }
   };
@@ -100,7 +99,7 @@ export default function ForgotPasswordPage() {
               {errors.email && <p className='mt-1 text-sm text-red-600'>{errors.email.message}</p>}
             </div>
 
-            <AuthButton
+            {/* <AuthButton
               type='submit'
               disabled={isSubmitting}
               className='mt-4 w-full  disabled:opacity-50 disabled:cursor-not-allowed shadow-lg'
@@ -112,8 +111,8 @@ export default function ForgotPasswordPage() {
               ) : (
                 "Send Reset Link"
               )}
-            </AuthButton>
-            {/* <button
+            </AuthButton> */}
+            <button
               type='submit'
               disabled={isSubmitting}
               className='w-full py-3 rounded-xl text-white font-semibold bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center'
@@ -125,7 +124,7 @@ export default function ForgotPasswordPage() {
               ) : (
                 "Send Reset Link"
               )}
-            </button> */}
+            </button>
           </form>
         )}
 

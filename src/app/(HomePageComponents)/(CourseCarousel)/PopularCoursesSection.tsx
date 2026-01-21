@@ -15,7 +15,7 @@ export default function PopularCoursesSection() {
   const [courses, setCourses] = useState<CourseType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [cartItems, setCartItems] = useState<{ courseId: string; quantity: number }[]>([]);
-  const [wishlistItems, setWishlistItems] = useState<Set<string>>(new Set());
+  const [wishlistItems] = useState<Set<string>>(new Set());
 
   const router = useRouter();
   const { setCartUpdate } = useSessionContext();
@@ -28,8 +28,8 @@ export default function PopularCoursesSection() {
         const response = await apiClient.get<CourseType[]>("/course/public/allCourses");
         // const response = await apiClient.get<CourseType[]>("/course/public/allCourses?isHome=true");
         setCourses(response.data ?? []);
-      } catch (error) {
-        console.error("Failed to fetch popular courses", error);
+      } catch (_error) {
+        // console.error("Failed to fetch popular courses", error);
       } finally {
         setIsLoading(false);
       }
@@ -51,16 +51,16 @@ export default function PopularCoursesSection() {
     [setCartUpdate]
   );
 
-  const handleAddToWishlist = useCallback((courseId: string) => {
-    console.log("Add to wishlist clicked:", courseId);
-  }, []);
+  // const handleAddToWishlist = useCallback((courseId: string) => {
+  //   // console.log("Add to wishlist clicked:", courseId);
+  // }, []);
 
   const courseSlides = courses.map(course => (
     <CourseCard
       key={course.id}
       course={course}
       onAddToCart={handleAddToCart}
-      onAddToWishlist={handleAddToWishlist}
+      // onAddToWishlist={handleAddToWishlist}
       isInCart={cartItems.some(item => item.courseId === course.id)}
       isInWishlist={wishlistItems.has(course.id)}
     />

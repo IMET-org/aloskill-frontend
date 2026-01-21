@@ -146,8 +146,8 @@ export default function CourseCreationForm() {
       } else {
         throw new Error("Failed to fetch categories");
       }
-    } catch (error) {
-      console.error("Error fetching categories:", error);
+    } catch (_error) {
+      // console.error("Error fetching categories:", error);
       setCategoryError("Failed to load categories. Please try again.");
       setLoading(false);
       return undefined;

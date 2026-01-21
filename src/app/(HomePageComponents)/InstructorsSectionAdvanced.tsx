@@ -49,7 +49,7 @@ export function InstructorsSectionAdvanced() {
           setFeaturedInstructors(transformed);
         }
       } catch (error) {
-        console.error("Error:", error);
+        // console.error("Error:", error);
       } finally {
         setLoading(false);
       }

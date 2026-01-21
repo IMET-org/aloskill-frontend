@@ -1,4 +1,4 @@
-// app/products/page.tsx
+
 "use client";
 
 import { BookCard } from "@/components/cards/BookCard";
@@ -36,8 +36,8 @@ export default function ProductsPage() {
         const allBooks = await getAllBooks();
         setBooks(allBooks);
         setFilteredBooks(allBooks);
-      } catch (error) {
-        console.error("Failed to fetch books:", error);
+      } catch (_error) {
+        // console.error("Failed to fetch books:", error);
       } finally {
         setIsLoading(false);
       }
@@ -101,7 +101,7 @@ export default function ProductsPage() {
   };
 
   const handleAddToCart = (bookId: number) => {
-    console.log("Added to cart:", bookId);
+    // console.log("Added to cart:", bookId);
     // TODO: Implement cart functionality
   };
 
@@ -198,7 +198,7 @@ export default function ProductsPage() {
               <span className='text-sm text-gray-600 font-semibold'>Active Filters:</span>
               {searchQuery && (
                 <span className='px-3 py-1 bg-[var(--color-orange)] text-white text-sm rounded-full'>
-                  Search: "{searchQuery}"
+                  Search: {searchQuery}
                 </span>
               )}
               {selectedCategory !== "all" && (
