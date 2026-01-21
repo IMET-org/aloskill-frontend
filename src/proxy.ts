@@ -38,7 +38,7 @@ const SECURITY_CONFIG = {
 };
 
 export default withAuth(
-  async function middleware(request: NextRequest) {
+  async function proxy(request: NextRequest) {
     const response = NextResponse.next();
     const { pathname, searchParams } = request.nextUrl;
     const clientIP = getClientIP(request);
