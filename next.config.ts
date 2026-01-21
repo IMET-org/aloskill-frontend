@@ -58,9 +58,9 @@ const nextConfig: NextConfig = {
   },
 
   // === Development & Tooling ===
-  eslint: {
-    dirs: ["src", "app", "pages", "components", "lib", "hooks", "utils"],
-  },
+  // eslint: {
+  //   dirs: ["src", "app", "pages", "components", "lib", "hooks", "utils"],
+  // },
   typescript: {
     ignoreBuildErrors: false,
     tsconfigPath: "./tsconfig.json",
