@@ -53,7 +53,7 @@
     "incremental": true,
     "tsBuildInfoFile": ".next/cache/tsconfig.tsbuildinfo",
     /* JSX */
-    "jsx": "react-jsx",
+    "jsx": "preserve",
     /* Additional Checks */
     "noUnusedLocals": false,
     "noUnusedParameters": false,
@@ -73,8 +73,7 @@
     "src/**/*.d.ts",
     "app/**/*",
     "pages/**/*",
-    ".next/dev/types/**/*.ts",
-    
+    ".next/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",
