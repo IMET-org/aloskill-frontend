@@ -189,7 +189,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/api/v1/:path*",
-        destination: "http://localhost:5000/api/v1/:path*",
+        destination: config.NEXT_PUBLIC_BACKEND_API_URL || "http://localhost:5000/api/v1/:path*",
       },
     ];
   },
@@ -197,7 +197,7 @@ const nextConfig: NextConfig = {
   env: {
     APP_VERSION: process.env["npm_package_version"],
     BUILD_TIME: new Date().toISOString(),
-    BACKEND_URL: config.BACKEND_API_URL || "http://localhost:5000/api/v1",
+    BACKEND_URL: config.NEXT_PUBLIC_BACKEND_API_URL || "http://localhost:5000/api/v1",
   },
 
   // === Webpack Optimizations ===
@@ -278,7 +278,7 @@ const securityHeaders = [
     connect-src 'self' ${
       config.NODE_ENV === "development"
         ? "http://localhost:5000"
-        : process.env["NEXT_PUBLIC_API_URL"] || ""
+        : config.NEXT_PUBLIC_BACKEND_API_URL || ""
     } https://vitals.vercel-insights.com https://video.bunnycdn.com;
     frame-ancestors 'none';
     frame-src https://iframe.mediadelivery.net;
@@ -326,8 +326,7 @@ if (config.NODE_ENV === "production") {
 const apiSecurityHeaders = [
   {
     key: "Content-Security-Policy",
-    value:
-      "default-src 'self'; connect-src 'self' http://localhost:5000/ https://vitals.vercel-insights.com;",
+    value: `default-src 'self'; connect-src 'self' http://localhost:5000/ https://vitals.vercel-insights.com ${config.NEXT_PUBLIC_BACKEND_API_URL};`,
   },
   {
     key: "X-Content-Type-Options",

@@ -1,6 +1,7 @@
 import { getSession } from "next-auth/react";
+import { config } from "../../config/env";
 
-const API_BASE_URL = process.env["BACKEND_API_URL"] || "http://localhost:5000/api/v1";
+const API_BASE_URL = config.NEXT_PUBLIC_BACKEND_API_URL || "http://localhost:5000/api/v1";
 
 interface ApiResponse<T = unknown> {
   success: boolean;

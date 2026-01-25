@@ -5,9 +5,9 @@ import { Eye, EyeOff } from "lucide-react";
 import { useState, type Dispatch, type SetStateAction } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import z from "zod";
+import { useSessionContext } from "../../contexts/SessionContext.tsx";
 import InstructorRegistrationFooterAction from "./InstructorRegistrationFooterAction.tsx";
 import type { FormData } from "./page.tsx";
-import { useSessionContext } from '../../contexts/SessionContext.tsx';
 
 type registerForm = {
   email: string;
@@ -53,6 +53,7 @@ const InstructorStep0 = ({
         if (!data.email) return true;
         try {
           const response = await apiClient.get(`/user/${data.email}`);
+          console.log("resp: ", response);
           if (!response?.success) return false;
           const userData = response?.data as { result: { canProceed: boolean } };
           return userData?.result?.canProceed;

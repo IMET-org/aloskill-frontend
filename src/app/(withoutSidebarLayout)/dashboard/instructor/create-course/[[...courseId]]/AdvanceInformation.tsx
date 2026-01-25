@@ -393,6 +393,8 @@ function AdvanceInformation({
         formData
       );
 
+      console.log("response : ", response);
+
       if (!response.success || !response.data) {
         setUploadError("Upload failed: try different Image or try again");
         return { name: "", url: "" };
