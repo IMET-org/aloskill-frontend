@@ -32,7 +32,7 @@ const InstructorStep2 = ({
     if (currentStep < 4) {
       setCurrentStep(currentStep + 1);
     }
-    
+
     data.experience = Number(data.experience);
     data.teachingExperience = Number(data.teachingExperience);
 
@@ -63,11 +63,11 @@ const InstructorStep2 = ({
               {...register("qualifications", {
                 required: "Enter Your Qualifications",
                 pattern: {
-                  value: /^[A-Za-z\-,\s\.\/]+$/
-,
-                  message: "Qualification can only contain letters,comma,dot,slash,hyphen and spaces.",
+                  value: /^[A-Za-z\-,\s\.\/]+$/,
+                  message:
+                    "Qualification can only contain letters,comma,dot,slash,hyphen and spaces.",
                 },
-                minLength: 5,
+                minLength: 1,
                 maxLength: 100,
               })}
               type='text'
@@ -124,9 +124,8 @@ const InstructorStep2 = ({
             <input
               {...register("expertise", {
                 pattern: {
-                  value: /^[A-Za-z\-,\s\.\/]+$/,
-                  message:
-                    "Expertise can only contains Text, dot, comma, hyphens, underscores and spaces.",
+                  value: /^[^<>]/,
+                  message: "Expertise accept all characters except angle brackets (< >).",
                 },
                 minLength: 3,
                 maxLength: 100,
@@ -149,8 +148,9 @@ const InstructorStep2 = ({
             <input
               {...register("currentOrg", {
                 pattern: {
-                  value: /^[A-Za-z\-,\s\.\/]+$/,
-                  message: "Current Organization can only contain letters,space, dot , slash,hyphen characters.",
+                  value: /^[^<>]/,
+                  message:
+                    "Current organization accept all characters except angle brackets (< >).",
                 },
                 minLength: 3,
                 maxLength: 30,
