@@ -278,7 +278,7 @@ const securityHeaders = [
     connect-src 'self' ${
       config.NODE_ENV === "development"
         ? "http://localhost:5000"
-        : process.env["BACKEND_API_URL"] || ""
+        : config.NEXT_PUBLIC_BACKEND_API_URL || ""
     } https://vitals.vercel-insights.com https://video.bunnycdn.com;
     frame-ancestors 'none';
     frame-src https://iframe.mediadelivery.net;
@@ -326,8 +326,7 @@ if (config.NODE_ENV === "production") {
 const apiSecurityHeaders = [
   {
     key: "Content-Security-Policy",
-    value:
-      "default-src 'self'; connect-src 'self' http://localhost:5000/ https://vitals.vercel-insights.com https://aloskill-backend-production.up.railway.app https://fortunate-kindness-production.up.railway.app/;",
+    value: `default-src 'self'; connect-src 'self' http://localhost:5000/ https://vitals.vercel-insights.com ${config.NEXT_PUBLIC_BACKEND_API_URL};`,
   },
   {
     key: "X-Content-Type-Options",
