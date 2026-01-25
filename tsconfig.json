@@ -53,7 +53,7 @@
     "incremental": true,
     "tsBuildInfoFile": ".next/cache/tsconfig.tsbuildinfo",
     /* JSX */
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     /* Additional Checks */
     "noUnusedLocals": false,
     "noUnusedParameters": false,

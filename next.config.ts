@@ -189,7 +189,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/api/v1/:path*",
-        destination: config.BACKEND_API_URL || "http://localhost:5000/api/v1/:path*",
+        destination: config.NEXT_PUBLIC_BACKEND_API_URL || "http://localhost:5000/api/v1/:path*",
       },
     ];
   },
@@ -197,7 +197,7 @@ const nextConfig: NextConfig = {
   env: {
     APP_VERSION: process.env["npm_package_version"],
     BUILD_TIME: new Date().toISOString(),
-    BACKEND_URL: config.BACKEND_API_URL || "http://localhost:5000/api/v1",
+    BACKEND_URL: config.NEXT_PUBLIC_BACKEND_API_URL || "http://localhost:5000/api/v1",
   },
 
   // === Webpack Optimizations ===
@@ -327,7 +327,7 @@ const apiSecurityHeaders = [
   {
     key: "Content-Security-Policy",
     value:
-      "default-src 'self'; connect-src 'self' http://localhost:5000/ https://vitals.vercel-insights.com https://aloskill-backend-production.up.railway.app;",
+      "default-src 'self'; connect-src 'self' http://localhost:5000/ https://vitals.vercel-insights.com https://aloskill-backend-production.up.railway.app https://fortunate-kindness-production.up.railway.app/;",
   },
   {
     key: "X-Content-Type-Options",
