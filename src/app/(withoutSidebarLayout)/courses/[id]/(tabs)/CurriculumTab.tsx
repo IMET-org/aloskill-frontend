@@ -76,7 +76,7 @@ export function CurriculumTab({
                 <div className='p-3 sm:p-5 pt-0 space-y-1 sm:space-y-2 bg-white'>
                   {module.lessons.map((lesson: any, itemIndex: number) => (
                     <div
-                      key={lesson.id}
+                      key={lesson.position}
                       className='flex items-center justify-between p-3 sm:p-4 hover:bg-gradient-to-r hover:from-orange-50 hover:to-purple-50 rounded-lg transition-all group cursor-pointer'
                       style={{
                         animationDelay: `${itemIndex * 50}ms`,

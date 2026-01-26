@@ -38,7 +38,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: "aloskill-course-storage-pullzone.b-cdn.net",
+        hostname: "aloskill-pull-zone-3.b-cdn.net",
         pathname: "/**",
       },
       {
@@ -279,7 +279,7 @@ const securityHeaders = [
       config.NODE_ENV === "development"
         ? "http://localhost:5000"
         : process.env["BACKEND_API_URL"] || ""
-    } https://vitals.vercel-insights.com https://video.bunnycdn.com;
+    } https://vitals.vercel-insights.com https://video.bunnycdn.com https://fortunate-kindness-production.up.railway.app;
     frame-ancestors 'none';
     frame-src https://iframe.mediadelivery.net;
     object-src 'none';
@@ -327,7 +327,7 @@ const apiSecurityHeaders = [
   {
     key: "Content-Security-Policy",
     value:
-      "default-src 'self'; connect-src 'self' http://localhost:5000/ https://vitals.vercel-insights.com https://aloskill-backend-production.up.railway.app https://fortunate-kindness-production.up.railway.app/;",
+      "default-src 'self'; connect-src 'self' http://localhost:5000/ https://vitals.vercel-insights.com https://aloskill-backend-production.up.railway.app https://fortunate-kindness-production.up.railway.app;",
   },
   {
     key: "X-Content-Type-Options",
