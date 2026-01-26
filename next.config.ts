@@ -38,7 +38,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: "aloSkill-pull-zone-3.b-cdn.net",
+        hostname: "aloskill-pull-zone-3.b-cdn.net",
         pathname: "/**",
       },
       {
@@ -276,7 +276,7 @@ const securityHeaders = [
     style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
     img-src 'self' data: https: blob:;
     font-src 'self' https://fonts.gstatic.com;
-    connect-src 'self' http://localhost:5000 ${config.NEXT_PUBLIC_BACKEND_BASE_URL} https://vitals.vercel-insights.com https://video.bunnycdn.com;
+    connect-src 'self' http://localhost:5000 ${config.NEXT_PUBLIC_BACKEND_BASE_URL} https://vitals.vercel-insights.com https://video.bunnycdn.com https://fortunate-kindness-production.up.railway.app;
     frame-ancestors 'none';
     frame-src https://iframe.mediadelivery.net;
     object-src 'none';
@@ -323,7 +323,7 @@ if (config.NODE_ENV === "production") {
 const apiSecurityHeaders = [
   {
     key: "Content-Security-Policy",
-    value: `default-src 'self'; connect-src 'self' ${config.NEXT_PUBLIC_BACKEND_BASE_URL} http://localhost:5000 https://vitals.vercel-insights.com https://video.bunnycdn.com;`,
+    value: `default-src 'self'; connect-src 'self' ${config.NEXT_PUBLIC_BACKEND_BASE_URL} http://localhost:5000 https://fortunate-kindness-production.up.railway.app https://vitals.vercel-insights.com https://video.bunnycdn.com;`,
   },
   {
     key: "X-Content-Type-Options",
