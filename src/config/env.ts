@@ -4,7 +4,10 @@ const envSchema = z.object({
   NODE_ENV: z.enum(["development", "production", "test"]).default(process.env.NODE_ENV),
   NEXT_PUBLIC_BACKEND_API_URL: z
     .url({ message: "Invalid HTTP(S) URL" })
-    .default(process.env['NEXT_PUBLIC_BACKEND_API_URL'] as string),
+    .default(process.env["NEXT_PUBLIC_BACKEND_API_URL"] as string),
+  NEXT_PUBLIC_BACKEND_BASE_URL: z
+    .url({ message: "Invalid HTTP(S) URL" })
+    .default(process.env["NEXT_PUBLIC_BACKEND_BASE_URL"] as string),
   NEXTAUTH_URL: z
     .url({ message: "Invalid HTTP(S) URL" })
     .default(process.env.NEXTAUTH_URL as string),
