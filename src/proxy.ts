@@ -643,7 +643,7 @@ function addAdvancedSecurityHeaders(response: NextResponse, _request: NextReques
     `connect-src 'self' ${
       envConfig.NODE_ENV === "development"
         ? "http://localhost:5000"
-        : envConfig.NEXT_PUBLIC_BACKEND_API_URL || ""
+        : envConfig.NEXT_PUBLIC_BACKEND_BASE_URL || ""
     } http://localhost:5000 https://vitals.vercel-insights.com https://video.bunnycdn.com https://fortunate-kindness-production.up.railway.app https://accounts.google.com`,
     "media-src 'self' blob: https:",
     "object-src 'none'",
