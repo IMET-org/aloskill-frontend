@@ -634,18 +634,23 @@ function addAdvancedSecurityHeaders(response: NextResponse, _request: NextReques
   // Content Security Policy with LMS-specific directives
   const cspDirectives = [
     "default-src 'self' https://iframe.mediadelivery.net",
-    "script-src 'self' 'unsafe-eval' 'unsafe-inline' http://assets.mediadelivery.net",
+    // Added Google for scripts
+    "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://assets.mediadelivery.net https://accounts.google.com",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "img-src 'self' data: https: blob:",
     "font-src 'self' https://fonts.gstatic.com",
-    "connect-src 'self' http://localhost:5000 https://vitals.vercel-insights.com https://video.bunnycdn.com https://fortunate-kindness-production.up.railway.app",
+    // Added Google and Railway backend
+    `connect-src 'self' ${
+      envConfig.NODE_ENV === "development"
+        ? "http://localhost:5000"
+        : envConfig.NEXT_PUBLIC_BACKEND_API_URL || ""
+    } http://localhost:5000 https://vitals.vercel-insights.com https://video.bunnycdn.com https://fortunate-kindness-production.up.railway.app https://accounts.google.com`,
     "media-src 'self' blob: https:",
     "object-src 'none'",
     "base-uri 'self'",
-    "form-action 'self'",
+    "form-action 'self' https://accounts.google.com", // Allows the Google login form to submit
+    "frame-src 'self' https://accounts.google.com https://iframe.mediadelivery.net", // Essential for Google Login and Video frames
     "frame-ancestors 'none'",
-    // "block-all-mixed-content",
-    // "upgrade-insecure-requests",
   ];
 
   response.headers.set("Content-Security-Policy", cspDirectives.join("; "));
