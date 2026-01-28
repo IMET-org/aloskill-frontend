@@ -199,9 +199,9 @@ export type CourseDetailsPrivate = {
     isExpanded: boolean;
     position: number;
     title: string;
-    duration: number;
+    moduleDuration: number;
     lessons: {
-      postion: number;
+      position: number;
       title: string;
       description: string | null;
       notes: string | null;
@@ -213,6 +213,20 @@ export type CourseDetailsPrivate = {
         url: string;
       }[];
     }[];
+  }[];
+};
+
+export type PrivateLesson = {
+  position: number;
+  title: string;
+  description: string | null;
+  notes: string | null;
+  duration: number | null;
+  type: string;
+  contentUrl: string | null;
+  files: {
+    name: string;
+    url: string;
   }[];
 };
 export interface FilterOption {
