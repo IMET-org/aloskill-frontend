@@ -27,7 +27,7 @@ const InstructorsLayout = ({ children }: { children: React.ReactNode }) => {
     { icon: LogOut, label: "SignOut", path: "/dashboard" },
   ];
   return (
-    <div className='w-screen h-screen bg-linear-to-br from-pink-100 via-purple-100 to-pink-100 overflow-y-auto overflow-x-hidden flex items-center gap-2'>
+    <div className='w-screen h-screen bg-linear-to-br from-pink-100 via-purple-100 to-pink-100 overflow-y-auto overflow-x-hidden flex items-center gap-2 box-border'>
       <div className='w-[20%] h-full bg-linear-to-t from-[#0F172A] to-[#0B1120] text-white flex flex-col'>
         <Link
           href='/'

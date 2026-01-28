@@ -363,6 +363,9 @@ export default withAuth(
           path.startsWith("/courses") ||
           path.startsWith("/about") ||
           path.startsWith("/products") ||
+          path.startsWith("/studentHub") ||
+          path.startsWith("/events") ||
+          path.startsWith("/challenges") ||
           path.startsWith("/instructors");
 
         if (isPublicRoute) {
@@ -443,6 +446,9 @@ async function enforceAccessControl(
     "/courses",
     "/blog",
     "/products",
+    "/studentHub",
+    "/events",
+    "/challenges",
     "/instructors",
   ];
   if (publicRoutes.includes(pathname)) {
