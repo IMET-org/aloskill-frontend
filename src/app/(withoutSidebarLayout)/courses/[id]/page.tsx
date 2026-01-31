@@ -22,7 +22,6 @@ import {
   Globe,
   Heart,
   Linkedin,
-  Play,
   Share2,
   Shield,
   ShoppingCart,
@@ -160,21 +159,21 @@ export default function CourseDetailPage() {
               >
                 Home
               </Link>
-              <ChevronRight className='w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0' />
+              <ChevronRight className='w-3 h-3 sm:w-4 sm:h-4 shrink-0' />
               <Link
                 href='/courses'
                 className='hover:text-[#da7c36] transition-colors whitespace-nowrap'
               >
                 Web Development
               </Link>
-              <ChevronRight className='w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0' />
+              <ChevronRight className='w-3 h-3 sm:w-4 sm:h-4 shrink-0' />
               <Link
                 href='/courses'
                 className='hover:text-[#da7c36] transition-colors whitespace-nowrap'
               >
                 Web Development
               </Link>
-              <ChevronRight className='w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0' />
+              <ChevronRight className='w-3 h-3 sm:w-4 sm:h-4 shrink-0' />
               <span className='text-gray-900 whitespace-nowrap'>Responsive</span>
             </nav>
           </FadeIn>
@@ -199,7 +198,9 @@ export default function CourseDetailPage() {
                 <div className='flex flex-wrap items-center gap-3 sm:gap-6 mb-4 sm:mb-6'>
                   {/* Rating */}
                   <div className='flex items-center gap-2'>
-                    <span className='font-bold text-lg sm:text-xl text-gray-900'></span>
+                    <span className='text-lg sm:text-xl text-gray-700'>
+                      {course?.ratingAverage}
+                    </span>
                     <div className='flex items-center'>
                       {[1, 2, 3, 4, 5].map(star => (
                         <Star
@@ -216,7 +217,9 @@ export default function CourseDetailPage() {
                   {/* Students */}
                   <div className='flex items-center gap-2'>
                     <Users className='w-4 h-4 sm:w-5 sm:h-5 text-gray-500' />
-                    <span className=' text-sm text-gray-600'>enrolled students</span>
+                    <span className=' text-sm text-gray-600'>
+                      {course?.enrollmentCount} enrolled students
+                    </span>
                   </div>
                 </div>
 
@@ -272,7 +275,7 @@ export default function CourseDetailPage() {
                       fill
                       className='object-cover group-hover:scale-105 transition-transform duration-700'
                     /> */}
-                    <div className='absolute inset-0 bg-gradient-to-t from-black/60 to-transparent' />
+                    {/* <div className='absolute inset-0 bg-linear-to-t from-black/60 to-transparent' />
                     <div className='absolute inset-0 flex items-center justify-center'>
                       <button className='w-16 h-16 sm:w-20 sm:h-20 bg-white rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-all duration-300 group-hover:bg-[#da7c36]'>
                         <Play
@@ -280,7 +283,7 @@ export default function CourseDetailPage() {
                           fill='currentColor'
                         />
                       </button>
-                    </div>
+                    </div> */}
                   </div>
                 </div>
               </FadeIn>
@@ -328,7 +331,7 @@ export default function CourseDetailPage() {
                     >
                       {tab}
                       {activeTab === tab && (
-                        <div className='absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#d15100] to-[#da7c36]' />
+                        <div className='absolute bottom-0 left-0 right-0 h-0.5 bg-linear-to-r from-[#d15100] to-[#da7c36]' />
                       )}
                     </button>
                   ))}
@@ -376,7 +379,7 @@ export default function CourseDetailPage() {
                           allowFullScreen
                         />
                       )}
-                      <div className='absolute inset-0 bg-gradient-to-t from-black/60 to-transparent' />
+                      {/* <div className='absolute inset-0 bg-linear-to-t from-black/60 to-transparent' />
                       <div className='absolute inset-0 flex items-center justify-center'>
                         <button className='w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-all duration-300 group-hover:bg-[#da7c36]'>
                           <Play
@@ -384,14 +387,14 @@ export default function CourseDetailPage() {
                             fill='currentColor'
                           />
                         </button>
-                      </div>
+                      </div> */}
                     </div>
                   </div>
                 </div>
 
                 <div className='bg-white rounded-md sm:rounded-md shadow-lg border border-gray-200 overflow-hidden'>
                   {/* Price */}
-                  <div className='p-4 sm:p-6 bg-gradient-to-br from-orange-50 via-white to-purple-50'>
+                  <div className='p-4 sm:p-6 bg-linear-to-br from-orange-50 via-white to-purple-50'>
                     <div className='flex items-baseline gap-2 sm:gap-3 mb-3 sm:mb-4 flex-wrap'>
                       {course?.discountPrice ? (
                         <>
@@ -416,7 +419,7 @@ export default function CourseDetailPage() {
 
                     {course?.discountPrice && (
                       <div className='flex items-center gap-2  text-sm text-red-600 mb-3 sm:mb-4'>
-                        <Clock className='w-4 h-4 flex-shrink-0' />
+                        <Clock className='w-4 h-4 shrink-0' />
                         <span className='font-semibold'>
                           {" "}
                           {getRemainingDays(course?.discountEndDate as string)} day
@@ -452,7 +455,7 @@ export default function CourseDetailPage() {
                     {/* Money-back guarantee */}
                     <div className='mt-4 p-3 bg-green-50 border border-green-200 rounded-lg'>
                       <div className='flex items-center gap-2  text-sm text-green-700'>
-                        <Shield className='w-4 h-4 flex-shrink-0' />
+                        <Shield className='w-4 h-4 shrink-0' />
                         <span className='font-semibold'>30-Day Money-Back Guarantee</span>
                       </div>
                     </div>
@@ -471,7 +474,7 @@ export default function CourseDetailPage() {
                             key={index}
                             className='flex items-center gap-2 sm:gap-3  text-sm text-gray-700 hover:text-[#da7c36] transition-colors group'
                           >
-                            <Icon className='w-4 h-4 sm:w-5 sm:h-5 text-[#da7c36] flex-shrink-0 group-hover:scale-110 transition-transform' />
+                            <Icon className='w-4 h-4 sm:w-5 sm:h-5 text-[#da7c36] shrink-0 group-hover:scale-110 transition-transform' />
                             <span>{item.label}</span>
                           </div>
                         );

@@ -517,7 +517,9 @@ export default function CourseCurriculum({
                         return {
                           ...lesson,
                           contentUrl: uploadResult,
-                          duration: fileObject.duration,
+                          duration: lesson.duration
+                            ? lesson.duration + fileObject.duration
+                            : fileObject.duration,
                         };
                       }
                       return lesson;
@@ -548,9 +550,9 @@ export default function CourseCurriculum({
                           ...lesson,
                           files: uploadResult,
                           duration:
-                            lesson.type === "ARTICLE"
-                              ? uploadResult.length * 5 * 60
-                              : lesson.duration,
+                            lesson.type === "ARTICLE" && lesson.duration
+                              ? lesson.duration + uploadResult.length * 5 * 60
+                              : uploadResult.length * 5 * 60,
                         };
                       }
                       return lesson;
