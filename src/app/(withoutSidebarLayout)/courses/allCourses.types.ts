@@ -64,7 +64,9 @@ export type CourseType = {
     reviews: number;
   };
 };
+
 export type CourseStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
+
 export type CourseCardProps = {
   course: CourseType;
 
@@ -128,6 +130,7 @@ export type CourseDetails = {
     percentage: string;
   }[];
 };
+
 export type CourseDetailsPublic = {
   id: string;
   title: string;
@@ -187,10 +190,17 @@ export type CourseDetailsPublic = {
     percentage: string;
   }[];
 };
+
 export type CourseDetailsPrivate = {
   title: string;
   createdAt: string;
   updatedAt: string;
+  courseProgress: {
+    completed: boolean;
+    progressValue: number;
+    lastViewedAt: string | null;
+    completedAt: string | null;
+  }[];
   content: {
     totalLessons: number;
     totalDuration: string;
@@ -201,6 +211,7 @@ export type CourseDetailsPrivate = {
     title: string;
     moduleDuration: number;
     lessons: {
+      id: string;
       position: number;
       title: string;
       description: string | null;
@@ -212,9 +223,48 @@ export type CourseDetailsPrivate = {
         name: string;
         url: string;
       }[];
+      lessonProgress: {
+        completed: boolean;
+        progressValue: number;
+        lastViewedAt: string | null;
+        completedAt: string | null;
+      }[];
     }[];
   }[];
 };
+
+export type StudentCourseCardType = {
+  id: string;
+  title: string;
+  category: {
+    name: string;
+  } | null;
+  thumbnailUrl: string | null;
+  modules: {
+    lessons: {
+      duration: number | null;
+    }[];
+    _count: {
+      lessons: number;
+    };
+  }[];
+  _count: {
+    enrollments: number;
+    reviews: number;
+  };
+  createdBy: {
+    user: {
+      avatarUrl: string | null;
+    };
+    displayName: string;
+  } | null;
+  LessonProgress: {
+    completedAt: string | null;
+    completed: boolean;
+    progressValue: number;
+    lastViewedAt: string | null;
+  }[];
+}[];
 
 export type PrivateLesson = {
   position: number;
@@ -229,6 +279,7 @@ export type PrivateLesson = {
     url: string;
   }[];
 };
+
 export interface FilterOption {
   value: string;
   label: string;

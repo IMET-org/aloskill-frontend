@@ -18,10 +18,11 @@ import { apiClient } from "../../../../lib/api/client";
 import { getFileIdFromUrl } from "../../../../lib/course/utils";
 import type { CourseDetailsPrivate, PrivateLesson } from "../../courses/allCourses.types";
 import AttachFileTab from "./AttachFileTab";
+import BunnyVideoPlayer from "./BunnyVideoPlayer";
 import CommentsTab from "./CommentsTab";
 import DescriptionTab from "./DescriptionTab";
 import LectureNotesTab from "./LectureNotesTab";
-
+const COMPLETION_THRESHOLD = 0.9;
 export default function CoursePage() {
   const [activeTab, setActiveTab] = useState("description");
   const [expandedSections, setExpandedSections] = useState<number[]>([1]);
@@ -55,206 +56,6 @@ export default function CoursePage() {
     };
     fetchCourses();
   }, [id]);
-
-  // const markLessonComplete = (vidoeId: string | undefined) => {
-  //   console.log("Mark lesson Completed");
-  // };
-
-  // useEffect(() => {
-  //   const handleMessage = event => {
-  //     console.log("Received origin:", event.origin);
-  //     console.log("Received data:", event.data);
-  //     // if (event.origin !== "https://iframe.mediadelivery.net") return;
-
-  //     let data;
-  //     try {
-  //       data = typeof event.data === "string" ? JSON.parse(event.data) : event.data;
-  //     } catch (e) {
-  //       return;
-  //     }
-  //     console.log("data : ", data);
-
-  //     // if (data.event === "ready") {
-  //     //   const eventsToSubscribe = ["play", "pause", "ended", "timeupdate"];
-
-  //     //   eventsToSubscribe.forEach(eventName => {
-  //     //     iframeRef.current?.contentWindow?.postMessage(
-  //     //       JSON.stringify({ method: "addEventListener", value: eventName }),
-  //     //       "*"
-  //     //     );
-  //     //   });
-  //     // }
-
-  //     // 2. Now these will actually trigger!
-  //     if (data.event === "play") console.log("Video Playing");
-  //     if (data.event === "pause") console.log("Video Paused");
-  //     if (data.event === "ended") markLessonComplete(videoData?.videoId);
-  //   };
-
-  //   window.addEventListener("message", handleMessage);
-  //   return () => window.removeEventListener("message", handleMessage);
-  // }, [videoData]);
-
-  // useEffect(() => {
-  //   const handleMessage = event => {
-  //     // 1. Security check
-  //     if (!event.origin.includes("mediadelivery.net")) return;
-
-  //     try {
-  //       // Bunny sends stringified JSON
-  //       const data = JSON.parse(event.data);
-
-  //       // LOG EVERYTHING: This will show us the real structure
-  //       console.log("FULL DATA RECEIVED:", data);
-
-  //       // Some versions of Bunny use 'event', others use 'method'
-  //       const eventName = data.event || data.method;
-
-  //       if (eventName === "ready") {
-  //         console.log("Player is ready, attempting to subscribe...");
-  //         // Use the event source to send the ping back directly
-  //         event.source.postMessage('{"command": "ping"}', event.origin);
-  //       }
-
-  //       if (eventName === "play" || eventName === "playing") {
-  //         console.log("🔥 SUCCESS: The video is playing!");
-  //       }
-  //     } catch (err) {
-  //       // Not JSON, ignore
-  //     }
-  //   };
-
-  //   window.addEventListener("message", handleMessage);
-  //   return () => window.removeEventListener("message", handleMessage);
-  // }, []);
-
-  const [progress, setProgress] = useState(0);
-  const [isCompleted, setIsCompleted] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const playerReadyRef = useRef(false);
-  const COMPLETION_THRESHOLD = 0.9;
-  useEffect(() => {
-    const handleMessage = event => {
-      // Security check
-      if (!event.origin.includes("mediadelivery.net")) return;
-
-      try {
-        const data = JSON.parse(event.data);
-        console.log("Bunny Player Event:", data);
-
-        const eventName = data.event || data.method;
-
-        switch (eventName) {
-          case "ready":
-            console.log("✅ Player READY - Subscribing to events...");
-            playerReadyRef.current = true;
-
-            // Get the iframe's contentWindow
-            const iframe = iframeRef.current;
-            if (iframe && iframe.contentWindow) {
-              // Subscribe to multiple events
-              iframe.contentWindow.postMessage(
-                JSON.stringify({ method: "addEventListener", value: "timeupdate" }),
-                "*"
-              );
-              iframe.contentWindow.postMessage(
-                JSON.stringify({ method: "addEventListener", value: "ended" }),
-                "*"
-              );
-              iframe.contentWindow.postMessage(
-                JSON.stringify({ method: "addEventListener", value: "play" }),
-                "*"
-              );
-              iframe.contentWindow.postMessage(
-                JSON.stringify({ method: "addEventListener", value: "pause" }),
-                "*"
-              );
-
-              console.log("📡 Subscribed to player events");
-            }
-            break;
-
-          case "timeupdate":
-            console.log("⏱️ TIME UPDATE EVENT RECEIVED!");
-
-            // Try different data structures (Bunny's API can vary)
-            const current =
-              data.currentTime || data.value?.currentTime || data.data?.currentTime || 0;
-            const total = data.duration || data.value?.duration || data.data?.duration || 0;
-
-            console.log(`Current: ${current}s, Duration: ${total}s`);
-
-            setCurrentTime(current);
-            setDuration(total);
-
-            if (total > 0) {
-              const progressPercent = (current / total) * 100;
-              setProgress(progressPercent);
-              console.log(`📊 Progress: ${progressPercent.toFixed(2)}%`);
-
-              // Check completion threshold
-              if (current / total >= COMPLETION_THRESHOLD && !isCompleted) {
-                console.log("🎉 LESSON COMPLETE!");
-                markLessonComplete();
-              }
-            }
-            break;
-
-          case "ended":
-            console.log("🎬 Video ENDED");
-            if (!isCompleted) {
-              markLessonComplete();
-            }
-            break;
-
-          case "play":
-          case "playing":
-            console.log("▶️ Video PLAYING");
-            break;
-
-          case "pause":
-            console.log("⏸️ Video PAUSED");
-            break;
-
-          default:
-            console.log(`❓ Unknown event: ${eventName}`);
-        }
-      } catch (err) {
-        // Not JSON or parsing error
-        console.log("Non-JSON message:", event.data);
-      }
-    };
-
-    const markLessonComplete = () => {
-      setIsCompleted(true);
-      setProgress(100);
-
-      // Save completion to localStorage
-      // const completedLessons = JSON.parse(
-      //   localStorage.getItem(`course_${courseId}_completed`) || '[]'
-      // );
-
-      // if (!completedLessons.includes(lessonId)) {
-      //   completedLessons.push(lessonId);
-      //   localStorage.setItem(
-      //     `course_${courseId}_completed`,
-      //     JSON.stringify(completedLessons)
-      //   );
-      // }
-
-      // Trigger callback to parent component
-      // if (onLessonComplete) {
-      //   onLessonComplete(lessonId);
-      // }
-
-      // Optional: Save to backend
-      // saveLessonProgress(courseId, lessonId, 100);
-    };
-
-    window.addEventListener("message", handleMessage);
-    return () => window.removeEventListener("message", handleMessage);
-  }, []);
 
   const handleSetActiveContents = useCallback(
     (moduleId = 1, lessonId = 1) => {
@@ -375,12 +176,8 @@ export default function CoursePage() {
               <div className='aspect-video bg-linear-to-br from-teal-400 to-teal-500'>
                 {videoData ? (
                   <>
-                    <iframe
-                      ref={iframeRef}
-                      className='w-full h-full'
-                      src={`https://iframe.mediadelivery.net/embed/${videoData.libraryId}/${videoData.videoId}?token=${videoData.token}&expires=${videoData.expiresAt}&autoplay=false&api=true`}
-                      allow='encrypted-media;'
-                      allowFullScreen
+                    <BunnyVideoPlayer
+                      videoUrl={`https://iframe.mediadelivery.net/embed/${videoData.libraryId}/${videoData.videoId}?token=${videoData.token}&expires=${videoData.expiresAt}&autoplay=false&api=true&enableStats=true`}
                     />
                   </>
                 ) : (
@@ -391,7 +188,21 @@ export default function CoursePage() {
                 )}
               </div>
             </div>
+            {/* <div className='space-y-2'>
+              <div className='flex justify-between text-sm'>
+                <span>Progress: {progress.toFixed(1)}%</span>
+                {isCompleted && (
+                  <span className='text-green-600 font-medium'>✔ Lesson Completed</span>
+                )}
+              </div>
 
+              <div className='h-2 w-full rounded bg-gray-200'>
+                <div
+                  className='h-full rounded bg-blue-600 transition-all'
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+            </div> */}
             {/* Lecture Title */}
             <div className='bg-transparent border-b border-gray-300 mt-4 pb-4'>
               <h2 className='text-lg font-bold text-gray-900'>2. Sign up in Webflow</h2>
