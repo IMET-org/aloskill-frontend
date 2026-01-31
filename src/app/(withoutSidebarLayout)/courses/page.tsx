@@ -198,14 +198,14 @@ export default function AllCoursesPage() {
     filteredQuery.priceRange[1] !== 10000;
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-slate-50 via-white to-purple-50/30'>
+    <div className='min-h-screen bg-linear-to-br from-slate-50 via-white to-purple-50/30'>
       <div className='mx-auto max-w-[1920px] '>
         <PageHeading />
 
         {/* Mobile Filter Button */}
         <button
           onClick={() => setShowMobileFilters(true)}
-          className='lg:hidden fixed bottom-6 right-6 z-50 w-14 h-14 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-2xl shadow-lg shadow-orange-500/30 flex items-center justify-center hover:shadow-xl hover:shadow-orange-500/40 hover:scale-105 transition-all duration-200'
+          className='lg:hidden fixed bottom-6 right-6 z-50 w-14 h-14 bg-linear-to-r from-orange-500 to-orange-600 text-white rounded-2xl shadow-lg shadow-orange-500/30 flex items-center justify-center hover:shadow-xl hover:shadow-orange-500/40 hover:scale-105 transition-all duration-200'
         >
           <SlidersHorizontal className='w-5 h-5' />
         </button>
@@ -296,7 +296,7 @@ export default function AllCoursesPage() {
                 {/* Controls */}
                 <div className='flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4'>
                   <div className='flex items-center gap-4'>
-                    <div className='flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-50 to-purple-50 rounded-xl border border-orange-100'>
+                    <div className='flex items-center gap-2 px-4 py-2 bg-linear-to-r from-orange-50 to-purple-50 rounded-xl border border-orange-100'>
                       {/* <span className='text-sm font-semibold text-orange-600'>
                         {filteredAndSortedCourses.length}
                       </span>
