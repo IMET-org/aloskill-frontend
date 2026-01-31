@@ -1,10 +1,13 @@
-import { type Dispatch, type SetStateAction } from "react";
-import { type SubmitHandler, useForm } from "react-hook-form";
+import { useSessionContext } from "@/app/contexts/SessionContext.tsx";
+import { apiClient } from "@/lib/api/client.ts";
+import { Loader, Upload } from "lucide-react";
+import { useState, type ChangeEvent, type Dispatch, type SetStateAction } from "react";
+import { useForm, type SubmitHandler } from "react-hook-form";
 import InstructorRegistrationFooterAction from "./InstructorRegistrationFooterAction.tsx";
 import type { FormData } from "./page.tsx";
-
 type Inputs = {
   displayName: string;
+  profileImage: string | null;
   DOB: string;
   gender: string;
   nationality: string;
@@ -27,6 +30,8 @@ const InstructorStep1 = ({
   const {
     register,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<Inputs>();
 
@@ -40,6 +45,10 @@ const InstructorStep1 = ({
     });
   };
 
+  const { user } = useSessionContext();
+  const [imageUploadLoading, setImageUploadLoading] = useState<boolean>(false);
+  const [uploadError, setUploadError] = useState<string>("");
+  const [uploadFileName, setUploadFileName] = useState<string>("");
   const handlePrevious = () => {
     setCurrentStep(currentStep - 1);
   };
@@ -53,6 +62,110 @@ const InstructorStep1 = ({
     today.setFullYear(today.getFullYear() - 18);
 
     return dob.getTime() <= today.getTime();
+  };
+
+  const validateImageRatio = (file: File): Promise<{ isValid: boolean; error: string }> => {
+    return new Promise(resolve => {
+      const img = document.createElement("img");
+      const objectUrl = URL.createObjectURL(file);
+
+      img.onload = () => {
+        URL.revokeObjectURL(objectUrl);
+
+        const width = img.naturalWidth;
+        const height = img.naturalHeight;
+        const isSquare = width === height;
+        const isLargeEnough = width >= 800 && height >= 800;
+
+        if (!isSquare) {
+          resolve({
+            isValid: false,
+            error: "Image must be a perfect square (1:1 ratio).",
+          });
+        } else if (!isLargeEnough) {
+          resolve({
+            isValid: false,
+            error: `Image is too small. Minimum size is 800x800px (Current: ${width}x${height}px).`,
+          });
+        } else {
+          resolve({ isValid: true, error: "" });
+        }
+      };
+
+      img.onerror = () => {
+        URL.revokeObjectURL(objectUrl);
+        resolve({ isValid: false, error: "Failed to load image file." });
+      };
+
+      img.src = objectUrl;
+    });
+  };
+
+  const uploadFileToBunny = async (file: File): Promise<{ name: string; url: string }> => {
+    setImageUploadLoading(true);
+    setUploadError("");
+    if (!user?.id) {
+      setUploadError("User not authenticated.");
+      setImageUploadLoading(false);
+      return { name: "", url: "" };
+    }
+
+    try {
+      const isValidRatio = await validateImageRatio(file);
+      if (!isValidRatio.isValid) {
+        setUploadError(isValidRatio.error);
+        return { name: "", url: "" };
+      }
+      setUploadError("");
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await apiClient.postFormData<string>(
+        `/course/file-upload?folder=${user.id}`,
+        formData
+      );
+
+      if (!response.success || !response.data) {
+        setUploadError("Upload failed: try different Image or try again");
+        return { name: "", url: "" };
+      }
+
+      return {
+        name: file.name,
+        url: response.data,
+      };
+    } catch (error: unknown) {
+      setUploadError(error instanceof Error ? error.message : "An unknown error occurred.");
+      return { name: "", url: "" };
+    } finally {
+      setImageUploadLoading(false);
+    }
+  };
+
+  const handleFileSelect = async (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+
+      if (file) {
+        const isImage = file.type.startsWith("image/");
+
+        if (isImage) {
+          try {
+            const uploadResult = await uploadFileToBunny(file);
+            if (uploadResult.url) {
+              setValue("profileImage", uploadResult.url, {
+                shouldDirty: true,
+                shouldValidate: true,
+              });
+              setUploadFileName(uploadResult.name);
+            }
+          } catch (_error) {
+            // console.error("Error uploading file:", error);
+          }
+          return;
+        }
+      }
+    }
   };
 
   return (
@@ -85,6 +198,49 @@ const InstructorStep1 = ({
             />
             {errors.displayName && (
               <span className='text-xs text-red-500 mt-1'>{errors.displayName.message}</span>
+            )}
+          </div>
+
+          {/* Profile Iamge */}
+          <div>
+            <label className='block text-sm font-medium text-gray-700 mb-1'>
+              <span className=''>Upload Profile Image *</span>
+            </label>
+            {imageUploadLoading ? (
+              <div className='flex items-center gap-2 px-4 py-1.5 text-orange border border-gray-200 rounded font-medium'>
+                <Loader className='w-6 h-6 animate-spin mx-auto my-auto' />
+              </div>
+            ) : uploadFileName ? (
+              <input
+                type='text'
+                defaultValue={uploadFileName}
+                className='w-full flex items-center gap-2 px-4 py-1.5 border border-gray-200 text-orange rounded font-medium cursor-pointer'
+              />
+            ) : (
+              <>
+                <label
+                  htmlFor='imageUpload'
+                  className=' w-full flex items-center gap-2 px-4 py-1.5  text-orange border border-gray-200 rounded font-medium hover:bg-orange-100 transition-colors cursor-pointer'
+                >
+                  <Upload size={16} />
+                  Upload Image
+                </label>
+                <input
+                  type='file'
+                  id='imageUpload'
+                  onChange={e => handleFileSelect(e)}
+                  hidden
+                  accept='.jpg,.jpeg,.png'
+                />
+              </>
+            )}
+            {errors.profileImage && (
+              <span className='text-xs text-red-500 mt-1'>
+                {errors.profileImage.message as string}
+              </span>
+            )}
+            {uploadError && (
+              <span className='text-xs text-red-500 mt-1'>{uploadError as string}</span>
             )}
           </div>
 
