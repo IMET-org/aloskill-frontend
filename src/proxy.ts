@@ -641,12 +641,12 @@ function addAdvancedSecurityHeaders(response: NextResponse, _request: NextReques
   const cspDirectives = [
     "default-src 'self' https://iframe.mediadelivery.net",
     // Added Google for scripts
-    "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://assets.mediadelivery.net https://accounts.google.com",
+    "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://accounts.google.com http://assets.mediadelivery.net/playerjs/playerjs-latest.min.js",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "img-src 'self' data: https: blob:",
     "font-src 'self' https://fonts.gstatic.com",
     // Added Google and Railway backend
-    `connect-src 'self' http://localhost:5000 ${envConfig.NEXT_PUBLIC_BACKEND_BASE_URL} https://vitals.vercel-insights.com https://video.bunnycdn.com https://fortunate-kindness-production.up.railway.app https://accounts.google.com`,
+    `connect-src 'self' http://localhost:5000 ${envConfig.NEXT_PUBLIC_BACKEND_BASE_URL} https://vitals.vercel-insights.com https://video.bunnycdn.com https://fortunate-kindness-production.up.railway.app https://accounts.google.com https://assets.mediadelivery.net`,
     "media-src 'self' blob: https:",
     "object-src 'none'",
     "base-uri 'self'",

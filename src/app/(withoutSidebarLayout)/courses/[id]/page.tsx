@@ -269,21 +269,6 @@ export default function CourseDetailPage() {
                         allowFullScreen
                       />
                     )}
-                    {/* <Image
-                      src={course?.thumbnailUrl || "/course-placeholder.jpg"}
-                      alt={course?.title || "Course Preview"}
-                      fill
-                      className='object-cover group-hover:scale-105 transition-transform duration-700'
-                    /> */}
-                    {/* <div className='absolute inset-0 bg-linear-to-t from-black/60 to-transparent' />
-                    <div className='absolute inset-0 flex items-center justify-center'>
-                      <button className='w-16 h-16 sm:w-20 sm:h-20 bg-white rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-all duration-300 group-hover:bg-[#da7c36]'>
-                        <Play
-                          className='w-6 h-6 sm:w-8 sm:h-8 text-[#da7c36] group-hover:text-white ml-1 transition-colors'
-                          fill='currentColor'
-                        />
-                      </button>
-                    </div> */}
                   </div>
                 </div>
               </FadeIn>
@@ -374,20 +359,11 @@ export default function CourseDetailPage() {
                       {videoData && (
                         <iframe
                           className='w-full h-full'
-                          src={`https://iframe.mediadelivery.net/embed/${videoData.libraryId}/${videoData.videoId}?token=${videoData.token}&expires=${videoData.expiresAt}`}
-                          allow='encrypted-media; autoplay'
+                          src={`https://iframe.mediadelivery.net/embed/${videoData.libraryId}/${videoData.videoId}?token=${videoData.token}&expires=${videoData.expiresAt}&autoplay=false`}
+                          allow='encrypted-media;'
                           allowFullScreen
                         />
                       )}
-                      {/* <div className='absolute inset-0 bg-linear-to-t from-black/60 to-transparent' />
-                      <div className='absolute inset-0 flex items-center justify-center'>
-                        <button className='w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-all duration-300 group-hover:bg-[#da7c36]'>
-                          <Play
-                            className='w-8 h-8 text-[#da7c36] group-hover:text-white ml-1 transition-colors'
-                            fill='currentColor'
-                          />
-                        </button>
-                      </div> */}
                     </div>
                   </div>
                 </div>

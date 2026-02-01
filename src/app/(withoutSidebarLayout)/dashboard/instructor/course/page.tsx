@@ -22,7 +22,7 @@ const InstructorCoursePage = () => {
     const getCourses = async () => {
       setApiError("");
       const coursesFromDB = await apiClient.get<CourseType[]>(
-        `/course/allCourses?userId=${user?.id}`
+        `/course/instructor/allCourses?userId=${user?.id}`
       );
 
       try {
