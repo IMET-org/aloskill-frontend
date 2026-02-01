@@ -134,127 +134,76 @@ export default function CoursePage() {
   const [duration, setDuration] = useState(0);
   const playerReadyRef = useRef(false);
   const COMPLETION_THRESHOLD = 0.9;
+
   useEffect(() => {
-    const handleMessage = event => {
-      // Security check
+    const handleMessage = (event: MessageEvent) => {
+      // 1. Security & Type Check
       if (!event.origin.includes("mediadelivery.net")) return;
 
+      let data;
       try {
-        const data = JSON.parse(event.data);
-        console.log("Bunny Player Event:", data);
-
-        const eventName = data.event || data.method;
-
-        switch (eventName) {
-          case "ready":
-            console.log("✅ Player READY - Subscribing to events...");
-            playerReadyRef.current = true;
-
-            // Get the iframe's contentWindow
-            const iframe = iframeRef.current;
-            if (iframe && iframe.contentWindow) {
-              // Subscribe to multiple events
-              iframe.contentWindow.postMessage(
-                JSON.stringify({ method: "addEventListener", value: "timeupdate" }),
-                "*"
-              );
-              iframe.contentWindow.postMessage(
-                JSON.stringify({ method: "addEventListener", value: "ended" }),
-                "*"
-              );
-              iframe.contentWindow.postMessage(
-                JSON.stringify({ method: "addEventListener", value: "play" }),
-                "*"
-              );
-              iframe.contentWindow.postMessage(
-                JSON.stringify({ method: "addEventListener", value: "pause" }),
-                "*"
-              );
-
-              console.log("📡 Subscribed to player events");
-            }
-            break;
-
-          case "timeupdate":
-            console.log("⏱️ TIME UPDATE EVENT RECEIVED!");
-
-            // Try different data structures (Bunny's API can vary)
-            const current =
-              data.currentTime || data.value?.currentTime || data.data?.currentTime || 0;
-            const total = data.duration || data.value?.duration || data.data?.duration || 0;
-
-            console.log(`Current: ${current}s, Duration: ${total}s`);
-
-            setCurrentTime(current);
-            setDuration(total);
-
-            if (total > 0) {
-              const progressPercent = (current / total) * 100;
-              setProgress(progressPercent);
-              console.log(`📊 Progress: ${progressPercent.toFixed(2)}%`);
-
-              // Check completion threshold
-              if (current / total >= COMPLETION_THRESHOLD && !isCompleted) {
-                console.log("🎉 LESSON COMPLETE!");
-                markLessonComplete();
-              }
-            }
-            break;
-
-          case "ended":
-            console.log("🎬 Video ENDED");
-            if (!isCompleted) {
-              markLessonComplete();
-            }
-            break;
-
-          case "play":
-          case "playing":
-            console.log("▶️ Video PLAYING");
-            break;
-
-          case "pause":
-            console.log("⏸️ Video PAUSED");
-            break;
-
-          default:
-            console.log(`❓ Unknown event: ${eventName}`);
-        }
-      } catch (err) {
-        // Not JSON or parsing error
-        console.log("Non-JSON message:", event.data);
+        data = typeof event.data === "string" ? JSON.parse(event.data) : event.data;
+      } catch (e) {
+        return;
       }
-    };
 
-    const markLessonComplete = () => {
-      setIsCompleted(true);
-      setProgress(100);
+      const eventName = data.event || data.method;
 
-      // Save completion to localStorage
-      // const completedLessons = JSON.parse(
-      //   localStorage.getItem(`course_${courseId}_completed`) || '[]'
-      // );
+      // 2. The Subscription Logic
+      if (eventName === "ready") {
+        console.log("✅ Bunny Player Ready");
 
-      // if (!completedLessons.includes(lessonId)) {
-      //   completedLessons.push(lessonId);
-      //   localStorage.setItem(
-      //     `course_${courseId}_completed`,
-      //     JSON.stringify(completedLessons)
-      //   );
-      // }
+        // Grab the duration from the ready event if available
+        if (data.duration) setDuration(data.duration);
 
-      // Trigger callback to parent component
-      // if (onLessonComplete) {
-      //   onLessonComplete(lessonId);
-      // }
+        const playerWindow = iframeRef.current?.contentWindow;
+        if (playerWindow) {
+          const events = ["play", "pause", "timeupdate", "ended"];
+          events.forEach(ev => {
+            playerWindow.postMessage(
+              JSON.stringify({ method: "addEventListener", value: ev }),
+              "*"
+            );
+          });
+          console.log("📡 Subscriptions Active");
+        }
+      }
 
-      // Optional: Save to backend
-      // saveLessonProgress(courseId, lessonId, 100);
+      // 3. The Progress Tracking Logic
+      if (eventName === "timeupdate") {
+        const currentTime = data.value;
+        setCurrentTime(currentTime);
+
+        // Calculate progress percentage
+        // If duration isn't in state yet, use a fallback or the data object
+        const totalTime = duration || data.duration || 0;
+
+        if (totalTime > 0) {
+          const percentDone = (currentTime / totalTime) * 100;
+
+          // Log progress every few seconds (to avoid console spam)
+          if (Math.floor(currentTime) % 5 === 0) {
+            console.log(`📊 Progress: ${percentDone.toFixed(2)}%`);
+          }
+
+          // 4. TRIGGER: 20% Milestone
+          if (percentDone >= 20 && !isCompleted) {
+            console.log("🎯 20% Milestone Reached! Pinging Backend...");
+            // markLessonComplete(activeContent?.id);
+            // (We'll build this function next)
+          }
+        }
+      }
+
+      if (eventName === "ended") {
+        console.log("🎬 Video Finished");
+        setIsCompleted(true);
+      }
     };
 
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
-  }, []);
+  }, [duration, isCompleted, activeContent]); // Dependencies are key!
 
   const handleSetActiveContents = useCallback(
     (moduleId = 1, lessonId = 1) => {
