@@ -185,7 +185,7 @@ export default function CoursePage() {
   }
 
   return (
-    <div className='min-h-screen bg-linear-to-br from-purple-50 via-pink-50 to-blue-50'>
+    <div className='min-h-screen bg-linear-to-br from-purple-50 via-pink-50 to-blue-50 py-28'>
       {/* Header */}
       <header className='bg-transparent shadow-md'>
         <div className='max-w-8xl mx-auto px-3 sm:px-4 lg:px-6 py-2.5'>
