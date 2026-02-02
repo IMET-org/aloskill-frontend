@@ -84,7 +84,7 @@ export default function HeroSection() {
   };
 
   return (
-    <section className='relative  min-h-screen flex items-center justify-center  py-28 overflow-hidden'>
+    <section className='relative w-full  min-h-screen flex items-center justify-center  py-28 overflow-hidden'>
       {/* Animated Background Gradients */}
       <div className='absolute inset-0 overflow-hidden pointer-events-none'>
         <motion.div

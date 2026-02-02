@@ -199,38 +199,20 @@ export default function NavBar({ onMenuToggle }: HeaderProps) {
   return (
     <>
       <header className='w-full bg-transparent backdrop-blur-md border-b border-gray-200/50 shadow-sm'>
-        <div className='flex items-center justify-between px-4 md:px-6 py-3 max-w-full mx-auto'>
+        <div className='flex items-center justify-between px-4 md:px-6 py-3  mx-auto'>
           {/* Mobile Menu Button */}
           <button
             onClick={onMenuToggle}
-            className='lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0'
+            className='lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0 z-50'
             aria-label='Toggle menu'
           >
-            <Menu className='w-6 h-6 text-gray-700' />
+            <Menu className='w-6 h-6 text-gray-700 z-60' />
           </button>
 
           {/* Logo */}
           <div className='flex-shrink-0 relative z-40'>
             <Logo />
           </div>
-
-          {/* Category Button */}
-          {/* <button className='hidden md:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-700 text-white rounded-full hover:from-orange-700 hover:to-orange-500 transition-all duration-300 shadow-md hover:shadow-lg'>
-            <svg
-              className='w-4 h-4'
-              fill='none'
-              stroke='currentColor'
-              viewBox='0 0 24 24'
-            >
-              <path
-                strokeLinecap='round'
-                strokeLinejoin='round'
-                strokeWidth={2}
-                d='M4 6h16M4 12h16M4 18h16'
-              />
-            </svg>
-            <span className='text-sm font-medium'>Category</span>
-          </button> */}
 
           {/* Search Bar */}
           <div className='flex-1 max-w-xl mx-4 hidden md:block'>

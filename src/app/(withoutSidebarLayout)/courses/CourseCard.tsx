@@ -1,17 +1,6 @@
 "use client";
 
-import {
-  BookOpen,
-  Clock,
-  Edit,
-  Eye,
-  Heart,
-  MoreVertical,
-  ShoppingCart,
-  Star,
-  Trash2,
-  Users,
-} from "lucide-react";
+import { BookOpen, Clock, Edit, Eye, Heart, MoreVertical, Star, Trash2, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { memo, useState } from "react";
@@ -36,7 +25,18 @@ const CourseCard = memo(function CourseCard({
     originalPrice,
     discountPrice,
     status,
+    lessonProgress,
   } = course;
+
+  // hasProgress
+  const hasProgress = lessonProgress && lessonProgress.length > 0;
+  const overallProgress = hasProgress
+    ? Math.round(
+        lessonProgress.reduce((acc, curr) => acc + curr.progressValue, 0) / lessonProgress.length
+      )
+    : 0;
+
+    
   const lessons = modules.reduce((acc, m) => acc + m._count.lessons, 0);
 
   const totalMinutes = modules
@@ -221,6 +221,25 @@ const CourseCard = memo(function CourseCard({
       </div>
 
       <div className='p-5 flex flex-col grow'>
+
+    {/* hasProgress     */}
+        {hasProgress && (
+          <div className='mb-4'>
+            <div className='flex justify-between items-end mb-1'>
+              <span className='text-xs font-bold text-orange-600 uppercase tracking-wider'>
+                Progress
+              </span>
+              <span className='text-xs font-medium text-gray-600'>{overallProgress}%</span>
+            </div>
+            <div className='w-full bg-gray-200 rounded-full h-2'>
+              <div
+                className='bg-orange-500 h-2 rounded-full transition-all duration-500'
+                style={{ width: `${overallProgress}%` }}
+              ></div>
+            </div>
+          </div>
+        )}
+
         <div className='flex items-center justify-between gap-2 mb-3'>
           <div className='flex items-center gap-1'>
             <div
@@ -305,28 +324,12 @@ const CourseCard = memo(function CourseCard({
             </div>
 
             <div className='flex items-center gap-2 shrink-0'>
-              {onAddToCart && (
-                <button
-                  onClick={handleAddToCart}
-                  disabled={isInCart}
-                  className={`p-2 rounded-lg transition-all ${
-                    isInCart
-                      ? "bg-green-100 text-green-600 cursor-default"
-                      : "bg-gray-100 text-gray-700 hover:bg-orange-100 hover:text-orange-600"
-                  }`}
-                  title={isInCart ? "In cart" : "Add to cart"}
-                  aria-label={isInCart ? "In cart" : "Add to cart"}
-                >
-                  <ShoppingCart className='w-4 h-4' />
-                </button>
-              )}
-
-              <Link href={`/checkout/${id}`}>
+              <Link href={`/watch-video/${id}`}>
                 <button
                   type='button'
-                  className='px-4 py-1 bg-linear-to-r from-orange-500 to-orange-600 text-white rounded-lg text-md font-semibold hover:from-orange-600 hover:to-orange-700 transition-all shadow-md hover:shadow-lg whitespace-nowrap'
+                  className='px-4 py-1 bg-orange-600 text-white rounded-lg text-sm font-semibold hover:bg-orange-700 transition-all'
                 >
-                  Enroll
+                  Continue
                 </button>
               </Link>
             </div>

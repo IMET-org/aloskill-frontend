@@ -1,6 +1,5 @@
 "use client";
 
-import GCommunitySection from "@/app/(HomePageComponents)/(CommunitySection)/GCommunitySection.tsx";
 import PopularCoursesSection from "@/app/(HomePageComponents)/(CourseCarousel)/PopularCoursesSection.tsx";
 import HeroSection from "@/app/(HomePageComponents)/(HeroSection)/HeroSection";
 import StatsSection from "@/app/(HomePageComponents)/(StatsSection)/StatsSection.tsx";
@@ -19,6 +18,7 @@ import TestimonialSlider from "../(HomePageComponents)/(TestimonialSection)/Test
 import FAQStickyStack from "../(HomePageComponents)/FAQStickyStack.tsx";
 import ProcessPerfect from "../(HomePageComponents)/Process.tsx";
 import StdTestimonials from "../(HomePageComponents)/StdTestimonials.tsx";
+import GCommunitySection from "../(HomePageComponents)/(CommunitySection)/GCommunitySection.tsx";
 
 export default function HomePage() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);

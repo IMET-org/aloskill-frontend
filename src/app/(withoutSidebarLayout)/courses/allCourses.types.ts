@@ -63,6 +63,12 @@ export type CourseType = {
     enrollments: number;
     reviews: number;
   };
+  lessonProgress: {
+    completedAt: string | null;
+    completed: boolean;
+    progressValue: number;
+    lastViewedAt: string | null;
+  }[];
 };
 
 export type CourseStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
@@ -236,28 +242,32 @@ export type CourseDetailsPrivate = {
 export type StudentCourseCardType = {
   id: string;
   title: string;
-  category: {
-    name: string;
-  } | null;
   thumbnailUrl: string | null;
-  modules: {
-    lessons: {
-      duration: number | null;
-    }[];
-    _count: {
-      lessons: number;
-    };
-  }[];
-  _count: {
-    enrollments: number;
-    reviews: number;
-  };
+
   createdBy: {
     user: {
       avatarUrl: string | null;
     };
     displayName: string;
   } | null;
+
+  category: {
+    name: string;
+  } | null;
+
+  modules: {
+    _count: {
+      lessons: number;
+    };
+    lessons: {
+      duration: number | null;
+    }[];
+  }[];
+
+  _count: {
+    enrollments: number;
+    reviews: number;
+  };
   LessonProgress: {
     completedAt: string | null;
     completed: boolean;

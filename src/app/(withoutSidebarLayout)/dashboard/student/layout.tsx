@@ -51,8 +51,8 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
                   />
                 </div>
                 <div>
-                  <h2 className='font-semibold text-gray-900'>{user?.name}</h2>
-                  <p className='text-gray-500 text-sm'>Web Designer & Best-Selling Instructor</p>
+                  <h2 className='text-lg font-semibold text-gray-900'>{user?.name}</h2>
+                  {/* <p className='text-gray-500 text-sm'>Web Designer & Best-Selling Instructor</p> */}
                 </div>
               </div>
               <Link

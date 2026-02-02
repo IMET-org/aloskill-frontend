@@ -1,10 +1,11 @@
 "use client";
 
+import { useSessionContext } from "@/app/contexts/SessionContext.tsx";
 import { Eye, EyeOff, Upload } from "lucide-react";
 import Image from "next/image";
 import React, { useState } from "react";
-
 const SettingsPage = () => {
+  const { user } = useSessionContext();
   const [profileData, setProfileData] = useState({
     firstName: "",
     lastName: "",
@@ -95,7 +96,7 @@ const SettingsPage = () => {
                 <Image
                   width={400}
                   height={400}
-                  src={profileImage}
+                  src={user?.image}
                   alt='Profile'
                   className='w-full aspect-square object-cover rounded shadow-md'
                 />
