@@ -4,12 +4,16 @@ import { useEffect, useRef } from "react";
 
 interface BunnyVidoePlayerProps {
   videoUrl: string;
+  setIsCompleted: React.Dispatch<
+    React.SetStateAction<{ progressValue: number; isFinished: boolean } | null>
+  >;
   width?: string;
   height?: string;
 }
 
 export default function BunnyVidoePlayer({
   videoUrl,
+  setIsCompleted,
   width = "100%",
   height = "100%",
 }: BunnyVidoePlayerProps) {
@@ -42,7 +46,7 @@ export default function BunnyVidoePlayer({
 
         // Example events
         player.on("play", () => console.log("Play started"));
-        player.on("ended", ()=> console.log("play end"));
+        player.on("ended", () => setIsCompleted({ progressValue: 100, isFinished: true }));
         player.getDuration((duration: number) => console.log("Duration:", duration));
 
         if (player.supports("method", "mute")) {
@@ -60,5 +64,10 @@ export default function BunnyVidoePlayer({
     };
   }, [videoUrl]);
 
-  return <div ref={iframeRef} style={{ width, height }} />;
+  return (
+    <div
+      ref={iframeRef}
+      style={{ width, height }}
+    />
+  );
 }
