@@ -60,11 +60,11 @@ export function InstructorsSectionAdvanced() {
   if (loading) return <div>Loading...</div>;
   return (
     <section className='py-16 md:py-24 bg-linear-to-br from-gray-50 via-white to-purple-50'>
-      <div className=' mx-auto px-2'>
-        <div className='grid grid-cols-1 lg:grid-cols-2 gap-2 2xl:gap-4 items-center'>
+      <div className=' mx-auto px-4'>
+        <div className='grid grid-cols-1 lg:grid-cols-2  gap-4 xl:gap-4 items-center'>
           {/* Left Content */}
 
-          <div className='space-y-6 lg:pr-8 order-2 lg:order-1 animate-fade-in'>
+          <div className='space-y-6 lg:pr-8 order-1 lg:order-1 animate-fade-in'>
             <SectionHeader
               badge='Our Instructor'
               title='Meet Our Expert Instructors'
@@ -86,7 +86,7 @@ export function InstructorsSectionAdvanced() {
           </div>
 
           {/* Right - Instructors Grid */}
-          <div className='grid grid-cols-1 sm:grid-cols-2 gap-2 2xl:gap-6 order-1 lg:order-2'>
+          <div className='grid grid-cols-1 sm:grid-cols-2 gap-2 2xl:gap-6 order-2 lg:order-2'>
             {featuredInstructors.map((instructor, index) => (
               <InstructorCard
                 key={instructor.id}

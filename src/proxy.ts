@@ -361,12 +361,18 @@ export default withAuth(
           path === "/" ||
           path.startsWith("/auth") ||
           path.startsWith("/courses") ||
-          path.startsWith("/about") ||
-          path.startsWith("/products") ||
+          path.startsWith("/instructors") ||
           path.startsWith("/studentHub") ||
+          path.startsWith("/books") ||
           path.startsWith("/events") ||
           path.startsWith("/challenges") ||
-          path.startsWith("/instructors");
+          path.startsWith("/community") ||
+          path.startsWith("/career") ||
+          path.startsWith("/earn") ||
+          path.startsWith("/success") ||
+          path.startsWith("/help") ||
+          path.startsWith("/about") ||
+          path.startsWith("/products");
 
         if (isPublicRoute) {
           return true;
@@ -443,13 +449,18 @@ async function enforceAccessControl(
     "/auth/signin",
     "/auth/signup",
     "/pricing",
-    "/courses",
     "/blog",
-    "/products",
-    "/studentHub",
-    "/events",
-    "/challenges",
+    "/courses",
     "/instructors",
+    "/studentHub",
+    "/books",
+    "/events",
+    "/career",
+    "/earn",
+    "/success",
+    "/help",
+    "/about",
+    "/products",
   ];
   if (publicRoutes.includes(pathname)) {
     return { granted: true, redirectUrl: "" };

@@ -147,9 +147,9 @@ export default function CourseDetailPage() {
   }
 
   return (
-    <div className='min-h-screen bg-gray-50 max-w-[1420px] mx-auto'>
+    <div className='min-h-screen bg-gray-50 max-w-[1420px] mx-auto py-18'>
       {/* Breadcrumb */}
-      <div className='bg-white border-b border-gray-200 '>
+      <div className=''>
         <div className='  px-4 sm:px-6 lg:px-8 py-3 sm:py-4'>
           <FadeIn>
             <nav className='flex items-center gap-2 text-sm text-gray-600 overflow-x-auto'>
@@ -164,17 +164,11 @@ export default function CourseDetailPage() {
                 href='/courses'
                 className='hover:text-[#da7c36] transition-colors whitespace-nowrap'
               >
-                Web Development
+                All Courses
               </Link>
               <ChevronRight className='w-3 h-3 sm:w-4 sm:h-4 shrink-0' />
-              <Link
-                href='/courses'
-                className='hover:text-[#da7c36] transition-colors whitespace-nowrap'
-              >
-                Web Development
-              </Link>
-              <ChevronRight className='w-3 h-3 sm:w-4 sm:h-4 shrink-0' />
-              <span className='text-gray-900 whitespace-nowrap'>Responsive</span>
+
+              <span className='text-orange whitespace-nowrap'>{course?.title}</span>
             </nav>
           </FadeIn>
         </div>
