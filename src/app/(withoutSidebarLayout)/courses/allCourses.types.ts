@@ -192,15 +192,10 @@ export type CourseDetailsPublic = {
 };
 
 export type CourseDetailsPrivate = {
+  id: string;
   title: string;
   createdAt: string;
   updatedAt: string;
-  courseProgress: {
-    completed: boolean;
-    progressValue: number;
-    lastViewedAt: string | null;
-    completedAt: string | null;
-  }[];
   content: {
     totalLessons: number;
     totalDuration: string;
@@ -267,6 +262,7 @@ export type StudentCourseCardType = {
 }[];
 
 export type PrivateLesson = {
+  id: string;
   position: number;
   title: string;
   description: string | null;
@@ -277,6 +273,12 @@ export type PrivateLesson = {
   files: {
     name: string;
     url: string;
+  }[];
+  lessonProgress: {
+    completed: boolean;
+    progressValue: number;
+    lastViewedAt: string | null;
+    completedAt: string | null;
   }[];
 };
 

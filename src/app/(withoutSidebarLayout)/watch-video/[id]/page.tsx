@@ -13,22 +13,27 @@ import {
   Play,
 } from "lucide-react";
 import { useParams } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { apiClient } from "../../../../lib/api/client";
 import { getFileIdFromUrl } from "../../../../lib/course/utils";
+import { useSessionContext } from "../../../contexts/SessionContext";
 import type { CourseDetailsPrivate, PrivateLesson } from "../../courses/allCourses.types";
 import AttachFileTab from "./AttachFileTab";
 import BunnyVideoPlayer from "./BunnyVideoPlayer";
 import CommentsTab from "./CommentsTab";
 import DescriptionTab from "./DescriptionTab";
 import LectureNotesTab from "./LectureNotesTab";
-const COMPLETION_THRESHOLD = 0.9;
+
 export default function CoursePage() {
   const [activeTab, setActiveTab] = useState("description");
   const [expandedSections, setExpandedSections] = useState<number[]>([1]);
   const [isLoading, setIsLoading] = useState(false);
   const [course, setCourse] = useState<CourseDetailsPrivate | undefined>(undefined);
   const [activeContent, setActiveContent] = useState<PrivateLesson | null>(null);
+  const [isCompleted, setIsCompleted] = useState<{
+    progressValue: number;
+    isFinished: boolean;
+  } | null>(null);
   const [videoData, setVideoData] = useState<{
     libraryId: string;
     token: string;
@@ -36,26 +41,7 @@ export default function CoursePage() {
     videoId: string;
   } | null>(null);
   const { id } = useParams();
-  const iframeRef = useRef<HTMLIFrameElement>(null);
-
-  useEffect(() => {
-    if (!id) return;
-    const fetchCourses = async () => {
-      try {
-        setIsLoading(true);
-        const response = await apiClient.get<CourseDetailsPrivate>(
-          `/course/private/viewCourse/${id}`
-        );
-        console.log("response", response);
-        setCourse(response.data);
-      } catch (error) {
-        console.error("Failed to fetch Course", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchCourses();
-  }, [id]);
+  const { user } = useSessionContext();
 
   const handleSetActiveContents = useCallback(
     (moduleId = 1, lessonId = 1) => {
@@ -68,12 +54,80 @@ export default function CoursePage() {
       }
       setActiveContent(null);
     },
-    [course]
+    [course?.modules]
   );
 
   useEffect(() => {
-    handleSetActiveContents(1, 1);
-  }, [course, handleSetActiveContents]);
+    if (!id) return;
+    const fetchCourses = async () => {
+      try {
+        setIsLoading(true);
+        const response = await apiClient.get<CourseDetailsPrivate>(
+          `/course/private/viewCourse/${id}`
+        );
+        setCourse(response.data);
+      } catch (error) {
+        console.error("Failed to fetch Course", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchCourses();
+  }, [id]);
+
+  const markLessonAsDone = (lessonId: string) => {
+    setCourse(prev => {
+      if (!prev) return prev;
+
+      return {
+        ...prev,
+        modules: prev.modules.map(mod => ({
+          ...mod,
+          lessons: mod.lessons.map(less => {
+            if (less.id === lessonId) {
+              return {
+                ...less,
+                lessonProgress: [
+                  {
+                    ...(less.lessonProgress[0] || {
+                      progressValue: 0,
+                      lastViewedAt: null,
+                      completedAt: null,
+                    }),
+                    completed: true,
+                    completedAt: new Date().toISOString(),
+                    progressValue: 100,
+                  },
+                ],
+              };
+            }
+            return less;
+          }),
+        })),
+      };
+    });
+  };
+
+  const handleUpdateProgress = useCallback(async () => {
+    if (isCompleted) {
+      if (activeContent?.lessonProgress[0]?.completed) return;
+      const updateLesson = await apiClient.patch(`/course/update-lesson/${user?.id}`, {
+        courseId: course?.id,
+        lessonId: activeContent?.id,
+        progressValue: isCompleted.progressValue,
+        isFinished: isCompleted.isFinished,
+      });
+
+      if (updateLesson.success) {
+        markLessonAsDone(updateLesson?.data as string);
+      }
+      setIsCompleted(null);
+    }
+  }, [activeContent?.id, activeContent?.lessonProgress, user?.id, course?.id, isCompleted]);
+
+  useEffect(() => {
+    handleUpdateProgress();
+  }, [course, handleUpdateProgress]);
 
   useEffect(() => {
     if (!activeContent?.contentUrl) {
@@ -100,6 +154,11 @@ export default function CoursePage() {
       getVideoData();
     } catch (_error: unknown) {}
   }, [activeContent?.contentUrl]);
+
+  useEffect(() => {
+    if (activeContent) return;
+    handleSetActiveContents(1, 1);
+  }, [handleSetActiveContents, activeContent]);
 
   const toggleSection = (sectionId: number) => {
     setExpandedSections(prev =>
@@ -178,6 +237,7 @@ export default function CoursePage() {
                   <>
                     <BunnyVideoPlayer
                       videoUrl={`https://iframe.mediadelivery.net/embed/${videoData.libraryId}/${videoData.videoId}?token=${videoData.token}&expires=${videoData.expiresAt}&autoplay=false&api=true&enableStats=true`}
+                      setIsCompleted={setIsCompleted}
                     />
                   </>
                 ) : (
@@ -302,7 +362,26 @@ export default function CoursePage() {
                             </span>
                             <span className='flex items-center space-x-1'>
                               <CheckCircle2 className='w-3 h-3 text-green-500' />
-                              <span>25% finish (1/{section.lessons.length})</span>
+                              {(() => {
+                                const completedCount =
+                                  section?.lessons.reduce(
+                                    (acc, lesson) =>
+                                      lesson.lessonProgress[0]?.completed ? acc + 1 : acc,
+                                    0
+                                  ) || 0;
+
+                                const totalLessons = section?.lessons.length || 0;
+                                const percentage =
+                                  totalLessons > 0
+                                    ? Math.floor((completedCount / totalLessons) * 100)
+                                    : 0;
+
+                                return (
+                                  <span>
+                                    {percentage}% finished ({completedCount}/{totalLessons})
+                                  </span>
+                                );
+                              })()}
                             </span>
                           </div>
                         </div>
@@ -318,11 +397,11 @@ export default function CoursePage() {
                               handleSetActiveContents(section.position, lesson.position)
                             }
                             className={`flex items-center justify-between p-3 hover:bg-gray-50 transition-colors cursor-pointer ${
-                              lesson.current ? "bg-orange-50" : ""
+                              activeContent?.id === lesson.id ? "bg-orange-50" : ""
                             }`}
                           >
                             <div className='flex items-center space-x-3'>
-                              {lesson.completed ? (
+                              {lesson.lessonProgress[0]?.completed ? (
                                 <CheckCircle2 className='w-4 h-4 text-orange-500' />
                               ) : (
                                 <Circle className='w-4 h-4 text-gray-300' />
@@ -331,7 +410,7 @@ export default function CoursePage() {
                             </div>
                             <div className='flex items-center space-x-2'>
                               <span className='text-xs text-gray-500'>{lesson.duration}</span>
-                              {lesson.current ? (
+                              {activeContent?.id === lesson.id ? (
                                 <Pause className='w-4 h-4 text-gray-700' />
                               ) : (
                                 <Play className='w-4 h-4 text-gray-400' />
