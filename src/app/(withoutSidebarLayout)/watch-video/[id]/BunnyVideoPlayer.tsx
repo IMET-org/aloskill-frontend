@@ -24,9 +24,11 @@ export default function BunnyVidoePlayer({
     const script = document.createElement("script");
     script.src = "//assets.mediadelivery.net/playerjs/playerjs-latest.min.js";
     script.async = true;
+    
+    const currentRef = iframeRef.current;
 
     script.onload = () => {
-      if (!iframeRef.current) return;
+      if (!currentRef) return;
 
       // Create iframe inside the div
       const iframe = document.createElement("iframe");
@@ -36,15 +38,12 @@ export default function BunnyVidoePlayer({
       iframe.allow = "autoplay; fullscreen; picture-in-picture";
       iframe.style.border = "0";
 
-      iframeRef.current.appendChild(iframe);
+      currentRef.appendChild(iframe);
 
       // Initialize playerjs
       const player = new (window as any).playerjs.Player(iframe);
 
       player.on("ready", () => {
-        console.log("Player ready");
-
-        // Example events
         player.on("play", () => console.log("Play started"));
         player.on("ended", () => setIsCompleted({ progressValue: 100, isFinished: true }));
         player.getDuration((duration: number) => console.log("Duration:", duration));
@@ -60,9 +59,9 @@ export default function BunnyVidoePlayer({
     // Cleanup on unmount
     return () => {
       document.body.removeChild(script);
-      if (iframeRef.current) iframeRef.current.innerHTML = "";
+      if (currentRef) currentRef.innerHTML = "";
     };
-  }, [videoUrl]);
+  }, [videoUrl, setIsCompleted]);
 
   return (
     <div

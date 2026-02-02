@@ -63,7 +63,7 @@ export default function CoursePage() {
       try {
         setIsLoading(true);
         const response = await apiClient.get<CourseDetailsPrivate>(
-          `/course/private/viewCourse/${id}`
+          `/course/private/viewCourse/${id}/${user?.id}`
         );
         setCourse(response.data);
       } catch (error) {
@@ -73,7 +73,7 @@ export default function CoursePage() {
       }
     };
     fetchCourses();
-  }, [id]);
+  }, [id, user?.id]);
 
   const markLessonAsDone = (lessonId: string) => {
     setCourse(prev => {
