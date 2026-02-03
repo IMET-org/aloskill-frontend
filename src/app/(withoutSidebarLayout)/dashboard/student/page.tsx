@@ -115,6 +115,7 @@ export default function DashboardPage() {
             <CourseCard
               key={course.id}
               course={course}
+              isEnrolled={true}
             />
           ))}
         </div>

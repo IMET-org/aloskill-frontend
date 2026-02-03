@@ -63,6 +63,7 @@ export type CourseType = {
     enrollments: number;
     reviews: number;
   };
+
   lessonProgress: {
     completedAt: string | null;
     completed: boolean;
@@ -81,7 +82,9 @@ export type CourseCardProps = {
 
   isInCart?: boolean;
   isInWishlist?: boolean;
-
+  cartItems?: { courseId: string; quantity: number }[];
+  wishlistItems?: Set<string | number>;
+  isEnrolled?: boolean;
   dashboardActions?: {
     onView?: (courseId: string | number) => void;
     onEdit?: (courseId: string) => void;
@@ -158,6 +161,7 @@ export type CourseDetailsPublic = {
   category: string | undefined;
   courseInstructors: {
     instructorId: string;
+    userId: string;
     bio: string;
     expertise: string | null;
     rating: number | null;

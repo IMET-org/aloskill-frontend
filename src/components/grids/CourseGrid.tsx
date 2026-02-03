@@ -23,7 +23,6 @@ const CourseGrid = memo(function CourseGrid({
   onAddToCart,
   onAddToWishlist,
   cartItems = [],
-  // cartItems = new Set(),
   wishlistItems = new Set(),
 }: CourseGridProps) {
   if (isLoading) {

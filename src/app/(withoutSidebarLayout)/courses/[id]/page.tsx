@@ -21,6 +21,7 @@ import {
   FileText,
   Globe,
   Heart,
+  Home,
   Linkedin,
   Share2,
   Shield,
@@ -155,8 +156,9 @@ export default function CourseDetailPage() {
             <nav className='flex items-center gap-2 text-sm text-gray-600 overflow-x-auto'>
               <Link
                 href='/'
-                className='hover:text-[#da7c36] transition-colors whitespace-nowrap'
+                className='hover:text-orange flex flex-row gap-1 transition-colors whitespace-nowrap'
               >
+                <Home className='w-4 h-4 ' />
                 Home
               </Link>
               <ChevronRight className='w-3 h-3 sm:w-4 sm:h-4 shrink-0' />

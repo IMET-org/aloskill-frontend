@@ -1,6 +1,8 @@
 "use client";
-import { ArrowRight, X } from "lucide-react";
+import { FadeIn } from "@/lib/course/utils.tsx";
+import { ArrowRight, BaggageClaim, ChevronRight, X } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { apiClient } from "../../../../lib/api/client";
@@ -108,23 +110,36 @@ export default function CheckoutPage() {
 
   return (
     <div className='min-h-screen bg-linear-to-br from-orange-50 via-purple-50 to-blue-50'>
-      {/* Header */}
+      {/* Breadcrumb */}
       <header className='bg-white shadow-sm animate-slide-down'>
         <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6'>
-          <div className='text-center'>
-            <h1 className='text-3xl font-bold text-[#074079]'>CheckOut</h1>
-            <p className='text-sm text-gray-500 mt-1'>Home / Checkout</p>
+          <div className='flex gap-3'>
+            <BaggageClaim className='w-5 h-5 text-orange' />
+            <FadeIn>
+              <nav className='flex items-center gap-2 text-sm text-gray-600 overflow-x-auto'>
+                <Link
+                  href='/'
+                  className='hover:text-[#da7c36] transition-colors whitespace-nowrap'
+                >
+                  Home
+                </Link>
+                <ChevronRight className='w-3 h-3 sm:w-4 sm:h-4 shrink-0' />
+                <p className='text-sm text-orange'>Checkout</p>
+              </nav>
+            </FadeIn>
           </div>
         </div>
       </header>
 
       <main className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'>
+        <h2 className='text-xl font-semibold text-[#074079] mb-2'>Checkout</h2>
+        <hr className='text-gray-300 py-4' />
         <div className='grid grid-cols-1 lg:grid-cols-3 gap-8'>
           {/* Left Section - Billing & Payment */}
           <div className='lg:col-span-2 space-y-6'>
             {/* Payment Option */}
             <div
-              className='bg-white rounded-xl shadow-md p-6 sm:p-8 animate-fade-in'
+              className='bg-white rounded-lg shadow-md p-6 sm:p-8 animate-fade-in'
               style={{ animationDelay: "100ms" }}
             >
               <h2 className='text-lg font-bold text-[#074079] mb-6'>Payment Option</h2>
@@ -239,7 +254,7 @@ export default function CheckoutPage() {
           {/* Right Section - Order Summary */}
           <div className='lg:col-span-1'>
             <div
-              className='bg-white rounded-xl shadow-lg p-6 sticky top-8 animate-fade-in'
+              className='bg-white rounded-lg shadow-lg p-6 sticky top-8 animate-fade-in'
               style={{ animationDelay: "300ms" }}
             >
               <h2 className='text-xl font-bold text-[#074079] mb-6'>Order Summary</h2>

@@ -12,7 +12,7 @@ import {
   Pause,
   Play,
 } from "lucide-react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { apiClient } from "../../../../lib/api/client";
 import { getFileIdFromUrl } from "../../../../lib/course/utils";
@@ -25,6 +25,7 @@ import DescriptionTab from "./DescriptionTab";
 import LectureNotesTab from "./LectureNotesTab";
 
 export default function CoursePage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState("description");
   const [expandedSections, setExpandedSections] = useState<number[]>([1]);
   const [isLoading, setIsLoading] = useState(false);
@@ -185,13 +186,16 @@ export default function CoursePage() {
   }
 
   return (
-    <div className='min-h-screen bg-linear-to-br from-purple-50 via-pink-50 to-blue-50 py-18'>
+    <div className='min-h-screen bg-linear-to-br from-purple-50 via-pink-50 to-blue-50 py-6'>
       {/* Header */}
       <header className='bg-transparent shadow-md'>
         <div className='max-w-8xl mx-auto px-3 sm:px-4 lg:px-6 py-2.5'>
           <div className='flex items-center justify-between'>
             <div className='flex items-center space-x-4'>
-              <button className='cursor-pointer'>
+              <button
+                className='cursor-pointer'
+                onClick={() => router.back()}
+              >
                 <ChevronLeft className='w-5 h-5 text-gray-700' />
               </button>
               <div>
