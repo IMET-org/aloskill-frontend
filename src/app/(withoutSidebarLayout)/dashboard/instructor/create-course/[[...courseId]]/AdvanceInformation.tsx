@@ -542,8 +542,8 @@ function AdvanceInformation({
                             <>
                               <iframe
                                 className='w-full h-full'
-                                src={`https://iframe.mediadelivery.net/embed/${videoData.libraryId}/${videoData.videoId}?token=${videoData.token}&expires=${videoData.expiresAt}`}
-                                allow='encrypted-media; autoplay'
+                                src={`https://iframe.mediadelivery.net/embed/${videoData.libraryId}/${videoData.videoId}?token=${videoData.token}&expires=${videoData.expiresAt}&autoplay=false`}
+                                allow='encrypted-media;'
                                 allowFullScreen
                               />
                             </>

@@ -22,6 +22,7 @@ import {
   Globe,
   Heart,
   Linkedin,
+  Loader,
   Share2,
   Shield,
   ShoppingCart,
@@ -29,6 +30,7 @@ import {
   Twitter,
   Users,
   Video,
+  X,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -40,6 +42,13 @@ import InstructorTab from "./(tabs)/InstructorTab.tsx";
 import OverviewTab from "./(tabs)/OverviewTab.tsx";
 import ReviewsTab from "./(tabs)/ReviewsTab.tsx";
 
+type VideoData = {
+  libraryId: string;
+  token: string;
+  expiresAt: number;
+  videoId: string;
+} | null;
+
 export default function CourseDetailPage() {
   const params = useParams();
   const courseId = params["id"] as string;
@@ -48,13 +57,11 @@ export default function CourseDetailPage() {
   const [isInWishlist, setIsInWishlist] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [course, setCourse] = useState<CourseDetailsPublic>();
-  const [videoData, setVideoData] = useState<{
-    libraryId: string;
-    token: string;
-    expiresAt: number;
-    videoId: string;
-  } | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [modalVideoData, setModalVideoData] = useState<VideoData>(null);
+  const [videoData, setVideoData] = useState<VideoData>(null);
   const { setCartUpdate } = useSessionContext();
+
   useEffect(() => {
     const fetchCourses = async () => {
       try {
@@ -99,6 +106,26 @@ export default function CourseDetailPage() {
     } catch (_error: unknown) {}
   }, [course?.trailerUrl]);
 
+  const getModalVideoData = async (url: string) => {
+    if (!url) return;
+    setIsModalOpen(true);
+    const getVideoFromBunny = await apiClient.post<{
+      libraryId: string;
+      token: string;
+      videoId: string;
+      expiresAt: number;
+    }>("/course/get-video-url", {
+      filePath: getFileIdFromUrl(url),
+      duration: 10,
+    });
+    if (!getVideoFromBunny.success) {
+      return;
+    }
+    if (getVideoFromBunny.data) {
+      setModalVideoData(getVideoFromBunny.data);
+    }
+  };
+
   const courseDescriptionParsed = parseCourseDescription(course?.description);
 
   const courseIncludes = [
@@ -109,6 +136,7 @@ export default function CourseDetailPage() {
     { icon: Globe, label: "Access on mobile and TV" },
     { icon: Clock, label: "Full lifetime access" },
   ];
+
   const tabs = ["Overview", "Curriculum", "Instructor", "Reviews"];
   const toggleSection = (index: number) => {
     setExpandedSections(prev => {
@@ -123,11 +151,11 @@ export default function CourseDetailPage() {
       return next;
     });
   };
+
   const getRemainingDays = (endDate: string | Date): number => {
     const now = new Date();
     const end = new Date(endDate);
 
-    // If date is invalid or already expired
     if (isNaN(end.getTime()) || end <= now) return 0;
 
     const diffMs = end.getTime() - now.getTime();
@@ -258,8 +286,8 @@ export default function CourseDetailPage() {
                     {videoData && (
                       <iframe
                         className='w-full h-full'
-                        src={`https://iframe.mediadelivery.net/embed/${videoData.libraryId}/${videoData.videoId}?token=${videoData.token}&expires=${videoData.expiresAt}`}
-                        allow='encrypted-media; autoplay'
+                        src={`https://iframe.mediadelivery.net/embed/${videoData.libraryId}/${videoData.videoId}?token=${videoData.token}&expires=${videoData.expiresAt}&autoplay=false`}
+                        allow='encrypted-media;'
                         allowFullScreen
                       />
                     )}
@@ -326,6 +354,7 @@ export default function CourseDetailPage() {
                       toggleSection={toggleSection}
                       totalLectures={course?.content?.totalLessons ?? 0}
                       totalDuration={course?.content?.totalDuration ?? 0}
+                      getModalVideoData={getModalVideoData}
                     />
                   )}
                   {activeTab === "Instructor" && (
@@ -515,6 +544,41 @@ export default function CourseDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* modal for course curriculumn */}
+      {isModalOpen && (
+        <div className='w-screen h-screen fixed top-0 z-90 bg-black/40 flex items-center justify-center'>
+          <div className='w-[600px] aspect-video bg-white rounded flex items-center justify-center'>
+            {!modalVideoData ? (
+              <div className='flex items-center gap-3'>
+                <Loader className='w-8 h-8 text-orange animate-spin' />
+                <p className='text-lg text-orange'>Loading video...</p>
+              </div>
+            ) : (
+              <div className='w-full h-full rounded relative group'>
+                {modalVideoData && (
+                  <iframe
+                    className='w-full h-full rounded'
+                    src={`https://iframe.mediadelivery.net/embed/${modalVideoData.libraryId}/${modalVideoData.videoId}?token=${modalVideoData.token}&expires=${modalVideoData.expiresAt}&autoplay=false`}
+                    allow='encrypted-media;'
+                    allowFullScreen
+                  />
+                )}
+                <button
+                  type='button'
+                  onClick={() => {
+                    setIsModalOpen(false);
+                    setModalVideoData(null);
+                  }}
+                  className='items-center justify-center p-1 rounded-full bg-orange text-md absolute top-2 right-2 cursor-pointer hidden group-hover:flex transform transition-all duration-1000'
+                >
+                  <X className='font-semibold text-gray-300 text-md' />
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       <style
         jsx

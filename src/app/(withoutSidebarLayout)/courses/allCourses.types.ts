@@ -227,6 +227,7 @@ export type CourseDetailsPrivate = {
       lessonProgress: {
         completed: boolean;
         progressValue: number;
+        lastPosition: number;
         lastViewedAt: string | null;
         completedAt: string | null;
       }[];
@@ -267,6 +268,7 @@ export type StudentCourseCardType = {
     completedAt: string | null;
     completed: boolean;
     progressValue: number;
+    lastPosition: number;
     lastViewedAt: string | null;
   }[];
 }[];
@@ -287,6 +289,7 @@ export type PrivateLesson = {
   lessonProgress: {
     completed: boolean;
     progressValue: number;
+    lastPosition: number;
     lastViewedAt: string | null;
     completedAt: string | null;
   }[];

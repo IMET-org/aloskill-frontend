@@ -5,10 +5,10 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronUp,
-  Circle,
   Clock,
   FileText,
   Loader,
+  Lock,
   Pause,
   Play,
 } from "lucide-react";
@@ -30,10 +30,6 @@ export default function CoursePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [course, setCourse] = useState<CourseDetailsPrivate | undefined>(undefined);
   const [activeContent, setActiveContent] = useState<PrivateLesson | null>(null);
-  const [isCompleted, setIsCompleted] = useState<{
-    progressValue: number;
-    isFinished: boolean;
-  } | null>(null);
   const [videoData, setVideoData] = useState<{
     libraryId: string;
     token: string;
@@ -45,14 +41,34 @@ export default function CoursePage() {
 
   const handleSetActiveContents = useCallback(
     (moduleId = 1, lessonId = 1) => {
-      const lessonContent = course?.modules
+      const targetLesson = course?.modules
         .find(m => m.position === moduleId)
         ?.lessons.find(l => l.position === lessonId);
-      if (lessonContent) {
-        setActiveContent(lessonContent);
+
+      if (!targetLesson) {
+        setActiveContent(null);
         return;
       }
-      setActiveContent(null);
+
+      if (moduleId === 1 && lessonId === 1) {
+        setActiveContent(targetLesson);
+        return;
+      }
+      const allLessons = course?.modules
+        .sort((a, b) => a.position - b.position)
+        .flatMap(m => m.lessons.sort((a, b) => a.position - b.position));
+
+      const targetIndex = allLessons?.findIndex(l => l.id === targetLesson.id);
+      const previousLesson =
+        targetIndex !== undefined && targetIndex > 0 ? allLessons?.[targetIndex - 1] : undefined;
+
+      const isPrevCompleted = previousLesson?.lessonProgress[0]?.completed;
+
+      if (isPrevCompleted) {
+        setActiveContent(targetLesson);
+      } else {
+        console.warn("Previous lesson not completed!");
+      }
     },
     [course?.modules]
   );
@@ -75,59 +91,77 @@ export default function CoursePage() {
     fetchCourses();
   }, [id, user?.id]);
 
-  const markLessonAsDone = (lessonId: string) => {
-    setCourse(prev => {
-      if (!prev) return prev;
+  const handleUpdateProgress = useCallback(
+    async (updateData: {
+      lessonId: string;
+      lastPosition: number;
+      progressValue: number;
+      isFinished: boolean;
+    }) => {
+      if (typeof updateData.lessonId !== "string" || !updateData.lessonId) {
+        console.error("Invalid lessonId provided");
+        return;
+      }
+      const updateModule = course?.modules.find(m =>
+        m.lessons.find(l => l.id === updateData.lessonId)
+      );
+      if (!updateModule) {
+        console.warn(`Module not found for lessonId: ${updateData.lessonId}`);
+        return;
+      }
+      const updatingLesson = updateModule.lessons.find(l => l.id === updateData.lessonId);
+      if (!updatingLesson) {
+        console.warn(`Lesson not found for lessonId: ${updateData.lessonId}`);
+        return;
+      }
+      if (updatingLesson.lessonProgress[0]?.completed) return;
 
-      return {
-        ...prev,
-        modules: prev.modules.map(mod => ({
-          ...mod,
-          lessons: mod.lessons.map(less => {
-            if (less.id === lessonId) {
-              return {
-                ...less,
-                lessonProgress: [
-                  {
-                    ...(less.lessonProgress[0] || {
-                      progressValue: 0,
-                      lastViewedAt: null,
-                      completedAt: null,
-                    }),
-                    completed: true,
-                    completedAt: new Date().toISOString(),
-                    progressValue: 100,
-                  },
-                ],
-              };
-            }
-            return less;
-          }),
-        })),
-      };
-    });
-  };
-
-  const handleUpdateProgress = useCallback(async () => {
-    if (isCompleted) {
-      if (activeContent?.lessonProgress[0]?.completed) return;
       const updateLesson = await apiClient.patch(`/course/update-lesson/${user?.id}`, {
-        courseId: course?.id,
-        lessonId: activeContent?.id,
-        progressValue: isCompleted.progressValue,
-        isFinished: isCompleted.isFinished,
+        courseId: id,
+        lessonId: updateData?.lessonId,
+        progressValue: updateData?.progressValue,
+        isFinished: updateData?.isFinished,
+        lastPosition: updateData?.lastPosition,
       });
 
       if (updateLesson.success) {
-        markLessonAsDone(updateLesson?.data as string);
-      }
-      setIsCompleted(null);
-    }
-  }, [activeContent?.id, activeContent?.lessonProgress, user?.id, course?.id, isCompleted]);
+        setCourse(prev => {
+          if (!prev) return prev;
 
-  useEffect(() => {
-    handleUpdateProgress();
-  }, [course, handleUpdateProgress]);
+          return {
+            ...prev,
+            modules: prev.modules.map(mod => ({
+              ...mod,
+              lessons: mod.lessons.map(less => {
+                if (less.id === updateLesson?.data) {
+                  return {
+                    ...less,
+                    lessonProgress: [
+                      {
+                        ...(less.lessonProgress[0] || {
+                          progressValue: 0,
+                          lastPosition: 0,
+                          lastViewedAt: null,
+                          completedAt: null,
+                          completed: false,
+                        }),
+                        completed: updateData?.isFinished ?? false,
+                        completedAt: updateData?.isFinished ? new Date().toISOString() : null,
+                        progressValue: updateData?.progressValue ?? 0,
+                        lastPosition: updateData?.lastPosition ?? 0,
+                      },
+                    ],
+                  };
+                }
+                return less;
+              }),
+            })),
+          };
+        });
+      }
+    },
+    [id, user, course?.modules]
+  );
 
   useEffect(() => {
     if (!activeContent?.contentUrl) {
@@ -166,10 +200,21 @@ export default function CoursePage() {
     );
   };
 
+  const progressCount = () => {
+    if (course) {
+      const allLessons = course.modules.flatMap(m => m.lessons);
+      const total = allLessons.length;
+      const completed = allLessons.filter(l => l.lessonProgress[0]?.completed).length;
+      const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+      return percentage;
+    }
+    return 0;
+  };
+
   const tabs = [
     { id: "description", label: "Description", component: DescriptionTab },
     { id: "lectures", label: "Lectures Notes", component: LectureNotesTab },
-    { id: "attach", label: "Attach File", component: AttachFileTab, badge: "01" },
+    { id: "attach", label: "Attach File", component: AttachFileTab },
     { id: "comments", label: "Comments", component: CommentsTab },
   ];
 
@@ -180,6 +225,16 @@ export default function CoursePage() {
       <div className='min-h-screen flex gap-3 items-center justify-center'>
         <Loader className='w-8 h-8 text-gray-500 animate-spin' />
         <p className='text-gray-500'>Loading course details...</p>
+      </div>
+    );
+  }
+
+  if (!course) {
+    return (
+      <div className='min-h-screen flex gap-3 items-center justify-center'>
+        <p className='text-gray-500'>
+          You are not Enrolled in this course or No course available with this request
+        </p>
       </div>
     );
   }
@@ -237,7 +292,9 @@ export default function CoursePage() {
                   <>
                     <BunnyVideoPlayer
                       videoUrl={`https://iframe.mediadelivery.net/embed/${videoData.libraryId}/${videoData.videoId}?token=${videoData.token}&expires=${videoData.expiresAt}&autoplay=false&api=true&enableStats=true`}
-                      setIsCompleted={setIsCompleted}
+                      lessonId={activeContent?.id as string}
+                      lastPosition={activeContent?.lessonProgress[0]?.lastPosition as number}
+                      handleUpdateProgress={handleUpdateProgress}
                     />
                   </>
                 ) : (
@@ -265,7 +322,7 @@ export default function CoursePage() {
             </div> */}
             {/* Lecture Title */}
             <div className='bg-transparent border-b border-gray-300 mt-4 pb-4'>
-              <h2 className='text-lg font-bold text-gray-900'>2. Sign up in Webflow</h2>
+              <h2 className='text-lg font-bold text-gray-900'>{activeContent?.title}</h2>
               <div className='flex items-end space-x-2 mt-3'>
                 <div className='flex items-center -space-x-2'>
                   {[1, 2, 3, 4, 5].map(i => (
@@ -277,7 +334,14 @@ export default function CoursePage() {
                 </div>
                 <span className='text-sm! text-gray-600'>512 Students watching</span>
                 <div className='flex-1' />
-                <span className='text-sm text-gray-500'>Last updated: Oct 26, 2020</span>
+                <span className='text-sm text-gray-500'>
+                  Last updated:{" "}
+                  {new Date(course.updatedAt).toLocaleDateString("en-GB", {
+                    day: "2-digit",
+                    month: "long",
+                    year: "numeric",
+                  })}
+                </span>
                 <span className='text-sm text-gray-500'>Comments: 154</span>
               </div>
             </div>
@@ -298,9 +362,9 @@ export default function CoursePage() {
                     >
                       <span className='flex items-center space-x-2'>
                         <span>{tab.label}</span>
-                        {tab.badge && (
+                        {tab.id === "attach" && (
                           <span className='px-2 py-0.5 bg-orange-500 text-white text-xs rounded-full'>
-                            {tab.badge}
+                            {activeContent?.files?.length}
                           </span>
                         )}
                       </span>
@@ -324,11 +388,16 @@ export default function CoursePage() {
               <div className='pb-6 mb-3 border-b border-gray-200'>
                 <div className='px-4 flex items-center justify-between mb-3'>
                   <h3 className='text-md font-semibold text-gray-900'>Course Contents</h3>
-                  <span className='text-sm font-semibold text-green-600'>15% Completed</span>
+                  <span className='text-sm font-semibold text-orange'>
+                    {progressCount()}% Completed
+                  </span>
                 </div>
                 <div className='px-4'>
                   <div className='w-full h-1 bg-gray-200 rounded-full'>
-                    <div className='h-full w-[15%] bg-orange rounded-full' />
+                    <div
+                      className={`h-full bg-orange rounded-full`}
+                      style={{ width: `${progressCount()}%` }}
+                    />
                   </div>
                 </div>
               </div>
@@ -404,7 +473,7 @@ export default function CoursePage() {
                               {lesson.lessonProgress[0]?.completed ? (
                                 <CheckCircle2 className='w-4 h-4 text-orange-500' />
                               ) : (
-                                <Circle className='w-4 h-4 text-gray-300' />
+                                <Lock className='w-4 h-4 text-gray-300' />
                               )}
                               <span className='text-sm text-gray-700'>{lesson.title}</span>
                             </div>

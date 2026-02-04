@@ -21,7 +21,7 @@ export default function LectureNotesTab({ content }: { content: PrivateLesson | 
 
   return (
     <div className='space-y-4'>
-      {notes.map(note => (
+      {/* {notes.map(note => (
         <div
           key={note.id}
           className='flex items-start justify-between p-4 border border-gray-200 rounded-lg hover:border-orange-300 hover:shadow-sm transition-all cursor-pointer'
@@ -44,7 +44,8 @@ export default function LectureNotesTab({ content }: { content: PrivateLesson | 
             <Download className='w-5 h-5 text-gray-600' />
           </button>
         </div>
-      ))}
+      ))} */}
+      <h4 className='font-semibold text-lg text-gray-800 mb-2'>Lecture Notes : </h4>
       {content?.notes ? content.notes : "No lecture notes available for this lecture."}
     </div>
   );

@@ -8,6 +8,7 @@ type CurriculumTabProps = {
   toggleSection: (index: number) => void;
   totalLectures: number;
   totalDuration: number;
+  getModalVideoData: (url: string) => void;
 };
 
 export function CurriculumTab({
@@ -16,6 +17,7 @@ export function CurriculumTab({
   toggleSection,
   totalLectures,
   totalDuration,
+  getModalVideoData
 }: CurriculumTabProps) {
   return (
     <div className='space-y-4 sm:space-y-6'>
@@ -85,7 +87,7 @@ export function CurriculumTab({
                           : "none",
                       }}
                     >
-                      <div className='flex items-center gap-2 sm:gap-3 flex-1 min-w-0'>
+                      <div onClick={()=> getModalVideoData(lesson?.contentUrl)} className='flex items-center gap-2 sm:gap-3 flex-1 min-w-0'>
                         {lesson?.contentUrl ? (
                           <Play className='w-3 h-3 sm:w-4 sm:h-4 text-green-600 shrink-0 group-hover:scale-125 transition-transform' />
                         ) : (

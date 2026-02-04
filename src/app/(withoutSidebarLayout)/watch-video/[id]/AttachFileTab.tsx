@@ -14,10 +14,10 @@ export default function AttachFileTab({content}: {content: PrivateLesson | null}
 
   return (
     <div className="space-y-4">
-      {attachments.length > 0 ? (
-        attachments.map((file) => (
+      {content?.files && content.files.length > 0 ? (
+        content.files.map((file,index) => (
           <div
-            key={file.id}
+            key={index}
             className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-orange-300 hover:shadow-sm transition-all"
           >
             <div className="flex items-center space-x-4">
@@ -26,13 +26,13 @@ export default function AttachFileTab({content}: {content: PrivateLesson | null}
               </div>
               <div>
                 <h4 className="font-semibold text-gray-900">{file.name}</h4>
-                <div className="flex items-center space-x-3 mt-1 text-sm text-gray-600">
+                {/* <div className="flex items-center space-x-3 mt-1 text-sm text-gray-600">
                   <span>{file.type}</span>
                   <span>•</span>
                   <span>{file.size}</span>
                   <span>•</span>
                   <span>{file.uploadedAt}</span>
-                </div>
+                </div> */}
               </div>
             </div>
             <button className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors flex items-center space-x-2">
