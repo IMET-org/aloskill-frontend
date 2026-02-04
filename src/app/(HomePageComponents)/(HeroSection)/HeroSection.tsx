@@ -18,9 +18,9 @@ const avatars = [
 ];
 
 const features = [
-  { icon: BookOpen, label: "1000+ Courses Available" },
-  { icon: Users, label: "Expert Instructors" },
-  { icon: Award, label: "Lifetime Access" },
+  { icon: BookOpen, label: "Learn & Earn Togethe" },
+  { icon: Users, label: "Industry Expert Instructors" },
+  { icon: Award, label: "Start Learning & Get Certified" },
 ];
 
 const stats = [
@@ -311,7 +311,7 @@ export default function HeroSection() {
           {stats.map((stat, index) => (
             <motion.div
               key={index}
-              className='bg-white/80 backdrop-blur-md px-2 py-2 rounded-2xl shadow-lg border border-gray-200'
+              className='bg-white/80 backdrop-blur-md px-2 md:px-6 py-2 rounded-lg shadow-lg border border-gray-200'
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.6 + index * 0.1, duration: 0.4 }}
