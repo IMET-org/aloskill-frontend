@@ -114,7 +114,7 @@ const GCommunitySection = () => {
         <div className='container mx-auto px-4'>
           <SectionMiddleHeader
             title='Learn Together, Grow Together'
-            subtitle='Join the Aloskill Community to connect with other learners, ask questions, share ideas, and build your network.'
+            subtitle='AloSkill Community-তে যুক্ত হয়ে শিখুন, প্রশ্ন করুন, আইডিয়া শেয়ার করুন এবং গড়ে তুলুন আপনার নিজের Growth network.'
             className='mt-12'
           />
 

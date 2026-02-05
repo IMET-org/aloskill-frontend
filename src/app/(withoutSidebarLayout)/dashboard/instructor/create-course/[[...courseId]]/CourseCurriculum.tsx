@@ -370,6 +370,7 @@ export default function CourseCurriculum({
           const upload = new tus.Upload(file, {
             endpoint: "https://video.bunnycdn.com/tusupload",
             retryDelays: [0, 3000, 5000, 10000, 20000, 60000, 60000],
+            chunkSize: 5 * 1024 * 1024,
             headers: {
               AuthorizationSignature: token,
               AuthorizationExpire: expires.toString(),

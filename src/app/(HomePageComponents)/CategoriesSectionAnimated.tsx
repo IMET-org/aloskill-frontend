@@ -19,7 +19,7 @@ const categoriesData = [
   {
     id: 1,
     icon: Code,
-    title: "Development",
+    title: "Digital & AI Skills",
     subtitle: "Code with Confident",
     bgColor: "bg-yellow-50",
     iconColor: "text-purple-600",
@@ -28,8 +28,8 @@ const categoriesData = [
   {
     id: 2,
     icon: Palette,
-    title: "UI/UX Design",
-    subtitle: "Design with Confident",
+    title: "Productivity & Life Systems",
+    subtitle: "Design your life with Confident",
     bgColor: "bg-blue-50",
     iconColor: "text-blue-500",
     courses: 85,
@@ -37,7 +37,7 @@ const categoriesData = [
   {
     id: 3,
     icon: Heart,
-    title: "Lifestyle",
+    title: "Freelancing & Career Skills",
     subtitle: "New Skills, New You",
     bgColor: "bg-orange-50",
     iconColor: "text-purple-500",
@@ -46,7 +46,7 @@ const categoriesData = [
   {
     id: 4,
     icon: Briefcase,
-    title: "Business",
+    title: "Business & Startup",
     subtitle: "Improve your business",
     bgColor: "bg-cyan-50",
     iconColor: "text-cyan-500",
@@ -55,7 +55,7 @@ const categoriesData = [
   {
     id: 5,
     icon: Camera,
-    title: "Photography",
+    title: "Content, Media & Branding",
     subtitle: "Major or Minor",
     bgColor: "bg-pink-50",
     iconColor: "text-pink-500",
@@ -64,7 +64,7 @@ const categoriesData = [
   {
     id: 6,
     icon: Music,
-    title: "Music",
+    title: "Economics & Finance",
     subtitle: "Control your Wallet",
     bgColor: "bg-blue-50",
     iconColor: "text-blue-600",
@@ -73,7 +73,7 @@ const categoriesData = [
   {
     id: 7,
     icon: GraduationCap,
-    title: "Teaching",
+    title: "Leadership & Management",
     subtitle: "High Education Level",
     bgColor: "bg-green-50",
     iconColor: "text-orange-500",
@@ -82,7 +82,7 @@ const categoriesData = [
   {
     id: 8,
     icon: Laptop,
-    title: "Development",
+    title: "Leadership & Management",
     subtitle: "Improve your business",
     bgColor: "bg-purple-50",
     iconColor: "text-green-500",

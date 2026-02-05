@@ -549,7 +549,7 @@ export default function CourseDetailPage() {
 
       {/* modal for course curriculumn */}
       {isModalOpen && (
-        <div className='w-screen h-screen fixed top-0 z-90 bg-black/40 flex items-center justify-center'>
+        <div className='w-screen h-screen fixed top-0 left-0 z-90 bg-black/40 flex items-center justify-center'>
           <div className='w-[600px] aspect-video bg-white rounded flex items-center justify-center'>
             {!modalVideoData ? (
               <div className='flex items-center gap-3'>
