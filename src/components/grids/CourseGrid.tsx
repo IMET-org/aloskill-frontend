@@ -27,6 +27,7 @@ const CourseGrid = memo(function CourseGrid({
 }: CourseGridProps) {
   if (isLoading) {
     return (
+      // course card skeleton
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8'>
         {[...Array(6)].map((_, index) => (
           <div

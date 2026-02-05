@@ -50,11 +50,19 @@ const CourseCard = memo(function CourseCard({
 
   const lessons = modules.reduce((acc, m) => acc + m._count.lessons, 0);
 
-  const totalMinutes = modules
-    .flatMap(m => m.lessons)
-    .reduce((acc, l) => acc + (l.duration ?? 0), 0);
+  // const totalMinutes = modules
+  //   .flatMap(m => m.lessons)
+  //   .reduce((acc, l) => acc + (l.duration ?? 0), 0);
+  const totalSecond = modules.reduce((total, module) => {
+    const moduleTotal = module.lessons.reduce((sum, lesson) => sum + (lesson.duration ?? 0), 0);
+    return total + moduleTotal;
+  }, 0);
 
-  const duration = `${Math.ceil(totalMinutes / 60)}h`;
+  const hours = Math.floor(totalSecond / 3600);
+  const minutes = Math.floor((totalSecond % 3600) / 60);
+  const totalDurationInFormatted = `${hours}:${minutes.toString().padStart(2, "0")} mins`;
+  console.log("total sec: ", totalSecond);
+  // const duration = `${Math.ceil(totalMinutes / 60 / 60)}h`;
 
   const price = discountPrice ?? originalPrice;
 
@@ -298,10 +306,10 @@ const CourseCard = memo(function CourseCard({
           </div>
           <div
             className='flex items-center gap-1'
-            title={`Duration: ${duration}`}
+            title={`Duration: ${totalDurationInFormatted}`}
           >
             <Clock className='w-4 h-4 text-orange-600 shrink-0' />
-            <span className='whitespace-nowrap'>{duration}</span>
+            <span className='whitespace-nowrap'>{totalDurationInFormatted}</span>
           </div>
           <div
             className='flex items-center gap-1'
