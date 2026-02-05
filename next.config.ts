@@ -38,7 +38,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: "aloskill-pull-zone-3.b-cdn.net",
+        hostname: "aloskill-pull-zone-4.b-cdn.net",
         pathname: "/**",
       },
       {
