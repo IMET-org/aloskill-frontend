@@ -9,6 +9,7 @@ import { Suspense } from "react";
 export default function StudentLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { user } = useSessionContext();
+
   const navItems = [
     { name: "Dashboard", path: "/dashboard/student" },
     { name: "Courses", path: "/dashboard/student/courses" },
@@ -22,8 +23,8 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
   return (
     <section className='w-full'>
       {/* 1. Gradient Background */}
-      <div className='h-48 w-full bg-gradient-to-r from-orange-100 via-purple-100 to-orange-100' />
-      <div className='relative -mt-32  min-h-screen w-[80%] mx-auto '>
+      <div className='h-48 w-full bg-linear-to-r from-orange-100 via-purple-100 to-orange-100' />
+      <div className='relative -mt-32  min-h-screen w-[83%] mx-auto '>
         {/* back home */}
         <div className='w-full px-4 pt-4'>
           <Link
@@ -45,7 +46,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
                   <Image
                     width={80}
                     height={80}
-                    src={user?.image}
+                    src={user?.profilePicture || "/image/avater.png"}
                     alt='Kevin Gilbert'
                     className='w-full h-full object-cover'
                   />

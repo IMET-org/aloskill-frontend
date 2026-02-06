@@ -81,7 +81,7 @@ export default function DashboardPage() {
         {stats.map((stat, index) => (
           <div
             key={index}
-            className={`${stat.bgColor} rounded-lg p-6`}
+            className={`${stat.bgColor} rounded px-6 py-4`}
           >
             <div className='flex items-center gap-4'>
               <div className='text-3xl'>{stat.icon}</div>
@@ -110,14 +110,18 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'>
-          {courses?.map(course => (
-            <CourseCard
-              key={course.id}
-              course={course}
-              isEnrolled={true}
-            />
-          ))}
+        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+          {courses.length > 0 ? (
+            courses?.map(course => (
+              <CourseCard
+                key={course.id}
+                course={course}
+                isEnrolled={true}
+              />
+            ))
+          ) : (
+            <p>Yet You have no purchased course!</p>
+          )}
         </div>
       </div>
     </div>
