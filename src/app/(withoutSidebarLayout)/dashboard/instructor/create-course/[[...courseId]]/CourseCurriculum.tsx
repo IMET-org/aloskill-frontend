@@ -1988,8 +1988,8 @@ export default function CourseCurriculum({
                                                     "Option text cannot exceed 50 characters",
                                                 },
                                                 pattern: {
-                                                  value: /^[a-zA-Z0-9\s.,!?'"()-]*$/,
-                                                  message: "Option text contain invalid characters",
+                                                  value: /^[^<>]*$/,
+                                                  message: "Option text must not contain any opening or closing HTML tags",
                                                 },
                                               }
                                             )}
@@ -2041,8 +2041,8 @@ export default function CourseCurriculum({
                                                     "Option text cannot exceed 50 characters",
                                                 },
                                                 pattern: {
-                                                  value: /^[a-zA-Z0-9\s.,!?'"()-]*$/,
-                                                  message: "Option text contain invalid characters",
+                                                  value: /^[^<>]*$/,
+                                                  message: "Option text must not contain any opening or closing HTML tags",
                                                 },
                                               }
                                             )}
@@ -2094,8 +2094,8 @@ export default function CourseCurriculum({
                                                     "Option text cannot exceed 50 characters",
                                                 },
                                                 pattern: {
-                                                  value: /^[a-zA-Z0-9\s.,!?'"()-]*$/,
-                                                  message: "Option text contain invalid characters",
+                                                  value: /^[^<>]*$/,
+                                                  message: "Option text must not contain any opening or closing HTML tags",
                                                 },
                                               }
                                             )}

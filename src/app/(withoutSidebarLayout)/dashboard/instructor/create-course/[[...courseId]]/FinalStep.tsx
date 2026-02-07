@@ -8,10 +8,10 @@ import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
+import { useSessionContext } from "../../../../../contexts/SessionContext.tsx";
 import CourseFooter from "./CourseFooter.tsx";
 import { type CreateCourseData } from "./page.tsx";
 import StepHeader from "./StepHeader.tsx";
-import { useSessionContext } from '../../../../../contexts/SessionContext.tsx';
 
 const CoursePriceAndInstructorSchema = z
   .object({
@@ -194,19 +194,16 @@ const FinalStep = ({
   const handleCourseSaveToDb = async (data: FinalStepForm, status: string) => {
     const { originalPrice, discountPrice } = data;
     const { allCategory: _allCategory, ...restCourseData } = courseData;
-    const courseSaveToDB = await apiClient.post(
-      `/course/create-course?user=${user?.email}`,
-      {
-        ...restCourseData,
-        originalPrice: Number(originalPrice),
-        discountPrice: Number(discountPrice),
-        discountEndDate: data.discountEndDate ? new Date(data.discountEndDate) : null,
-        welcomeMessage: data.welcomeMessage,
-        congratulationsMessage: data.congratulationsMessage,
-        courseInstructors: data.courseInstructors,
-        status: status,
-      }
-    );
+    const courseSaveToDB = await apiClient.post(`/course/create-course?user=${user?.email}`, {
+      ...restCourseData,
+      originalPrice: Number(originalPrice),
+      discountPrice: Number(discountPrice),
+      discountEndDate: data.discountEndDate ? new Date(data.discountEndDate) : null,
+      welcomeMessage: data.welcomeMessage,
+      congratulationsMessage: data.congratulationsMessage,
+      courseInstructors: data.courseInstructors,
+      status: status,
+    });
     return courseSaveToDB;
   };
 
@@ -265,19 +262,16 @@ const FinalStep = ({
       }
     }
     if (dataSaveMode === "update") {
-      const backendData = await apiClient.patch(
-        `/course/editOrUpdate-course?user=${user?.email}`,
-        {
-          ...restCourseData,
-          originalPrice: Number(originalPrice),
-          discountPrice: Number(discountPrice),
-          discountEndDate: data.discountEndDate ? new Date(data.discountEndDate) : null,
-          welcomeMessage: data.welcomeMessage,
-          congratulationsMessage: data.congratulationsMessage,
-          courseInstructors: data.courseInstructors,
-          status: courseData.status,
-        }
-      );
+      const backendData = await apiClient.patch(`/course/editOrUpdate-course?user=${user?.email}`, {
+        ...restCourseData,
+        originalPrice: Number(originalPrice),
+        discountPrice: Number(discountPrice),
+        discountEndDate: data.discountEndDate ? new Date(data.discountEndDate) : null,
+        welcomeMessage: data.welcomeMessage,
+        congratulationsMessage: data.congratulationsMessage,
+        courseInstructors: data.courseInstructors,
+        status: courseData.status,
+      });
       if (!backendData.success) {
         const message =
           backendData.message && typeof backendData.message === "string"
@@ -292,19 +286,16 @@ const FinalStep = ({
       }
     }
     if (dataSaveMode === "updateAndPublish") {
-      const backendData = await apiClient.patch(
-        `/course/editOrUpdate-course?user=${user?.email}`,
-        {
-          ...restCourseData,
-          originalPrice: Number(originalPrice),
-          discountPrice: Number(discountPrice),
-          discountEndDate: data.discountEndDate ? new Date(data.discountEndDate) : null,
-          welcomeMessage: data.welcomeMessage,
-          congratulationsMessage: data.congratulationsMessage,
-          courseInstructors: data.courseInstructors,
-          status: "PUBLISHED",
-        }
-      );
+      const backendData = await apiClient.patch(`/course/editOrUpdate-course?user=${user?.email}`, {
+        ...restCourseData,
+        originalPrice: Number(originalPrice),
+        discountPrice: Number(discountPrice),
+        discountEndDate: data.discountEndDate ? new Date(data.discountEndDate) : null,
+        welcomeMessage: data.welcomeMessage,
+        congratulationsMessage: data.congratulationsMessage,
+        courseInstructors: data.courseInstructors,
+        status: "PUBLISHED",
+      });
       if (!backendData.success) {
         const message =
           backendData.message && typeof backendData.message === "string"
@@ -336,7 +327,12 @@ const FinalStep = ({
                 Welcome Message
               </label>
               <textarea
-                {...register("welcomeMessage")}
+                {...register("welcomeMessage", {
+                  pattern: {
+                    value: /^[^<>]*$/,
+                    message: "Welcome Message must not contain any opening or closing HTML tags",
+                  },
+                })}
                 rows={4}
                 maxLength={1000}
                 defaultValue={courseData.welcomeMessage}
@@ -354,7 +350,12 @@ const FinalStep = ({
                 Congratulations Message
               </label>
               <textarea
-                {...register("congratulationsMessage")}
+                {...register("congratulationsMessage", {
+                  pattern: {
+                    value: /^[^<>]*$/,
+                    message: "Congratulations Message must not contain any opening or closing HTML tags",
+                  },
+                })}
                 rows={4}
                 maxLength={1000}
                 defaultValue={courseData.congratulationsMessage}
