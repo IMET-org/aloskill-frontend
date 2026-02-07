@@ -61,6 +61,7 @@ export default function CourseDetailPage() {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [modalVideoData, setModalVideoData] = useState<VideoData>(null);
   const [videoData, setVideoData] = useState<VideoData>(null);
+  const [videoDataLoading, setVidoeDataLoading] = useState<boolean>(false);
   const { setCartUpdate } = useSessionContext();
 
   useEffect(() => {
@@ -82,6 +83,7 @@ export default function CourseDetailPage() {
   }, [courseId]);
 
   useEffect(() => {
+    setVidoeDataLoading(true);
     if (!course?.trailerUrl) {
       return;
     }
@@ -104,7 +106,10 @@ export default function CourseDetailPage() {
         }
       };
       getVideoData();
-    } catch (_error: unknown) {}
+    } catch (_error: unknown) {
+    } finally {
+      setVidoeDataLoading(false);
+    }
   }, [course?.trailerUrl]);
 
   const getModalVideoData = async (url: string) => {
@@ -285,13 +290,19 @@ export default function CourseDetailPage() {
               <FadeIn delay={200}>
                 <div className='relative rounded-md overflow-hidden shadow-xl group'>
                   <div className='relative aspect-video'>
-                    {videoData && (
-                      <iframe
-                        className='w-full h-full'
-                        src={`https://iframe.mediadelivery.net/embed/${videoData.libraryId}/${videoData.videoId}?token=${videoData.token}&expires=${videoData.expiresAt}&autoplay=false`}
-                        allow='encrypted-media;'
-                        allowFullScreen
-                      />
+                    {videoDataLoading ? (
+                      <div className='w-full h-full flex items-center justify-center gap-2'>
+                        <Loader className='w-6 h-6 animate-spin' /> Loading Video...
+                      </div>
+                    ) : (
+                      videoData && (
+                        <iframe
+                          className='w-full h-full'
+                          src={`https://iframe.mediadelivery.net/embed/${videoData.libraryId}/${videoData.videoId}?token=${videoData.token}&expires=${videoData.expiresAt}&autoplay=false`}
+                          allow='encrypted-media;'
+                          allowFullScreen
+                        />
+                      )
                     )}
                   </div>
                 </div>
@@ -379,15 +390,21 @@ export default function CourseDetailPage() {
               <div className='sticky top-20 lg:top-24'>
                 {/* Desktop Preview Image */}
                 <div className='hidden lg:block mb-6'>
-                  <div className='relative rounded-md overflow-hidden shadow-xl group'>
-                    <div className='relative aspect-video'>
-                      {videoData && (
-                        <iframe
-                          className='w-full h-full'
-                          src={`https://iframe.mediadelivery.net/embed/${videoData.libraryId}/${videoData.videoId}?token=${videoData.token}&expires=${videoData.expiresAt}&autoplay=false`}
-                          allow='encrypted-media;'
-                          allowFullScreen
-                        />
+                  <div className='rounded overflow-hidden shadow m-0 p-0'>
+                    <div className='aspect-video'>
+                      {videoDataLoading ? (
+                        <div className='w-full h-full flex items-center justify-center gap-2 bg-amber-500 z-30'>
+                          <Loader className='w-6 h-6 animate-spin' /> Loading Video...
+                        </div>
+                      ) : (
+                        videoData && (
+                          <iframe
+                            className='w-full h-full object-fill rounded'
+                            src={`https://iframe.mediadelivery.net/embed/${videoData.libraryId}/${videoData.videoId}?token=${videoData.token}&expires=${videoData.expiresAt}&autoplay=false`}
+                            allow='encrypted-media;'
+                            allowFullScreen
+                          />
+                        )
                       )}
                     </div>
                   </div>

@@ -27,7 +27,7 @@ const InstructorCoursePage = () => {
 
       try {
         if (!coursesFromDB.success) {
-          setApiError("Something went wrong! try again later.");
+          setApiError(coursesFromDB.message || "Something went wrong! try again later.");
           return;
         }
         if (!coursesFromDB.data || coursesFromDB.data.length === 0) {
@@ -65,7 +65,7 @@ const InstructorCoursePage = () => {
                 dashboardActions={{
                   onView: id => router.push(`/dashboard/instructor/course/${id}`),
                   onEdit: id => router.push(`/dashboard/instructor/create-course/${id}`),
-                  onDelete: id => router.push(`/dashboard/instructor/create-course/${id}`)
+                  onDelete: id => router.push(`/dashboard/instructor/create-course/${id}`),
                 }}
               />
             ))}

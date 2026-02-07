@@ -1,6 +1,7 @@
 import { useSessionContext } from "@/app/contexts/SessionContext.tsx";
 import { apiClient } from "@/lib/api/client.ts";
 import { Loader, Upload } from "lucide-react";
+import Image from "next/image";
 import { useState, type ChangeEvent, type Dispatch, type SetStateAction } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import InstructorRegistrationFooterAction from "./InstructorRegistrationFooterAction.tsx";
@@ -31,7 +32,6 @@ const InstructorStep1 = ({
     register,
     handleSubmit,
     setValue,
-    watch,
     formState: { errors, isSubmitting },
   } = useForm<Inputs>();
 
@@ -48,7 +48,7 @@ const InstructorStep1 = ({
   const { user } = useSessionContext();
   const [imageUploadLoading, setImageUploadLoading] = useState<boolean>(false);
   const [uploadError, setUploadError] = useState<string>("");
-  const [uploadFileName, setUploadFileName] = useState<string>("");
+  const [uploadFile, setUploadFile] = useState<string>("");
   const handlePrevious = () => {
     setCurrentStep(currentStep - 1);
   };
@@ -157,7 +157,8 @@ const InstructorStep1 = ({
                 shouldDirty: true,
                 shouldValidate: true,
               });
-              setUploadFileName(uploadResult.name);
+              const imagePreview = URL.createObjectURL(file);
+              setUploadFile(imagePreview);
             }
           } catch (_error) {
             // console.error("Error uploading file:", error);
@@ -176,6 +177,68 @@ const InstructorStep1 = ({
       >
         <h2 className='mb-4'>Personal Information</h2>
         <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
+          {/* Profile Iamge */}
+          <div className='col-span-2'>
+            <label className='block text-sm font-medium text-gray-700 mb-1'>
+              <span className=''>Upload Profile Image *</span>
+            </label>
+            <div className='w-40 h-40'>
+              {imageUploadLoading ? (
+                <div className='w-full h-full p-3 flex items-center justify-center border border-gray-200 rounded'>
+                  <Loader className='w-8 h-8 animate-spin' />
+                </div>
+              ) : uploadFile ? (
+                <div className='w-full h-full relative group'>
+                  <Image
+                    width={160}
+                    height={160}
+                    src={uploadFile}
+                    alt='Profile image'
+                    className='w-full h-full'
+                  />
+                  <label
+                    htmlFor='imageUpload'
+                    className='h-full w-full text-white bg-black/50 items-center justify-center gap-2 p-3 border border-gray-200 rounded transition-colors cursor-pointer hidden group-hover:flex absolute top-0 left-0'
+                  >
+                    <Upload size={30} />
+                  </label>
+                  <input
+                    type='file'
+                    id='imageUpload'
+                    onChange={e => handleFileSelect(e)}
+                    hidden
+                    accept='.jpg,.jpeg,.png'
+                  />
+                </div>
+              ) : (
+                <>
+                  <label
+                    htmlFor='imageUpload'
+                    className='h-full w-full flex flex-col items-center justify-center gap-2 p-3 border border-gray-200 rounded transition-colors cursor-pointer'
+                  >
+                    <Upload size={16} />
+                    Upload Image
+                  </label>
+                  <input
+                    type='file'
+                    id='imageUpload'
+                    onChange={e => handleFileSelect(e)}
+                    hidden
+                    accept='.jpg,.jpeg,.png'
+                  />
+                </>
+              )}
+            </div>
+            {errors.profileImage && (
+              <span className='text-xs text-red-500 mt-1'>
+                {errors.profileImage.message as string}
+              </span>
+            )}
+            {uploadError && (
+              <span className='text-xs text-red-500 mt-1'>{uploadError as string}</span>
+            )}
+          </div>
+
           {/* Full Name */}
           <div>
             <label className='block text-sm font-medium text-gray-700 mb-1'>
@@ -198,49 +261,6 @@ const InstructorStep1 = ({
             />
             {errors.displayName && (
               <span className='text-xs text-red-500 mt-1'>{errors.displayName.message}</span>
-            )}
-          </div>
-
-          {/* Profile Iamge */}
-          <div>
-            <label className='block text-sm font-medium text-gray-700 mb-1'>
-              <span className=''>Upload Profile Image *</span>
-            </label>
-            {imageUploadLoading ? (
-              <div className='flex items-center gap-2 px-4 py-1.5 text-orange border border-gray-200 rounded font-medium'>
-                <Loader className='w-6 h-6 animate-spin mx-auto my-auto' />
-              </div>
-            ) : uploadFileName ? (
-              <input
-                type='text'
-                defaultValue={uploadFileName}
-                className='w-full flex items-center gap-2 px-4 py-1.5 border border-gray-200 text-orange rounded font-medium cursor-pointer'
-              />
-            ) : (
-              <>
-                <label
-                  htmlFor='imageUpload'
-                  className=' w-full flex items-center gap-2 px-4 py-1.5  text-orange border border-gray-200 rounded font-medium hover:bg-orange-100 transition-colors cursor-pointer'
-                >
-                  <Upload size={16} />
-                  Upload Image
-                </label>
-                <input
-                  type='file'
-                  id='imageUpload'
-                  onChange={e => handleFileSelect(e)}
-                  hidden
-                  accept='.jpg,.jpeg,.png'
-                />
-              </>
-            )}
-            {errors.profileImage && (
-              <span className='text-xs text-red-500 mt-1'>
-                {errors.profileImage.message as string}
-              </span>
-            )}
-            {uploadError && (
-              <span className='text-xs text-red-500 mt-1'>{uploadError as string}</span>
             )}
           </div>
 
@@ -319,7 +339,7 @@ const InstructorStep1 = ({
                 required: "Enter your Phone Number. Do not use pattern or text",
                 pattern: {
                   value: /^\+?[1-9][0-9]{10,14}$/,
-                  message: "Phone number can only contain Numbers and + sign.",
+                  message: "Phone must be this format (+8801345678945)",
                 },
                 minLength: 11,
                 maxLength: 14,
@@ -360,11 +380,11 @@ const InstructorStep1 = ({
           </div>
 
           {/* Address */}
-          <div>
+          <div className='col-span-2'>
             <label className='block text-sm font-medium text-gray-700 mb-1'>
               <span className=''>Address *</span>
             </label>
-            <input
+            <textarea
               {...register("address", {
                 required: "Enter your Address",
                 pattern: {
@@ -375,7 +395,6 @@ const InstructorStep1 = ({
                 minLength: 10,
                 maxLength: 255,
               })}
-              type='text'
               defaultValue={instructorData.address}
               placeholder='Your Full Address'
               className={`w-full text-sm px-3 py-2 rounded border focus:ring-1 focus:ring-orange focus:border-transparent focus:outline-none transition placeholder:text-sm resize-none ${errors.address ? "border-red-200 bg-red-50" : "border-gray-200"}`}
