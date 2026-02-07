@@ -1,8 +1,7 @@
 import { apiClient } from "@/lib/api/client.ts";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff } from "lucide-react";
-// import { useSession } from "next-auth/react";
-import { useState, type Dispatch, type SetStateAction } from "react";
+import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import z from "zod";
 import { useSessionContext } from "../../contexts/SessionContext.tsx";
@@ -26,7 +25,6 @@ const InstructorStep0 = ({
   instructorData: FormData;
   setInstructorData: Dispatch<SetStateAction<FormData>>;
 }) => {
-  // const { data } = useSession();
   const { user } = useSessionContext();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -35,7 +33,7 @@ const InstructorStep0 = ({
 
   const InstructorRegisterSchema = z
     .object({
-      email: z.string().email({ message: "Invalid email format." }),
+      email: z.email({ message: "Invalid email format." }),
       password: isLoggedIn
         ? z.string().optional()
         : z
@@ -53,7 +51,6 @@ const InstructorStep0 = ({
         if (!data.email) return true;
         try {
           const response = await apiClient.get(`/user/${data.email}`);
-          console.log("resp: ", response);
           if (!response?.success) return false;
           const userData = response?.data as { result: { canProceed: boolean } };
           return userData?.result?.canProceed;
@@ -74,8 +71,13 @@ const InstructorStep0 = ({
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<registerForm>({ resolver: zodResolver(InstructorRegisterSchema) });
+
+  useEffect(() => {
+    setValue("email", instructorData.email);
+  }, [instructorData?.email, setValue]);
 
   const onSubmit: SubmitHandler<registerForm> = async data => {
     setInstructorData({

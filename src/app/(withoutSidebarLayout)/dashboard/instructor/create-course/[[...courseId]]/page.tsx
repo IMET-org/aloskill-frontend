@@ -4,6 +4,7 @@ import { apiClient } from "@/lib/api/client.ts";
 import { FileText, Globe, Layers, LucidePlaySquare } from "lucide-react";
 import { useParams } from "next/navigation";
 import React, { useCallback, useEffect, useState } from "react";
+import { type Category, useSessionContext } from "../../../../../contexts/SessionContext.tsx";
 import AdvanceInformation from "./AdvanceInformation.tsx";
 import BasicInformaton from "./BasicInformaton.tsx";
 import CourseCurriculum from "./CourseCurriculum.tsx";
@@ -58,7 +59,7 @@ export type CreateCourseData = {
   id?: string;
   title: string;
   slug: string;
-  allCategory: Categories;
+  allCategory: Category[];
   category: string;
   subCategory: string;
   tags: string[];
@@ -78,28 +79,18 @@ export type CreateCourseData = {
   status: "DRAFT" | "PUBLISHED";
 };
 
-type Categories = {
-  id: string;
-  name: string;
-  parentId: string | null;
-  children: {
-    id: string;
-    name: string;
-  }[];
-}[];
-
 export default function CourseCreationForm() {
   const { courseId } = useParams();
+  const { categories } = useSessionContext();
   const [loading, setLoading] = useState<boolean>(false);
   const [categoryError, setCategoryError] = useState<string>("");
   const [currentStep, setCurrentStep] = useState(1);
-  const [category, setCategory] = useState<Categories>([]);
   const [courseUploadError, setCourseUploadError] = useState<string>("");
   const [courseData, setCourseData] = useState<CreateCourseData>({
     title: "",
     slug: "",
     tags: [],
-    allCategory: category,
+    allCategory: [],
     category: "",
     subCategory: "",
     description: "",
@@ -134,31 +125,10 @@ export default function CourseCreationForm() {
     ],
   });
 
-  const handleGetCategories = useCallback(async () => {
-    setLoading(true);
-    setCategoryError("");
-    try {
-      const response = await apiClient.get<Categories>("/course/category");
-      if (response.success && response.data) {
-        setCategory(response.data);
-        setCourseData(prev => ({ ...prev, allCategory: response.data as Categories }));
-        return;
-      } else {
-        throw new Error("Failed to fetch categories");
-      }
-    } catch (_error) {
-      // console.error("Error fetching categories:", error);
-      setCategoryError("Failed to load categories. Please try again.");
-      setLoading(false);
-      return undefined;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
   useEffect(() => {
-    handleGetCategories();
-  }, [handleGetCategories]);
+    if (!categories) return;
+    setCourseData(prev => ({ ...prev, allCategory: categories }));
+  }, [categories]);
 
   const handleGetCourse = useCallback(async () => {
     setLoading(true);

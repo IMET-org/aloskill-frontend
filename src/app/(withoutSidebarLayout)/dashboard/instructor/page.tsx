@@ -113,11 +113,11 @@ const Dashboard = () => {
         </div>
 
         {/* Profile Progress Section */}
-        <div className='bg-gradient-to-r from-[#0F172A] to-[#0B1120] rounded p-5 text-white'>
+        <div className='bg-linear-to-r from-[#0F172A] to-[#0B1120] rounded p-5 text-white'>
           <div className='flex items-center justify-between'>
             <div className='flex items-center space-x-4'>
               <div className='w-16 h-16 rounded-full bg-white overflow-hidden'>
-                <div className='w-full h-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center'>
+                <div className='w-full h-full bg-linear-to-br from-orange-400 to-orange-600 flex items-center justify-center'>
                   <span className='text-white font-bold text-xl'>VS</span>
                 </div>
               </div>
@@ -131,7 +131,7 @@ const Dashboard = () => {
                 <div className='text-sm text-indigo-200'>1/4 Steps</div>
                 <div className='w-64 h-3 bg-[#172b5d] overflow-hidden'>
                   <div
-                    className='h-full bg-gradient-to-r from-green-400 to-green-500'
+                    className='h-full bg-linear-to-r from-green-400 to-green-500'
                     style={{ width: "30%" }}
                   ></div>
                 </div>

@@ -59,7 +59,10 @@ export default function AllCoursesPage() {
     });
   };
 
-  const handleFilterChange = (fieldName: string, value: string) => {
+  const handleFilterChange = (
+    fieldName: "category" | "level" | "language" | "rating" | "priceRange",
+    value: string
+  ) => {
     setFilteredQuery(prev => ({ ...prev, [fieldName]: value }));
   };
   // Filter and sort logic
@@ -163,9 +166,8 @@ export default function AllCoursesPage() {
       try {
         setIsLoading(true);
         const response = await apiClient.get<CourseType[]>(
-          `/course/public/allCourses?category=${filteredQuery.category}&level=${filteredQuery.level}&language=${filteredQuery.language}&rating=${filteredQuery.rating}&priceMin=${filteredQuery.priceRange[0]}&priceMax=${filteredQuery.priceRange[1]}`
+          `/course/public/allCourses?category=${encodeURIComponent(filteredQuery.category)}&level=${filteredQuery.level}&language=${filteredQuery.language}&rating=${filteredQuery.rating}&priceMin=${filteredQuery.priceRange[0]}&priceMax=${filteredQuery.priceRange[1]}`
         );
-        // console.log(response);
         setCourses(response.data ?? []);
       } catch (_error) {
         // console.error("Failed to fetch popular courses", error);
@@ -244,7 +246,10 @@ export default function AllCoursesPage() {
           <aside className='hidden lg:block w-72 xl:w-80 shrink-0 bg-white/80 backdrop-blur-sm border-r border-gray-100 h-screen sticky top-0 overflow-y-auto shadow-sm pl-4  '>
             <div className='p-6'>
               <div className='flex items-center justify-between mb-6 pb-4 border-b border-gray-100'>
-                <h2 className='text-xl font-bold text-gray-900 flex items-center gap-2'>
+                <h2
+                  className='text-xl font-
+                bold text-gray-900 flex items-center gap-2'
+                >
                   <div className='p-2 bg-orange-50 rounded-lg'>
                     <Filter className='w-5 h-5 text-orange-600' />
                   </div>
