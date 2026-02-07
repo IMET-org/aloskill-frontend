@@ -84,7 +84,7 @@ export default function CourseCurriculum({
     setValue,
     formState: { errors, isSubmitting },
   } = useForm();
-
+  console.log("error zd:", errors);
   const addSection = () => {
     setCourseData(prev => ({
       ...prev,
