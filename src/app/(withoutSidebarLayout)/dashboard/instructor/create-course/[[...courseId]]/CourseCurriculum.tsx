@@ -11,7 +11,6 @@ import {
   Trash2,
   Upload,
 } from "lucide-react";
-// import { useSession } from "next-auth/react";
 import { type ChangeEvent, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as tus from "tus-js-client";
@@ -52,7 +51,6 @@ export default function CourseCurriculum({
   const [uploadError, setUploadError] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [uploadPercentage, setUploadPercentage] = useState<string>("");
-  // const { data: sessionData } = useSession();
   const { user } = useSessionContext();
 
   const [sections, setSections] = useState<ExtendedCourseModule[]>([
@@ -84,7 +82,7 @@ export default function CourseCurriculum({
     setValue,
     formState: { errors, isSubmitting },
   } = useForm();
-  console.log("error zd:", errors);
+
   const addSection = () => {
     setCourseData(prev => ({
       ...prev,
