@@ -205,7 +205,9 @@ const CourseCard = memo(function CourseCard({
           </span>
         </div>
 
-        <div className={`absolute top-4 right-4 z-10 bg-white rounded px-3 shadow-lg ${dashboardActions && "mr-8"}`}>
+        <div
+          className={`absolute top-4 right-4 z-10 bg-white rounded px-3 shadow-lg ${dashboardActions && "mr-8"}`}
+        >
           <div className='flex items-center gap-1'>
             <span className='text-orange-600 font-black text-md '>${price}</span>
             {originalPrice && originalPrice > price && (
@@ -336,7 +338,7 @@ const CourseCard = memo(function CourseCard({
               <span className='text-sm font-medium text-gray-700 truncate'>{instructor.name}</span>
             </div>
 
-            <div className='flex items-center gap-2 shrink-0'>
+            <div className={dashboardActions ? "hidden" : "flex items-center gap-2 shrink-0"}>
               {isEnrolled ? (
                 /* If the student is enrolled, show only the Continue button */
                 <Link href={`/watch-video/${id}`}>

@@ -18,6 +18,9 @@ export function CoursesTab({ courses }: { courses: InstructorDetail["ownedCourse
     },
     [setCartUpdate]
   );
+  const user = useSessionContext();
+  console.log("user sess: ", user);
+  // const router = useRouter();
   return (
     <div className=' animate-fade-in-content'>
       {courses.length <= 0 ? (
@@ -32,10 +35,7 @@ export function CoursesTab({ courses }: { courses: InstructorDetail["ownedCourse
             <CourseCard
               key={course.id}
               course={course}
-              onAddToCart={handleAddToCart}
-              // onAddToWishlist={handleAddToWishlist}
-              isInCart={cartItems.some(item => item.courseId === course.id)}
-              isInWishlist={wishlistItems.has(course.id)}
+              dashboardActions={{}}
             />
           ))}
         </div>
