@@ -1,5 +1,6 @@
 import { type Dispatch, type SetStateAction } from "react";
 import { type SubmitHandler, useForm } from "react-hook-form";
+import { type Category, useSessionContext } from "../../contexts/SessionContext.tsx";
 import InstructorRegistrationFooterAction from "./InstructorRegistrationFooterAction.tsx";
 import type { FormData } from "./page.tsx";
 
@@ -22,6 +23,8 @@ const InstructorStep3 = ({
   instructorData: FormData;
   setInstructorData: Dispatch<SetStateAction<FormData>>;
 }) => {
+  const { categories } = useSessionContext();
+
   const {
     register,
     handleSubmit,
@@ -63,10 +66,17 @@ const InstructorStep3 = ({
               className={`w-full text-sm px-3 py-2 rounded border focus:ring-1 focus:ring-orange focus:border-transparent focus:outline-none transition placeholder:text-sm resize-none ${errors.proposedCourseCategory ? "border-red-200 bg-red-50" : "border-gray-200"}`}
             >
               <option value=''>Select Course Category</option>
-              <option value='BUSINESS'>Business & Management</option>
-              <option value='MARKETING'>Marketing & Digital Growth</option>
-              <option value='ENTREPRENEURSHIP'>Entrepreneurship & Startups</option>
-              <option value='ICT'>ICT & Future Skills</option>
+              {categories &&
+                categories
+                  .filter((category: Category) => category.parentId === null)
+                  .map((cat: Category) => (
+                    <option
+                      key={cat.id}
+                      value={cat.name}
+                    >
+                      {cat.name}
+                    </option>
+                  ))}
             </select>
             {errors.proposedCourseCategory && (
               <span className='text-xs text-red-500 mt-1'>

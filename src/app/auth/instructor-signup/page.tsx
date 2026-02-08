@@ -1,8 +1,8 @@
 "use client";
 
 import { AlertCircle, Award, BookOpen, Briefcase, CheckCircle2, LogIn, User } from "lucide-react";
-// import { useSession } from "next-auth/react";
-import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
 import { useSessionContext } from "../../contexts/SessionContext.tsx";
 import InstructorStep0 from "./InstructorStep0.tsx";
 import InstructorStep1 from "./InstructorStep1.tsx";
@@ -39,8 +39,8 @@ export interface FormData {
 }
 
 const InstructorRegistrationForm = () => {
-  // const { data } = useSession();
   const { user } = useSessionContext();
+  const router = useRouter();
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [apiResponse, setApiResponse] = useState<{
     status: "" | "Success" | "Error";
@@ -53,7 +53,7 @@ const InstructorRegistrationForm = () => {
     gender: "",
     nationality: "",
     phoneNumber: "",
-    email: user?.email || "",
+    email: "",
     password: undefined,
     address: "",
     city: "",
@@ -73,6 +73,15 @@ const InstructorRegistrationForm = () => {
     website: "",
     socialAccount: [],
   });
+
+  useEffect(() => {
+    if (user?.role?.includes("INSTRUCTOR")) {
+      router.push("/");
+    }
+    if (user?.email) {
+      setInstructorData(prev => ({ ...prev, email: user?.email }));
+    }
+  }, [user, router]);
 
   const STEPS = [
     { number: 0, title: "Login Info", icon: LogIn },

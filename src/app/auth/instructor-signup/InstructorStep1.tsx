@@ -2,7 +2,7 @@ import { useSessionContext } from "@/app/contexts/SessionContext.tsx";
 import { apiClient } from "@/lib/api/client.ts";
 import { Loader, Upload } from "lucide-react";
 import Image from "next/image";
-import { useState, type ChangeEvent, type Dispatch, type SetStateAction } from "react";
+import { useEffect, useState, type ChangeEvent, type Dispatch, type SetStateAction } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import InstructorRegistrationFooterAction from "./InstructorRegistrationFooterAction.tsx";
 import type { FormData } from "./page.tsx";
@@ -49,6 +49,13 @@ const InstructorStep1 = ({
   const [imageUploadLoading, setImageUploadLoading] = useState<boolean>(false);
   const [uploadError, setUploadError] = useState<string>("");
   const [uploadFile, setUploadFile] = useState<string>("");
+
+  useEffect(() => {
+    if (user?.name) {
+      setValue("displayName", user?.name);
+    }
+  }, [user, setValue]);
+
   const handlePrevious = () => {
     setCurrentStep(currentStep - 1);
   };
@@ -104,8 +111,8 @@ const InstructorStep1 = ({
   const uploadFileToBunny = async (file: File): Promise<{ name: string; url: string }> => {
     setImageUploadLoading(true);
     setUploadError("");
-    if (!user?.id) {
-      setUploadError("User not authenticated.");
+    if (!instructorData?.email) {
+      setUploadError("Follow Registration Process and Fill the Email!");
       setImageUploadLoading(false);
       return { name: "", url: "" };
     }
@@ -121,12 +128,12 @@ const InstructorStep1 = ({
       formData.append("file", file);
 
       const response = await apiClient.postFormData<string>(
-        `/course/file-upload?folder=${user.id}`,
+        `/course/instructor-file-upload?folder=${instructorData?.email}`,
         formData
       );
 
       if (!response.success || !response.data) {
-        setUploadError("Upload failed: try different Image or try again");
+        setUploadError(response.message || "Upload failed: try different Image or try again");
         return { name: "", url: "" };
       }
 
@@ -255,7 +262,7 @@ const InstructorStep1 = ({
                 maxLength: 40,
               })}
               type='text'
-              defaultValue={instructorData.displayName}
+              defaultValue={instructorData.displayName || user?.name}
               placeholder='Your Full Name'
               className={`w-full text-sm px-3 py-2 rounded border focus:ring-1 focus:ring-orange focus:border-transparent focus:outline-none transition placeholder:text-sm resize-none ${errors.displayName ? "border-red-200 bg-red-50" : "border-gray-200"}`}
             />

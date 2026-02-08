@@ -24,6 +24,7 @@ import CommentsTab from "./CommentsTab";
 import DescriptionTab from "./DescriptionTab";
 import LectureNotesTab from "./LectureNotesTab";
 
+const mapUser = new Map<string, string>();
 export default function CoursePage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("description");
@@ -39,6 +40,10 @@ export default function CoursePage() {
   } | null>(null);
   const { id } = useParams();
   const { user } = useSessionContext();
+
+  if (user) {
+    mapUser.set("storedUser", user?.id);
+  }
 
   const handleSetActiveContents = useCallback(
     (moduleId = 1, lessonId = 1) => {
@@ -75,12 +80,12 @@ export default function CoursePage() {
   );
 
   useEffect(() => {
-    if (!id) return;
+    if (!id || !mapUser.get("storedUser")) return;
     const fetchCourses = async () => {
       try {
         setIsLoading(true);
         const response = await apiClient.get<CourseDetailsPrivate>(
-          `/course/private/viewCourse/${id}/${user?.id}`
+          `/course/private/viewCourse/${id}/${user?.id || mapUser.get("storedUser")}`
         );
         setCourse(response.data);
       } catch (error) {
@@ -90,7 +95,7 @@ export default function CoursePage() {
       }
     };
     fetchCourses();
-  }, [id, user?.id]);
+  }, [id, user]);
 
   const handleUpdateProgress = useCallback(
     async (updateData: {
