@@ -16,7 +16,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { memo, useState } from "react";
 import type { CourseCardProps, CourseStatus } from "./allCourses.types.ts";
-
 const CourseCard = memo(function CourseCard({
   course,
   onAddToCart,
@@ -25,6 +24,7 @@ const CourseCard = memo(function CourseCard({
   isInWishlist = false,
   dashboardActions,
   isEnrolled,
+  isOwner,
 }: CourseCardProps) {
   const {
     id,
@@ -338,7 +338,7 @@ const CourseCard = memo(function CourseCard({
               <span className='text-sm font-medium text-gray-700 truncate'>{instructor.name}</span>
             </div>
 
-            <div className={dashboardActions ? "hidden" : "flex items-center gap-2 shrink-0"}>
+            <div className={isOwner ? "hidden" : "flex items-center gap-2 shrink-0"}>
               {isEnrolled ? (
                 /* If the student is enrolled, show only the Continue button */
                 <Link href={`/watch-video/${id}`}>
@@ -349,6 +349,8 @@ const CourseCard = memo(function CourseCard({
                     Continue
                   </button>
                 </Link>
+              ) : dashboardActions ? (
+                <></>
               ) : (
                 /* If not enrolled, show Cart and Enroll buttons */
                 <>

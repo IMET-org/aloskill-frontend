@@ -1,5 +1,4 @@
 "use client";
-
 import { apiClient } from "@/lib/api/client.ts";
 import {
   BookOpen,
@@ -19,7 +18,6 @@ import { useEffect, useState } from "react";
 import type { InstructorDetail } from "../../../../types/instructor.types.ts";
 import { AboutTab } from "./about.tsx";
 import { CoursesTab } from "./courses.tsx";
-
 export default function InstructorDetailsPage() {
   const params = useParams();
   const instructorId = params["id"] as string;
@@ -240,7 +238,12 @@ export default function InstructorDetailsPage() {
           {/* Tab Content */}
           <div className='p-6 sm:p-8'>
             {activeTab === "about-us" && <AboutTab instructor={instructor} />}
-            {activeTab === "courses" && <CoursesTab courses={instructor.ownedCourses} />}
+            {activeTab === "courses" && (
+              <CoursesTab
+                courses={instructor.ownedCourses}
+                instructorId={instructorId}
+              />
+            )}
             {activeTab === "reviews" && (
               <div className='text-center py-12'>
                 <Star className='w-16 h-16 text-gray-300 mx-auto mb-4' />
