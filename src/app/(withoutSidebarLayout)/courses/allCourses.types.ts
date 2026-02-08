@@ -85,6 +85,7 @@ export type CourseCardProps = {
   cartItems?: { courseId: string; quantity: number }[];
   wishlistItems?: Set<string | number>;
   isEnrolled?: boolean;
+  isOwner?: boolean;
   dashboardActions?: {
     onView?: (courseId: string | number) => void;
     onEdit?: (courseId: string) => void;
@@ -112,7 +113,7 @@ export type CourseDetails = {
   tags: string[];
   category: string | undefined;
   totalWishListed: number;
-  createdBy: {
+  createdBy: {  
     displayName: string | undefined;
     avatarUrl: string | null | undefined;
   };

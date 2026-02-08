@@ -6,10 +6,16 @@ import type { InstructorDetail } from "@/types/instructor.types.ts";
 import { BookOpen } from "lucide-react";
 import { useCallback, useState } from "react";
 
-export function CoursesTab({ courses }: { courses: InstructorDetail["ownedCourses"] }) {
+export function CoursesTab({
+  courses,
+  instructorId,
+}: {
+  courses: InstructorDetail["ownedCourses"];
+  instructorId: string | null;
+}) {
   const [cartItems, setCartItems] = useState<{ courseId: string; quantity: number }[]>([]);
   const [wishlistItems] = useState<Set<string>>(new Set());
-  const { setCartUpdate } = useSessionContext();
+  const { setCartUpdate, user } = useSessionContext();
   const handleAddToCart = useCallback(
     (courseId: string) => {
       const cartItem = courseAddToCartHandler(courseId);
@@ -18,6 +24,7 @@ export function CoursesTab({ courses }: { courses: InstructorDetail["ownedCourse
     },
     [setCartUpdate]
   );
+
   return (
     <div className=' animate-fade-in-content'>
       {courses.length <= 0 ? (
@@ -32,10 +39,8 @@ export function CoursesTab({ courses }: { courses: InstructorDetail["ownedCourse
             <CourseCard
               key={course.id}
               course={course}
+              isOwner={user?.id === instructorId}
               onAddToCart={handleAddToCart}
-              // onAddToWishlist={handleAddToWishlist}
-              isInCart={cartItems.some(item => item.courseId === course.id)}
-              isInWishlist={wishlistItems.has(course.id)}
             />
           ))}
         </div>
