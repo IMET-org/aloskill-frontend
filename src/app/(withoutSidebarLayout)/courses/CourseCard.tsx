@@ -77,7 +77,7 @@ const CourseCard = memo(function CourseCard({
   const handleImageError = () => {
     setImageError(true);
   };
-
+  console.log("Coursee:", course);
   const handleWishlistToggle = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
