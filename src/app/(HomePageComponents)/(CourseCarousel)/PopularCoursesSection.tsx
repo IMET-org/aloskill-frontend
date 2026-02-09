@@ -21,10 +21,14 @@ export default function PopularCoursesSection() {
   const { setCartUpdate, user } = useSessionContext();
 
   useEffect(() => {
+    console.log("useeffect run");
+    console.log("USERR", user);
     const fetchCourses = async () => {
       try {
         setIsLoading(true);
-        const response = await apiClient.get<CourseType[]>(`/course/public/allCourses?userId=${user.id}`);
+        const response = await apiClient.get<CourseType[]>(
+          `/course/public/allCourses?userId=${user ? user.id : ""}`
+        );
         // const response = await apiClient.get<CourseType[]>("/course/public/allCourses?isHome=true");
         setCourses(response.data ?? []);
       } catch (_error) {
