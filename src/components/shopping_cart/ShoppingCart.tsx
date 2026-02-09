@@ -1,6 +1,7 @@
 "use client";
 import { useSessionContext } from "@/app/contexts/SessionContext.tsx";
-import { ArrowLeft, Minus, Plus, ShoppingCart, Tag, X } from "lucide-react";
+import { FadeIn } from "@/lib/course/utils.tsx";
+import { ArrowLeft, ChevronRight, Minus, Plus, ShoppingCart, Tag, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -87,14 +88,24 @@ export default function ShoppingCartPage() {
 
   return (
     <div className='min-h-screen bg-linear-to-br from-orange-50 via-purple-50 to-blue-50'>
-      {/* Header */}
-      <header className='bg-white shadow-sm sticky top-0 z-50 animate-fade-in'>
-        <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4'>
+      {/* Breadcrumb */}
+      <header className='bg-white shadow-sm animate-fade-in'>
+        <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6'>
           <div className='flex items-center gap-3'>
-            <ShoppingCart className='w-6 h-6 text-[#DA7C36]' />
+            <ShoppingCart className='w-5 h-5 text-[#DA7C36]' />
             <div>
-              <h1 className='text-2xl font-bold text-[#074079]'>Shopping Cart</h1>
-              <p className='text-sm text-gray-500'>Home / Shopping Cart</p>
+              <FadeIn>
+                <nav className='flex items-center gap-2 text-sm text-gray-600 overflow-x-auto'>
+                  <Link
+                    href='/'
+                    className='hover:text-[#da7c36] transition-colors whitespace-nowrap'
+                  >
+                    Home
+                  </Link>
+                  <ChevronRight className='w-3 h-3 sm:w-4 sm:h-4 shrink-0' />
+                  <p className='text-sm text-orange'>Shopping Cart</p>
+                </nav>
+              </FadeIn>
             </div>
           </div>
         </div>
@@ -122,7 +133,7 @@ export default function ShoppingCartPage() {
             {cartItems.map((item, index) => (
               <div
                 key={item.id}
-                className='bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 p-4 animate-fade-in-up'
+                className='bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300 p-4 animate-fade-in-up'
                 style={{ animationDelay: `${index * 100}ms` }}
               >
                 <div className='grid grid-cols-1 md:grid-cols-12 gap-4 items-center'>
@@ -152,13 +163,13 @@ export default function ShoppingCartPage() {
                   {/* Price */}
                   <div className='col-span-1 md:col-span-2 flex md:justify-center items-center gap-2'>
                     <span className='md:hidden text-sm text-gray-600 font-medium'>Price:</span>
-                    <div className='flex flex-col items-start md:items-center'>
+                    <div className='flex flex-row gap-2 md:flex-col items-start md:items-center'>
                       {item.discountPrice > 0 ? (
                         <>
                           <span className='text-[#DA7C36] font-bold text-base sm:text-lg'>
                             ${item.discountPrice}
                           </span>
-                          <span className='text-gray-400 line-through text-xs sm:text-sm'>
+                          <span className='text-gray-400 line-through text-base sm:text-sm'>
                             ${item.originalPrice}
                           </span>
                         </>
@@ -214,14 +225,14 @@ export default function ShoppingCartPage() {
             {/* Action Buttons */}
             <div className='flex flex-col sm:flex-row gap-4 pt-4 animate-fade-in'>
               <Link href='/courses'>
-                <button className='flex items-center justify-center gap-2 px-6 py-3 border-2 border-[#DA7C36] text-[#DA7C36] rounded-lg hover:bg-[#DA7C36] hover:text-white transition-all duration-300 font-medium'>
+                <button className='w-full flex items-center justify-center gap-2 px-6 py-2 border-2 border-[#DA7C36] text-[#DA7C36] rounded-lg hover:bg-[#DA7C36] hover:text-white transition-all duration-300 font-medium'>
                   <ArrowLeft className='w-5 h-5' />
                   RETURN TO SHOP
                 </button>
               </Link>
               <button
                 onClick={handleUpdateCart}
-                className='flex items-center justify-center gap-2 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-all duration-300 font-medium cursor-pointer'
+                className='flex items-center justify-center gap-2 px-6 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-all duration-300 font-medium cursor-pointer'
               >
                 UPDATE CART
               </button>
@@ -233,22 +244,22 @@ export default function ShoppingCartPage() {
             className='lg:col-span-1 animate-fade-in-up'
             style={{ animationDelay: "300ms" }}
           >
-            <div className='bg-white rounded-xl shadow-lg p-6 sticky top-24 space-y-6'>
+            <div className='bg-white rounded-lg shadow-lg p-6 sticky top-24 space-y-6'>
               {/* Coupon Code */}
               <div className='space-y-3'>
                 <label className='text-sm font-medium text-[#074079] flex items-center gap-2'>
                   <Tag className='w-4 h-4' />
                   Apply coupon code
                 </label>
-                <div className='flex gap-2'>
+                <div className='flex gap-2 flex-col '>
                   <input
                     type='text'
                     value={couponCode}
                     onChange={e => setCouponCode(e.target.value)}
                     placeholder='Coupon code'
-                    className='flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#DA7C36] focus:border-transparent transition-all duration-200'
+                    className='flex-1 px-2 py-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#DA7C36] focus:border-transparent transition-all duration-200'
                   />
-                  <button className='px-6 py-2 bg-[#074079] text-white rounded-lg hover:bg-[#053055] transition-colors duration-300 font-medium'>
+                  <button className='px-4 py-1 bg-[#074079] text-white rounded-lg hover:bg-[#053055] transition-colors duration-300 font-medium'>
                     Apply
                   </button>
                 </div>
@@ -278,7 +289,7 @@ export default function ShoppingCartPage() {
               <Link href='/checkout'>
                 <button
                   disabled={cartItems.length === 0}
-                  className='w-full py-4 bg-linear-to-r from-[#DA7C36] to-[#d15100] text-white rounded-lg font-bold text-base hover:shadow-lg hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed'
+                  className='w-full py-2 bg-linear-to-r from-[#DA7C36] to-[#d15100] text-white rounded-lg font-bold text-base hover:shadow-lg hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed'
                 >
                   Proceed to Checkout
                   <svg

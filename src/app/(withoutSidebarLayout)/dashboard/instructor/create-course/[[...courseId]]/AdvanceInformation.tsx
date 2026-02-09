@@ -43,6 +43,7 @@ const CourseDescriptionSchema = z.object({
         .trim()
         .min(10, "Must be at least 10 characters long.")
         .max(120, "Cannot exceed 120 characters.")
+        .regex(/^[^<>]*$/, "whyThisCourse must not contain any opening or closing HTML tags"),
     )
     .min(1, "You must define at least one teaching objective.")
     .max(5, "You can define a maximum of 5 teaching objectives."),
@@ -53,6 +54,7 @@ const CourseDescriptionSchema = z.object({
         .trim()
         .min(10, "Must be at least 10 characters long.")
         .max(120, "Cannot exceed 120 characters.")
+        .regex(/^[^<>]*$/, "whatYouTeach must not contain any opening or closing HTML tags"),
     )
     .min(1, "You must define at least one teaching objective.")
     .max(5, "You can define a maximum of 5 teaching objectives."),
@@ -63,6 +65,7 @@ const CourseDescriptionSchema = z.object({
         .trim()
         .min(10, "Must be at least 10 characters long.")
         .max(120, "Cannot exceed 120 characters.")
+        .regex(/^[^<>]*$/, "targetAudience must not contain any opening or closing HTML tags"),
     )
     .min(1, "You must define at least one teaching objective.")
     .max(5, "You can define a maximum of 5 teaching objectives."),
@@ -73,6 +76,7 @@ const CourseDescriptionSchema = z.object({
         .trim()
         .min(10, "Must be at least 10 characters long.")
         .max(120, "Cannot exceed 120 characters.")
+        .regex(/^[^<>]*$/, "requirements must not contain any opening or closing HTML tags"),
     )
     .min(1, "You must define at least one requirement.")
     .max(5, "You can define a maximum of 5 requirements."),
@@ -393,8 +397,6 @@ function AdvanceInformation({
         formData
       );
 
-      console.log("response : ", response);
-
       if (!response.success || !response.data) {
         setUploadError("Upload failed: try different Image or try again");
         return { name: "", url: "" };
@@ -544,8 +546,8 @@ function AdvanceInformation({
                             <>
                               <iframe
                                 className='w-full h-full'
-                                src={`https://iframe.mediadelivery.net/embed/${videoData.libraryId}/${videoData.videoId}?token=${videoData.token}&expires=${videoData.expiresAt}`}
-                                allow='encrypted-media; autoplay'
+                                src={`https://iframe.mediadelivery.net/embed/${videoData.libraryId}/${videoData.videoId}?token=${videoData.token}&expires=${videoData.expiresAt}&autoplay=false`}
+                                allow='encrypted-media;'
                                 allowFullScreen
                               />
                             </>

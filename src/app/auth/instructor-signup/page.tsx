@@ -1,17 +1,18 @@
 "use client";
 
 import { AlertCircle, Award, BookOpen, Briefcase, CheckCircle2, LogIn, User } from "lucide-react";
-// import { useSession } from "next-auth/react";
-import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import { useSessionContext } from "../../contexts/SessionContext.tsx";
 import InstructorStep0 from "./InstructorStep0.tsx";
 import InstructorStep1 from "./InstructorStep1.tsx";
 import InstructorStep2 from "./InstructorStep2.tsx";
 import InstructorStep3 from "./InstructorStep3.tsx";
 import InstructorStep4 from "./InstructorStep4.tsx";
-import { useSessionContext } from '../../contexts/SessionContext.tsx';
 
 export interface FormData {
   displayName: string;
+  profileImage: string | null;
   DOB: string;
   gender: string;
   nationality: string;
@@ -38,17 +39,21 @@ export interface FormData {
 }
 
 const InstructorRegistrationForm = () => {
-  // const { data } = useSession();
   const { user } = useSessionContext();
+  const router = useRouter();
   const [currentStep, setCurrentStep] = useState<number>(0);
-  const [apiResponse, setApiResponse] = useState<{ status: "" | "Success" | "Error", message: string }>({ status: "", message: "" });
+  const [apiResponse, setApiResponse] = useState<{
+    status: "" | "Success" | "Error";
+    message: string;
+  }>({ status: "", message: "" });
   const [instructorData, setInstructorData] = useState<FormData>({
     displayName: "",
+    profileImage: null,
     DOB: "",
     gender: "",
     nationality: "",
     phoneNumber: "",
-    email: user?.email || "",
+    email: "",
     password: undefined,
     address: "",
     city: "",
@@ -69,6 +74,15 @@ const InstructorRegistrationForm = () => {
     socialAccount: [],
   });
 
+  useEffect(() => {
+    if (user?.role?.includes("INSTRUCTOR")) {
+      router.push("/");
+    }
+    if (user?.email) {
+      setInstructorData(prev => ({ ...prev, email: user?.email }));
+    }
+  }, [user, router]);
+
   const STEPS = [
     { number: 0, title: "Login Info", icon: LogIn },
     { number: 1, title: "Personal Info", icon: User },
@@ -80,18 +94,17 @@ const InstructorRegistrationForm = () => {
   const StatusMessage = () => {
     return !apiResponse.status ? (
       <></>
-    ) :
-      apiResponse.status === "Success" ? (
-        <div className='mb-2 bg-green-50 border border-green-200 rounded px-4 py-2 flex items-center gap-2'>
-          <CheckCircle2 className='text-green-600 w-4 h-4 shrink-0' />
-          <p className='text-green-800 font-medium text-xs'>Application submitted successfully!</p>
-        </div>
-      ) : (
-        <div className='mb-2 bg-red-50 border border-red-200 rounded px-4 py-2 flex items-center gap-2'>
-          <AlertCircle className='text-red-600 w-4 h-4 shrink-0' />
-          <p className='text-red-800 font-medium text-xs'>{apiResponse.message}</p>
-        </div>
-      );
+    ) : apiResponse.status === "Success" ? (
+      <div className='mb-2 bg-green-50 border border-green-200 rounded px-4 py-2 flex items-center gap-2'>
+        <CheckCircle2 className='text-green-600 w-4 h-4 shrink-0' />
+        <p className='text-green-800 font-medium text-xs'>Application submitted successfully!</p>
+      </div>
+    ) : (
+      <div className='mb-2 bg-red-50 border border-red-200 rounded px-4 py-2 flex items-center gap-2'>
+        <AlertCircle className='text-red-600 w-4 h-4 shrink-0' />
+        <p className='text-red-800 font-medium text-xs'>{apiResponse.message}</p>
+      </div>
+    );
   };
 
   return (
@@ -108,12 +121,13 @@ const InstructorRegistrationForm = () => {
                 <React.Fragment key={step.number}>
                   <div className='flex items-center gap-2'>
                     <div
-                      className={`w-6 h-6 rounded-full flex items-center justify-center font-semibold transition-all ${currentStep > step.number
-                        ? "bg-green-400 text-white"
-                        : currentStep === step.number
-                          ? "bg-orange-400 text-white ring-4 ring-orange-300"
-                          : "bg-white text-gray-600"
-                        }`}
+                      className={`w-6 h-6 rounded-full flex items-center justify-center font-semibold transition-all ${
+                        currentStep > step.number
+                          ? "bg-green-400 text-white"
+                          : currentStep === step.number
+                            ? "bg-orange-400 text-white ring-4 ring-orange-300"
+                            : "bg-white text-gray-600"
+                      }`}
                     >
                       {currentStep > step.number ? (
                         <CheckCircle2 className='w-4 h-4' />
@@ -122,24 +136,26 @@ const InstructorRegistrationForm = () => {
                       )}
                     </div>
                     <span
-                      className={`text-sm font-semibold ${currentStep > step.number
-                        ? "text-green-400"
-                        : currentStep === step.number
-                          ? "text-orange-400"
-                          : "text-white"
-                        }`}
+                      className={`text-sm font-semibold ${
+                        currentStep > step.number
+                          ? "text-green-400"
+                          : currentStep === step.number
+                            ? "text-orange-400"
+                            : "text-white"
+                      }`}
                     >
                       {step.title}
                     </span>
                   </div>
                   {index < STEPS.length - 1 && (
                     <div
-                      className={`h-0.5 flex-1 mx-2 transition-all ${currentStep > step.number
-                        ? "bg-green-500"
-                        : currentStep === step.number
-                          ? "bg-orange-400"
-                          : "bg-gray-200"
-                        }`}
+                      className={`h-0.5 flex-1 mx-2 transition-all ${
+                        currentStep > step.number
+                          ? "bg-green-500"
+                          : currentStep === step.number
+                            ? "bg-orange-400"
+                            : "bg-gray-200"
+                      }`}
                     />
                   )}
                 </React.Fragment>

@@ -1,41 +1,51 @@
 "use client";
 
-import Image from "next/image";
-import { useState } from "react";
-
+import { useSessionContext } from "@/app/contexts/SessionContext.tsx";
+import { apiClient } from "@/lib/api/client.ts";
+import { Loader } from "lucide-react";
+import { useEffect, useState } from "react";
+import type { CourseType } from "../../courses/allCourses.types.ts";
+import CourseCard from "../../courses/CourseCard.tsx";
 export default function DashboardPage() {
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  const courses = [
-    {
-      id: 1,
-      image: "/api/placeholder/400/300",
-      title: "Roiki Level I, II and Master/Teacher Program",
-      subtitle: "1. Intorductions",
-      progress: 0,
-    },
-    {
-      id: 2,
-      image: "/api/placeholder/400/300",
-      title: "The Complete 2021 Web Development Bootcamp",
-      subtitle: "167. What You'll Need to Get Started - Se...",
-      progress: 61,
-    },
-    {
-      id: 3,
-      image: "/api/placeholder/400/300",
-      title: "Copywriting - Become a Freelance Copywriter...",
-      subtitle: "1. How to get started with figma",
-      progress: 0,
-    },
-    {
-      id: 4,
-      image: "/api/placeholder/400/300",
-      title: "2021 Complete Python Bootcamp From Zero to...",
-      subtitle: "9. Advanced CSS - Selector Priority",
-      progress: 12,
-    },
-  ];
+  const [courses, setCourses] = useState<CourseType[]>([]);
+  const [apiError, setApiError] = useState<string>("");
+  const { isLoading, user } = useSessionContext();
+
+  useEffect(() => {
+    if (isLoading) return;
+    if (!user?.id) return;
+    const getCourses = async () => {
+      setApiError("");
+      const coursesFromDB = await apiClient.get<CourseType[]>(
+        `/course/student/allCourses?userId=${user?.id}`
+      );
+
+      try {
+        if (!coursesFromDB.success) {
+          setApiError("Something went wrong! try again later.");
+          return;
+        }
+        if (!coursesFromDB.data || coursesFromDB.data.length === 0) {
+          setApiError("No courses found!");
+          return;
+        }
+        setCourses(coursesFromDB.data);
+      } catch (_e) {
+        setApiError("Something went wrong while fetching the courses.");
+      }
+    };
+    getCourses();
+  }, [user?.id, isLoading]);
+
+  if (isLoading) {
+    return (
+      <p className='text-md font-semibold text-gray-600 flex items-center gap-2'>
+        <Loader className='animate-spin' /> Loading...
+      </p>
+    );
+  }
 
   const stats = [
     {
@@ -71,7 +81,7 @@ export default function DashboardPage() {
         {stats.map((stat, index) => (
           <div
             key={index}
-            className={`${stat.bgColor} rounded-lg p-6`}
+            className={`${stat.bgColor} rounded px-6 py-4`}
           >
             <div className='flex items-center gap-4'>
               <div className='text-3xl'>{stat.icon}</div>
@@ -87,7 +97,9 @@ export default function DashboardPage() {
       {/* Course Section */}
       <div>
         <div className='flex items-center justify-between mb-4'>
-          <h3 className='text-xl font-semibold text-gray-900'>Let &apos;s start learning, Kevin</h3>
+          <h3 className='text-xl font-semibold text-gray-900'>
+            Let &apos;s start learning, {user?.name}
+          </h3>
           <div className='flex gap-2'>
             <button className='w-10 h-10 rounded-lg border border-orange-300 text-orange-500'>
               ←
@@ -98,35 +110,18 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'>
-          {courses.map(course => (
-            <div
-              key={course.id}
-              className='bg-white rounded-lg shadow-sm overflow-hidden'
-            >
-              <Image
-                width={400}
-                height={300}
-                src={course.image}
-                alt={course.title}
-                className='w-full h-48 object-cover'
+        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+          {courses.length > 0 ? (
+            courses?.map(course => (
+              <CourseCard
+                key={course.id}
+                course={course}
+                isEnrolled={true}
               />
-              <div className='p-4'>
-                <p className='text-xs text-gray-500 mb-1'>{course.title}</p>
-                <h4 className='font-medium text-gray-900 mb-3 text-sm'>{course.subtitle}</h4>
-                <div className='flex items-center justify-between'>
-                  <button className='px-4 py-2 rounded-lg bg-orange-50 text-orange-500 text-sm font-medium'>
-                    Watch Lecture
-                  </button>
-                  {course.progress > 0 && (
-                    <span className='text-green-600 font-medium text-sm'>
-                      {course.progress}% Completed
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
+            ))
+          ) : (
+            <p>Yet You have no purchased course!</p>
+          )}
         </div>
       </div>
     </div>

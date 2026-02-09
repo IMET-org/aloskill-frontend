@@ -29,8 +29,8 @@ const BasicInfoSchema = z.object({
     .min(5, "Title must be at least 5 characters long")
     .max(100, "Title cannot exceed 100 characters")
     .regex(
-      /^[\w\s\p{P}&\-]+$/u,
-      "Title contains invalid characters. Only letters, numbers, spaces, and common punctuation are allowed."
+      /^[^<>]*$/,
+      "Title contains invalid characters.Title must not contain any opening or closing HTML tags"
     ),
   slug: z
     .string()

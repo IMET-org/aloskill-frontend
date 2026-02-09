@@ -59,7 +59,10 @@ export default function AllCoursesPage() {
     });
   };
 
-  const handleFilterChange = (fieldName: string, value: string) => {
+  const handleFilterChange = (
+    fieldName: "category" | "level" | "language" | "rating" | "priceRange",
+    value: string
+  ) => {
     setFilteredQuery(prev => ({ ...prev, [fieldName]: value }));
   };
   // Filter and sort logic
@@ -163,9 +166,8 @@ export default function AllCoursesPage() {
       try {
         setIsLoading(true);
         const response = await apiClient.get<CourseType[]>(
-          `/course/public/allCourses?category=${filteredQuery.category}&level=${filteredQuery.level}&language=${filteredQuery.language}&rating=${filteredQuery.rating}&priceMin=${filteredQuery.priceRange[0]}&priceMax=${filteredQuery.priceRange[1]}`
+          `/course/public/allCourses?category=${encodeURIComponent(filteredQuery.category)}&level=${filteredQuery.level}&language=${filteredQuery.language}&rating=${filteredQuery.rating}&priceMin=${filteredQuery.priceRange[0]}&priceMax=${filteredQuery.priceRange[1]}`
         );
-        // console.log(response);
         setCourses(response.data ?? []);
       } catch (_error) {
         // console.error("Failed to fetch popular courses", error);
@@ -198,14 +200,14 @@ export default function AllCoursesPage() {
     filteredQuery.priceRange[1] !== 10000;
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-slate-50 via-white to-purple-50/30'>
+    <div className='min-h-screen bg-linear-to-br from-slate-50 via-white to-purple-50/30 py-10'>
       <div className='mx-auto max-w-[1920px] '>
         <PageHeading />
 
         {/* Mobile Filter Button */}
         <button
           onClick={() => setShowMobileFilters(true)}
-          className='lg:hidden fixed bottom-6 right-6 z-50 w-14 h-14 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-2xl shadow-lg shadow-orange-500/30 flex items-center justify-center hover:shadow-xl hover:shadow-orange-500/40 hover:scale-105 transition-all duration-200'
+          className='lg:hidden fixed bottom-6 right-6 z-50 w-14 h-14 bg-linear-to-r from-orange-500 to-orange-600 text-white rounded-2xl shadow-lg shadow-orange-500/30 flex items-center justify-center hover:shadow-xl hover:shadow-orange-500/40 hover:scale-105 transition-all duration-200'
         >
           <SlidersHorizontal className='w-5 h-5' />
         </button>
@@ -244,7 +246,10 @@ export default function AllCoursesPage() {
           <aside className='hidden lg:block w-72 xl:w-80 shrink-0 bg-white/80 backdrop-blur-sm border-r border-gray-100 h-screen sticky top-0 overflow-y-auto shadow-sm pl-4  '>
             <div className='p-6'>
               <div className='flex items-center justify-between mb-6 pb-4 border-b border-gray-100'>
-                <h2 className='text-xl font-bold text-gray-900 flex items-center gap-2'>
+                <h2
+                  className='text-xl font-
+                bold text-gray-900 flex items-center gap-2'
+                >
                   <div className='p-2 bg-orange-50 rounded-lg'>
                     <Filter className='w-5 h-5 text-orange-600' />
                   </div>
@@ -276,9 +281,9 @@ export default function AllCoursesPage() {
           <main className='flex-1 min-w-0'>
             {/* Top Bar */}
             <div className='sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm'>
-              <div className='px-4 sm:px-6 lg:px-8 py-5'>
+              <div className='flex justify-between px-4 sm:px-6 lg:px-8 py-5 lg:flex-row flex-col gap-4'>
                 {/* Search Bar */}
-                <div className='mb-5'>
+                <div className=''>
                   <div className='relative max-w-2xl'>
                     <div className='absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400'>
                       <Search className='w-5 h-5' />
@@ -293,19 +298,8 @@ export default function AllCoursesPage() {
                   </div>
                 </div>
 
-                {/* Controls */}
+                {/* Filter Controls */}
                 <div className='flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4'>
-                  <div className='flex items-center gap-4'>
-                    <div className='flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-50 to-purple-50 rounded-xl border border-orange-100'>
-                      {/* <span className='text-sm font-semibold text-orange-600'>
-                        {filteredAndSortedCourses.length}
-                      </span>
-                      <span className='text-sm text-gray-600'>
-                        {filteredAndSortedCourses.length === 1 ? "course" : "courses"} found
-                      </span> */}
-                    </div>
-                  </div>
-
                   <div className='flex items-center gap-3'>
                     {/* Sort */}
                     <div className='relative'>

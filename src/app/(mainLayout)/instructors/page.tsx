@@ -36,6 +36,7 @@ export default function AllInstructorsPage() {
         setLoading(true);
         setError(null);
         const response = await apiClient.get<InstructorListApiResponse[]>("/user/instructors/all");
+        console.log("res:", response);
         if (response.success && response.data) {
           const transformData = response.data.map(transformInstructor);
           setInstructors(transformData);

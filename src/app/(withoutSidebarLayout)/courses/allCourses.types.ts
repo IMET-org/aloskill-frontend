@@ -63,8 +63,21 @@ export type CourseType = {
     enrollments: number;
     reviews: number;
   };
+
+  lessonProgress: {
+    completedAt: string | null;
+    completed: boolean;
+    progressValue: number;
+    lastViewedAt: string | null;
+  }[];
+
+  enrollments: {
+    userId: string;
+  }[];
 };
+
 export type CourseStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
+
 export type CourseCardProps = {
   course: CourseType;
 
@@ -73,7 +86,10 @@ export type CourseCardProps = {
 
   isInCart?: boolean;
   isInWishlist?: boolean;
-
+  cartItems?: { courseId: string; quantity: number }[];
+  wishlistItems?: Set<string | number>;
+  isEnrolled?: boolean;
+  isOwner?: boolean;
   dashboardActions?: {
     onView?: (courseId: string | number) => void;
     onEdit?: (courseId: string) => void;
@@ -128,6 +144,7 @@ export type CourseDetails = {
     percentage: string;
   }[];
 };
+
 export type CourseDetailsPublic = {
   id: string;
   title: string;
@@ -149,6 +166,7 @@ export type CourseDetailsPublic = {
   category: string | undefined;
   courseInstructors: {
     instructorId: string;
+    userId: string;
     bio: string;
     expertise: string | null;
     rating: number | null;
@@ -187,7 +205,9 @@ export type CourseDetailsPublic = {
     percentage: string;
   }[];
 };
+
 export type CourseDetailsPrivate = {
+  id: string;
   title: string;
   createdAt: string;
   updatedAt: string;
@@ -199,9 +219,10 @@ export type CourseDetailsPrivate = {
     isExpanded: boolean;
     position: number;
     title: string;
-    duration: number;
+    moduleDuration: number;
     lessons: {
-      postion: number;
+      id: string;
+      position: number;
       title: string;
       description: string | null;
       notes: string | null;
@@ -212,9 +233,77 @@ export type CourseDetailsPrivate = {
         name: string;
         url: string;
       }[];
+      lessonProgress: {
+        completed: boolean;
+        progressValue: number;
+        lastPosition: number;
+        lastViewedAt: string | null;
+        completedAt: string | null;
+      }[];
     }[];
   }[];
 };
+
+export type StudentCourseCardType = {
+  id: string;
+  title: string;
+  thumbnailUrl: string | null;
+
+  createdBy: {
+    user: {
+      avatarUrl: string | null;
+    };
+    displayName: string;
+  } | null;
+
+  category: {
+    name: string;
+  } | null;
+
+  modules: {
+    _count: {
+      lessons: number;
+    };
+    lessons: {
+      duration: number | null;
+    }[];
+  }[];
+
+  _count: {
+    enrollments: number;
+    reviews: number;
+  };
+  LessonProgress: {
+    completedAt: string | null;
+    completed: boolean;
+    progressValue: number;
+    lastPosition: number;
+    lastViewedAt: string | null;
+  }[];
+}[];
+
+export type PrivateLesson = {
+  id: string;
+  position: number;
+  title: string;
+  description: string | null;
+  notes: string | null;
+  duration: number | null;
+  type: string;
+  contentUrl: string | null;
+  files: {
+    name: string;
+    url: string;
+  }[];
+  lessonProgress: {
+    completed: boolean;
+    progressValue: number;
+    lastPosition: number;
+    lastViewedAt: string | null;
+    completedAt: string | null;
+  }[];
+};
+
 export interface FilterOption {
   value: string;
   label: string;

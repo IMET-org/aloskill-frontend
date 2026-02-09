@@ -361,9 +361,18 @@ export default withAuth(
           path === "/" ||
           path.startsWith("/auth") ||
           path.startsWith("/courses") ||
+          path.startsWith("/instructors") ||
+          path.startsWith("/studentHub") ||
+          path.startsWith("/books") ||
+          path.startsWith("/events") ||
+          path.startsWith("/challenges") ||
+          path.startsWith("/community") ||
+          path.startsWith("/career") ||
+          path.startsWith("/earn") ||
+          path.startsWith("/success") ||
+          path.startsWith("/help") ||
           path.startsWith("/about") ||
-          path.startsWith("/products") ||
-          path.startsWith("/instructors");
+          path.startsWith("/products");
 
         if (isPublicRoute) {
           return true;
@@ -440,10 +449,18 @@ async function enforceAccessControl(
     "/auth/signin",
     "/auth/signup",
     "/pricing",
-    "/courses",
     "/blog",
-    "/products",
+    "/courses",
     "/instructors",
+    "/studentHub",
+    "/books",
+    "/events",
+    "/career",
+    "/earn",
+    "/success",
+    "/help",
+    "/about",
+    "/products",
   ];
   if (publicRoutes.includes(pathname)) {
     return { granted: true, redirectUrl: "" };
@@ -635,12 +652,12 @@ function addAdvancedSecurityHeaders(response: NextResponse, _request: NextReques
   const cspDirectives = [
     "default-src 'self' https://iframe.mediadelivery.net",
     // Added Google for scripts
-    "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://assets.mediadelivery.net https://accounts.google.com",
+    "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://accounts.google.com http://assets.mediadelivery.net/playerjs/playerjs-latest.min.js",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "img-src 'self' data: https: blob:",
     "font-src 'self' https://fonts.gstatic.com",
     // Added Google and Railway backend
-    `connect-src 'self' http://localhost:5000 ${envConfig.NEXT_PUBLIC_BACKEND_BASE_URL} https://vitals.vercel-insights.com https://video.bunnycdn.com https://fortunate-kindness-production.up.railway.app https://accounts.google.com`,
+    `connect-src 'self' http://localhost:5000 ${envConfig.NEXT_PUBLIC_BACKEND_BASE_URL} https://vitals.vercel-insights.com https://video.bunnycdn.com https://fortunate-kindness-production.up.railway.app https://accounts.google.com https://assets.mediadelivery.net`,
     "media-src 'self' blob: https:",
     "object-src 'none'",
     "base-uri 'self'",

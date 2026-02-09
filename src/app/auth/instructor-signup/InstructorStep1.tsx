@@ -1,10 +1,14 @@
-import { type Dispatch, type SetStateAction } from "react";
-import { type SubmitHandler, useForm } from "react-hook-form";
+import { useSessionContext } from "@/app/contexts/SessionContext.tsx";
+import { apiClient } from "@/lib/api/client.ts";
+import { Loader, Upload } from "lucide-react";
+import Image from "next/image";
+import { useEffect, useState, type ChangeEvent, type Dispatch, type SetStateAction } from "react";
+import { useForm, type SubmitHandler } from "react-hook-form";
 import InstructorRegistrationFooterAction from "./InstructorRegistrationFooterAction.tsx";
 import type { FormData } from "./page.tsx";
-
 type Inputs = {
   displayName: string;
+  profileImage: string | null;
   DOB: string;
   gender: string;
   nationality: string;
@@ -27,6 +31,7 @@ const InstructorStep1 = ({
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<Inputs>();
 
@@ -39,6 +44,17 @@ const InstructorStep1 = ({
       ...data,
     });
   };
+
+  const { user } = useSessionContext();
+  const [imageUploadLoading, setImageUploadLoading] = useState<boolean>(false);
+  const [uploadError, setUploadError] = useState<string>("");
+  const [uploadFile, setUploadFile] = useState<string>("");
+
+  useEffect(() => {
+    if (user?.name) {
+      setValue("displayName", user?.name);
+    }
+  }, [user, setValue]);
 
   const handlePrevious = () => {
     setCurrentStep(currentStep - 1);
@@ -55,6 +71,111 @@ const InstructorStep1 = ({
     return dob.getTime() <= today.getTime();
   };
 
+  const validateImageRatio = (file: File): Promise<{ isValid: boolean; error: string }> => {
+    return new Promise(resolve => {
+      const img = document.createElement("img");
+      const objectUrl = URL.createObjectURL(file);
+
+      img.onload = () => {
+        URL.revokeObjectURL(objectUrl);
+
+        const width = img.naturalWidth;
+        const height = img.naturalHeight;
+        const isSquare = width === height;
+        const isLargeEnough = width >= 800 && height >= 800;
+
+        if (!isSquare) {
+          resolve({
+            isValid: false,
+            error: "Image must be a perfect square (1:1 ratio).",
+          });
+        } else if (!isLargeEnough) {
+          resolve({
+            isValid: false,
+            error: `Image is too small. Minimum size is 800x800px (Current: ${width}x${height}px).`,
+          });
+        } else {
+          resolve({ isValid: true, error: "" });
+        }
+      };
+
+      img.onerror = () => {
+        URL.revokeObjectURL(objectUrl);
+        resolve({ isValid: false, error: "Failed to load image file." });
+      };
+
+      img.src = objectUrl;
+    });
+  };
+
+  const uploadFileToBunny = async (file: File): Promise<{ name: string; url: string }> => {
+    setImageUploadLoading(true);
+    setUploadError("");
+    if (!instructorData?.email) {
+      setUploadError("Follow Registration Process and Fill the Email!");
+      setImageUploadLoading(false);
+      return { name: "", url: "" };
+    }
+
+    try {
+      const isValidRatio = await validateImageRatio(file);
+      if (!isValidRatio.isValid) {
+        setUploadError(isValidRatio.error);
+        return { name: "", url: "" };
+      }
+      setUploadError("");
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await apiClient.postFormData<string>(
+        `/course/instructor-file-upload?folder=${instructorData?.email}`,
+        formData
+      );
+
+      if (!response.success || !response.data) {
+        setUploadError(response.message || "Upload failed: try different Image or try again");
+        return { name: "", url: "" };
+      }
+
+      return {
+        name: file.name,
+        url: response.data,
+      };
+    } catch (error: unknown) {
+      setUploadError(error instanceof Error ? error.message : "An unknown error occurred.");
+      return { name: "", url: "" };
+    } finally {
+      setImageUploadLoading(false);
+    }
+  };
+
+  const handleFileSelect = async (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+
+      if (file) {
+        const isImage = file.type.startsWith("image/");
+
+        if (isImage) {
+          try {
+            const uploadResult = await uploadFileToBunny(file);
+            if (uploadResult.url) {
+              setValue("profileImage", uploadResult.url, {
+                shouldDirty: true,
+                shouldValidate: true,
+              });
+              const imagePreview = URL.createObjectURL(file);
+              setUploadFile(imagePreview);
+            }
+          } catch (_error) {
+            // console.error("Error uploading file:", error);
+          }
+          return;
+        }
+      }
+    }
+  };
+
   return (
     <div className='space-y-4'>
       <form
@@ -63,6 +184,68 @@ const InstructorStep1 = ({
       >
         <h2 className='mb-4'>Personal Information</h2>
         <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
+          {/* Profile Iamge */}
+          <div className='col-span-2'>
+            <label className='block text-sm font-medium text-gray-700 mb-1'>
+              <span className=''>Upload Profile Image *</span>
+            </label>
+            <div className='w-40 h-40'>
+              {imageUploadLoading ? (
+                <div className='w-full h-full p-3 flex items-center justify-center border border-gray-200 rounded'>
+                  <Loader className='w-8 h-8 animate-spin' />
+                </div>
+              ) : uploadFile ? (
+                <div className='w-full h-full relative group'>
+                  <Image
+                    width={160}
+                    height={160}
+                    src={uploadFile}
+                    alt='Profile image'
+                    className='w-full h-full'
+                  />
+                  <label
+                    htmlFor='imageUpload'
+                    className='h-full w-full text-white bg-black/50 items-center justify-center gap-2 p-3 border border-gray-200 rounded transition-colors cursor-pointer hidden group-hover:flex absolute top-0 left-0'
+                  >
+                    <Upload size={30} />
+                  </label>
+                  <input
+                    type='file'
+                    id='imageUpload'
+                    onChange={e => handleFileSelect(e)}
+                    hidden
+                    accept='.jpg,.jpeg,.png'
+                  />
+                </div>
+              ) : (
+                <>
+                  <label
+                    htmlFor='imageUpload'
+                    className='h-full w-full flex flex-col items-center justify-center gap-2 p-3 border border-gray-200 rounded transition-colors cursor-pointer'
+                  >
+                    <Upload size={16} />
+                    Upload Image
+                  </label>
+                  <input
+                    type='file'
+                    id='imageUpload'
+                    onChange={e => handleFileSelect(e)}
+                    hidden
+                    accept='.jpg,.jpeg,.png'
+                  />
+                </>
+              )}
+            </div>
+            {errors.profileImage && (
+              <span className='text-xs text-red-500 mt-1'>
+                {errors.profileImage.message as string}
+              </span>
+            )}
+            {uploadError && (
+              <span className='text-xs text-red-500 mt-1'>{uploadError as string}</span>
+            )}
+          </div>
+
           {/* Full Name */}
           <div>
             <label className='block text-sm font-medium text-gray-700 mb-1'>
@@ -79,7 +262,7 @@ const InstructorStep1 = ({
                 maxLength: 40,
               })}
               type='text'
-              defaultValue={instructorData.displayName}
+              defaultValue={instructorData.displayName || user?.name}
               placeholder='Your Full Name'
               className={`w-full text-sm px-3 py-2 rounded border focus:ring-1 focus:ring-orange focus:border-transparent focus:outline-none transition placeholder:text-sm resize-none ${errors.displayName ? "border-red-200 bg-red-50" : "border-gray-200"}`}
             />
@@ -163,7 +346,7 @@ const InstructorStep1 = ({
                 required: "Enter your Phone Number. Do not use pattern or text",
                 pattern: {
                   value: /^\+?[1-9][0-9]{10,14}$/,
-                  message: "Phone number can only contain Numbers and + sign.",
+                  message: "Phone must be this format (+8801345678945)",
                 },
                 minLength: 11,
                 maxLength: 14,
@@ -204,11 +387,11 @@ const InstructorStep1 = ({
           </div>
 
           {/* Address */}
-          <div>
+          <div className='col-span-2'>
             <label className='block text-sm font-medium text-gray-700 mb-1'>
               <span className=''>Address *</span>
             </label>
-            <input
+            <textarea
               {...register("address", {
                 required: "Enter your Address",
                 pattern: {
@@ -219,7 +402,6 @@ const InstructorStep1 = ({
                 minLength: 10,
                 maxLength: 255,
               })}
-              type='text'
               defaultValue={instructorData.address}
               placeholder='Your Full Address'
               className={`w-full text-sm px-3 py-2 rounded border focus:ring-1 focus:ring-orange focus:border-transparent focus:outline-none transition placeholder:text-sm resize-none ${errors.address ? "border-red-200 bg-red-50" : "border-gray-200"}`}

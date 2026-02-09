@@ -49,8 +49,8 @@ export function CertificateSectionSimple() {
                 Get Certified for Every Skill You Learn
               </h2>
               <p className='text-gray-600 leading-relaxed'>
-                Earn a verified digital certificate after completing courses — showcase your
-                achievement on your resume or LinkedIn profile.
+                AloSkill-এ কোর্স শেষ করলেই পান verified digital certificate— যা ব্যবহার করতে পারবেন
+                CV, LinkedIn কিংবা নিজের professional profile-এ।
               </p>
             </div>
 
@@ -70,7 +70,9 @@ export function CertificateSectionSimple() {
                 </div>
                 <div>
                   <h5 className='font-semibold text-gray-900 mb-1'>Verified Certificates</h5>
-                  <p className='text-sm text-gray-600'>Industry-recognized credentials</p>
+                  <p className='text-sm text-gray-600'>
+                    Industry-relevant & skill-based certification
+                  </p>
                 </div>
               </div>
               <div className='flex items-start gap-3 p-4 bg-gray-50 rounded-xl hover:bg-[var(--color-orange)]/5 transition-colors'>
@@ -79,7 +81,9 @@ export function CertificateSectionSimple() {
                 </div>
                 <div>
                   <h5 className='font-semibold text-gray-900 mb-1'>Shareable Badges</h5>
-                  <p className='text-sm text-gray-600'>Show off your achievements</p>
+                  <p className='text-sm text-gray-600'>
+                    Share your achievement on LinkedIn & social media
+                  </p>
                 </div>
               </div>
             </div>

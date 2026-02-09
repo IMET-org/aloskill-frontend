@@ -1,5 +1,3 @@
-
-
 import { config as envConfig } from "@/config/env";
 import { authService } from "@/lib/api/auth.service.ts";
 import { type UserRole } from "@/types/next-auth.js";
@@ -161,7 +159,8 @@ export const authOptions: NextAuthOptions = {
               message: `Registration failed for ${user.email}`,
               data: null,
             };
-            return "/auth/error?error=AutoRegisterFailed";
+            // return "/auth/error?error=AutoRegisterFailed";
+            return `/auth/signin?error=${registerResponse.message}`;
           }
 
           result = registerResponse.data;

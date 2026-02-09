@@ -10,24 +10,21 @@ const features = [
     icon: Monitor,
     step: "01",
     title: "Learn",
-    description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Felis donec massa aliquip.",
+    description: "Learn from experts, anytime, anywhere.",
   },
   {
     id: 2,
     icon: GraduationCap,
     step: "02",
     title: "Graduate",
-    description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Felis donec massa aliquip.",
+    description: "Graduate with certificates that empower both careers and businesses.",
   },
   {
     id: 3,
     icon: Briefcase,
     step: "03",
     title: "Work",
-    description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Felis donec massa aliquip.",
+    description: "Work smarter, create opportunities, shape your future.",
   },
 ];
 
@@ -39,9 +36,8 @@ export function WhyLearnSectionAnimated() {
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
         {/* Section Header */}
         <SectionMiddleHeader
-          title='Why Learn With Us?'
-          subtitle='Our Courses are designed to help you achieve your goals. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempordunt ut
-            labore vanum...'
+          title='Why learn with our courses?'
+          subtitle='Learn skills that matter. Graduate with confidence. Work with impact.'
         />
 
         <div className='grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-0 mt-10'>
