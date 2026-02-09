@@ -21,8 +21,6 @@ export default function PopularCoursesSection() {
   const { setCartUpdate, user } = useSessionContext();
 
   useEffect(() => {
-    console.log("useeffect run");
-    console.log("USERR", user);
     const fetchCourses = async () => {
       try {
         setIsLoading(true);

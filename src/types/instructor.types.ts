@@ -12,11 +12,11 @@ export interface InstructorListApiResponse {
 
 export interface Instructor {
   id: string;
-  name: string;
-  image: string;
-  roles: string[];
+  avaterUrl: string | null;
+  role: string[];
   skills: string[];
-  rating: number;
+  displayName: string;
+  ratingAverage: number;
   totalCourses: number;
 }
 
