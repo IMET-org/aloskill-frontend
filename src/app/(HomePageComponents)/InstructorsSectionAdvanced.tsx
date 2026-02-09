@@ -7,7 +7,7 @@ import BorderGradientButton from "@/components/buttons/BorderGradientButton.tsx"
 import GradientButton from "@/components/buttons/GradientButton.tsx";
 import SectionHeader from "@/components/sections/SectionHeader.tsx";
 import { apiClient } from "@/lib/api/client.ts";
-import { type Instructor, type InstructorListApiResponse } from "@/types/instructor.types.ts";
+import { type Instructor } from "@/types/instructor.types.ts";
 import { ArrowRightIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -30,23 +30,9 @@ export function InstructorsSectionAdvanced() {
         setLoading(true);
 
         // ✅ Fetch from homepage
-        const response = await apiClient.get<InstructorListApiResponse[]>("/user/instructors/all");
-        const transformInstructor = (apiData: InstructorListApiResponse): Instructor => ({
-          id: apiData.id,
-          name: apiData.displayName,
-          image:
-            apiData.avaterUrl ||
-            "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80",
-          roles: apiData.role || [],
-          skills: apiData.skills || [],
-          rating: Number(apiData.ratingAverage) || 0,
-          totalCourses: apiData.totalCourses || 0,
-        });
+        const response = await apiClient.get<Instructor[]>("/user/instructors/all");
         if (response.success && response.data) {
-          // take first 4
-          const transformed = response.data.slice(0, 4).map(transformInstructor);
-
-          setFeaturedInstructors(transformed);
+          setFeaturedInstructors(response.data);
         }
       } catch (error) {
         // console.error("Error:", error);
