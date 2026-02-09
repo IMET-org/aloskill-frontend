@@ -1,6 +1,17 @@
 "use client";
 
-import { BookOpen, Clock, Edit, Eye, Heart, MoreVertical, Star, Trash2, Users } from "lucide-react";
+import {
+  BookOpen,
+  Clock,
+  Edit,
+  Eye,
+  Heart,
+  MoreVertical,
+  ShoppingCart,
+  Star,
+  Trash2,
+  Users,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { memo, useState } from "react";
@@ -327,7 +338,7 @@ const CourseCard = memo(function CourseCard({
               <span className='text-sm font-medium text-gray-700 truncate'>{instructor.name}</span>
             </div>
 
-            {/* <div className={isOwner ? "hidden" : "flex items-center gap-2 shrink-0"}>
+            <div className={isOwner ? "hidden" : "flex items-center gap-2 shrink-0"}>
               {isEnrolled ? (
                 <Link href={`/watch-video/${id}`}>
                   <button
@@ -339,7 +350,7 @@ const CourseCard = memo(function CourseCard({
                 </Link>
               ) : dashboardActions ? (
                 <></>
-              ) : !course?.enrollments[0]?.userId ? (
+              ) : (
                 <>
                   {onAddToCart && (
                     <button
@@ -365,17 +376,8 @@ const CourseCard = memo(function CourseCard({
                     </button>
                   </Link>
                 </>
-              ) : (
-                <Link href={`/watch-video/${id}`}>
-                  <button
-                    type='button'
-                    className='px-4 py-1 bg-orange-600 text-white rounded text-md font-semibold hover:bg-orange-700 transition-all shadow-md hover:shadow-lg cursor-pointer'
-                  >
-                    Continue
-                  </button>
-                </Link>
               )}
-            </div> */}
+            </div>
           </div>
         </div>
       </div>
@@ -384,3 +386,40 @@ const CourseCard = memo(function CourseCard({
 });
 
 export default CourseCard;
+
+// !course?.enrollments[0]?.userId ? (
+//                 <>
+//                   {onAddToCart && (
+//                     <button
+//                       onClick={handleAddToCart}
+//                       disabled={isInCart}
+//                       className={`p-2 rounded transition-all cursor-pointer ${
+//                         isInCart
+//                           ? "bg-green-100 text-green-600 cursor-default"
+//                           : "bg-gray-100 text-gray-700 hover:bg-orange-100 hover:text-orange-600"
+//                       }`}
+//                       title={isInCart ? "In cart" : "Add to cart"}
+//                     >
+//                       <ShoppingCart className='w-4 h-4' />
+//                     </button>
+//                   )}
+
+//                   <Link href={`/checkout/${id}`}>
+//                     <button
+//                       type='button'
+//                       className='px-4 py-1 bg-linear-to-r from-orange-500 to-orange-600 text-white rounded text-md font-semibold hover:from-orange-600 hover:to-orange-700 transition-all shadow-md hover:shadow-lg whitespace-nowrap cursor-pointer'
+//                     >
+//                       Enroll
+//                     </button>
+//                   </Link>
+//                 </>
+//               ) : (
+//                 <Link href={`/watch-video/${id}`}>
+//                   <button
+//                     type='button'
+//                     className='px-4 py-1 bg-orange-600 text-white rounded text-md font-semibold hover:bg-orange-700 transition-all shadow-md hover:shadow-lg cursor-pointer'
+//                   >
+//                     Continue
+//                   </button>
+//                 </Link>
+//               )
