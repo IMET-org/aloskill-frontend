@@ -18,17 +18,15 @@ export default function PopularCoursesSection() {
   const [wishlistItems] = useState<Set<string>>(new Set());
 
   const router = useRouter();
-  const { setCartUpdate } = useSessionContext();
+  const { setCartUpdate, user } = useSessionContext();
 
-  // 🔹 Fetch courses from DB
   useEffect(() => {
     const fetchCourses = async () => {
       try {
         setIsLoading(true);
-        const response = await apiClient.get<CourseType[]>("/course/public/allCourses");
+        const response = await apiClient.get<CourseType[]>(`/course/public/allCourses?userId=${user.id}`);
         // const response = await apiClient.get<CourseType[]>("/course/public/allCourses?isHome=true");
         setCourses(response.data ?? []);
-        console.log("response home:", response);
       } catch (_error) {
         // console.error("Failed to fetch popular courses", error);
       } finally {
@@ -37,7 +35,7 @@ export default function PopularCoursesSection() {
     };
 
     fetchCourses();
-  }, []);
+  }, [user]);
 
   // const handleEnroll = useCallback((courseId: string) => {
   //   console.log("Enroll clicked:", courseId);
@@ -68,7 +66,7 @@ export default function PopularCoursesSection() {
   ));
 
   return (
-    <section className='py-16 md:py-24 bg-gradient-to-b from-white to-gray-50 relative'>
+    <section className='py-16 md:py-24 bg-linear-to-b from-white to-gray-50 relative'>
       <div className='absolute top-16 right-16 opacity-10 pointer-events-none'>
         <Pencil className='w-32 h-32 text-orange-400 rotate-12' />
       </div>
