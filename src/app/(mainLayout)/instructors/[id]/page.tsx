@@ -16,11 +16,13 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import type { InstructorDetail } from "../../../../types/instructor.types.ts";
+import { useSessionContext } from "../../../contexts/SessionContext.tsx";
 import { AboutTab } from "./about.tsx";
 import { CoursesTab } from "./courses.tsx";
 export default function InstructorDetailsPage() {
   const params = useParams();
   const instructorId = params["id"] as string;
+  const { user } = useSessionContext();
 
   const [activeTab, setActiveTab] = useState("about-us");
   const [instructor, setInstructor] = useState<InstructorDetail | null>(null);
@@ -33,8 +35,10 @@ export default function InstructorDetailsPage() {
         setLoading(true);
         setError(null);
 
-        const response = await apiClient.get<InstructorDetail>(`/user/instructor/${instructorId}`);
-        console.log("ins data: ", response);
+        const response = await apiClient.get<InstructorDetail>(
+          `/user/instructor/${instructorId}?userId=${user ? user.id : ""}`
+        );
+
         if (response.success && response.data) {
           // const transformed = transformInstructorDetail(response.data);
           setInstructor(response.data);
@@ -51,7 +55,7 @@ export default function InstructorDetailsPage() {
     if (instructorId) {
       fetchInstructor();
     }
-  }, [instructorId]);
+  }, [instructorId, user]);
 
   const tabs = [
     { id: "about-us", label: "About me" },

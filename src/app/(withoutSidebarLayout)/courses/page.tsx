@@ -39,7 +39,7 @@ export default function AllCoursesPage() {
     new Set(["category", "rating", "level"])
   );
 
-  const { setCartUpdate } = useSessionContext();
+  const { setCartUpdate, user } = useSessionContext();
 
   useEffect(() => {
     const storedCartItems =
@@ -166,7 +166,7 @@ export default function AllCoursesPage() {
       try {
         setIsLoading(true);
         const response = await apiClient.get<CourseType[]>(
-          `/course/public/allCourses?category=${encodeURIComponent(filteredQuery.category)}&level=${filteredQuery.level}&language=${filteredQuery.language}&rating=${filteredQuery.rating}&priceMin=${filteredQuery.priceRange[0]}&priceMax=${filteredQuery.priceRange[1]}`
+          `/course/public/allCourses?category=${encodeURIComponent(filteredQuery.category)}&level=${filteredQuery.level}&language=${filteredQuery.language}&rating=${filteredQuery.rating}&priceMin=${filteredQuery.priceRange[0]}&priceMax=${filteredQuery.priceRange[1]}&userId=${user ? user.id : ""}`
         );
         setCourses(response.data ?? []);
       } catch (_error) {
@@ -177,7 +177,7 @@ export default function AllCoursesPage() {
     };
 
     fetchCourses();
-  }, [filteredQuery]);
+  }, [filteredQuery, user]);
   const clearAllFilters = () => {
     setSearchQuery("");
     setSortBy("popular");
