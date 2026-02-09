@@ -1,17 +1,6 @@
 "use client";
 
-import {
-  BookOpen,
-  Clock,
-  Edit,
-  Eye,
-  Heart,
-  MoreVertical,
-  ShoppingCart,
-  Star,
-  Trash2,
-  Users,
-} from "lucide-react";
+import { BookOpen, Clock, Edit, Eye, Heart, MoreVertical, Star, Trash2, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { memo, useState } from "react";
@@ -338,9 +327,8 @@ const CourseCard = memo(function CourseCard({
               <span className='text-sm font-medium text-gray-700 truncate'>{instructor.name}</span>
             </div>
 
-            <div className={isOwner ? "hidden" : "flex items-center gap-2 shrink-0"}>
+            {/* <div className={isOwner ? "hidden" : "flex items-center gap-2 shrink-0"}>
               {isEnrolled ? (
-                /* If the student is enrolled, show only the Continue button */
                 <Link href={`/watch-video/${id}`}>
                   <button
                     type='button'
@@ -387,7 +375,7 @@ const CourseCard = memo(function CourseCard({
                   </button>
                 </Link>
               )}
-            </div>
+            </div> */}
           </div>
         </div>
       </div>
