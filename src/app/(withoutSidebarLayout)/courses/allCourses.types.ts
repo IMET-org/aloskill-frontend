@@ -70,6 +70,10 @@ export type CourseType = {
     progressValue: number;
     lastViewedAt: string | null;
   }[];
+
+  enrollments: {
+    userId: string;
+  }[];
 };
 
 export type CourseStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
@@ -113,7 +117,7 @@ export type CourseDetails = {
   tags: string[];
   category: string | undefined;
   totalWishListed: number;
-  createdBy: {  
+  createdBy: {
     displayName: string | undefined;
     avatarUrl: string | null | undefined;
   };

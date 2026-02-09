@@ -11,7 +11,6 @@ import {
   Trash2,
   Upload,
 } from "lucide-react";
-// import { useSession } from "next-auth/react";
 import { type ChangeEvent, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as tus from "tus-js-client";
@@ -51,8 +50,8 @@ export default function CourseCurriculum({
   });
   const [uploadError, setUploadError] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
+  const [fileLoading, setFileLoading] = useState<boolean>(false);
   const [uploadPercentage, setUploadPercentage] = useState<string>("");
-  // const { data: sessionData } = useSession();
   const { user } = useSessionContext();
 
   const [sections, setSections] = useState<ExtendedCourseModule[]>([
@@ -84,7 +83,7 @@ export default function CourseCurriculum({
     setValue,
     formState: { errors, isSubmitting },
   } = useForm();
-  console.log("error zd:", errors);
+
   const addSection = () => {
     setCourseData(prev => ({
       ...prev,
@@ -426,11 +425,11 @@ export default function CourseCurriculum({
   };
 
   const uploadFileToBunny = async (file: File[]): Promise<Array<{ name: string; url: string }>> => {
-    setLoading(true);
+    setFileLoading(true);
     setUploadError("");
     if (!user?.id) {
       setUploadError("User not authenticated.");
-      setLoading(false);
+      setFileLoading(false);
       return [{ name: "", url: "" }];
     }
 
@@ -466,7 +465,7 @@ export default function CourseCurriculum({
       setUploadError(error instanceof Error ? error.message : "An unknown error occurred.");
       return [{ name: "", url: "" }];
     } finally {
-      setLoading(false);
+      setFileLoading(false);
     }
   };
 
@@ -849,10 +848,9 @@ export default function CourseCurriculum({
     fileName?: string,
     type?: string
   ) => {
+    const selectedModule = courseData.modules.find(m => m.position === sectionId);
+    const lesson = selectedModule?.lessons.find(l => l.position === lectureId);
     if (type === "video") {
-      const selectedModule = courseData.modules.find(m => m.position === sectionId);
-      const lesson = selectedModule?.lessons.find(l => l.position === lectureId);
-
       if (lesson?.contentUrl?.url) {
         const deletedResult = await apiClient.delete("/course/delete-video", {
           videoUrl: lesson.contentUrl.url,
@@ -860,31 +858,71 @@ export default function CourseCurriculum({
         if (!deletedResult.success) {
           return;
         }
-      }
-    }
-    setCourseData(prev => ({
-      ...prev,
-      modules: prev.modules.map(module => {
-        if (module.position === sectionId) {
-          return {
-            ...module,
-            lessons: module.lessons.map(lesson => {
-              if (lesson.position === lectureId) {
-                if (type === "video") {
-                  return { ...lesson, contentUrl: { name: "", url: "" } };
-                }
+        if (deletedResult.success) {
+          setCourseData(prev => ({
+            ...prev,
+            modules: prev.modules.map(module => {
+              if (module.position === sectionId) {
                 return {
-                  ...lesson,
-                  files: lesson.files && lesson.files.filter(file => file.name !== fileName),
+                  ...module,
+                  lessons: module.lessons.map(lesson => {
+                    if (lesson.position === lectureId) {
+                      if (type === "video") {
+                        return { ...lesson, contentUrl: { name: "", url: "" } };
+                      }
+                      return {
+                        ...lesson,
+                        files: lesson.files && lesson.files.filter(file => file.name !== fileName),
+                      };
+                    }
+                    return lesson;
+                  }),
                 };
               }
-              return lesson;
+              return module;
             }),
-          };
+          }));
         }
-        return module;
-      }),
-    }));
+      }
+      return;
+    }
+
+    const lessonFile = lesson?.files?.find(file => file.name === fileName);
+
+    if (lessonFile) {
+      const deletedResult = await apiClient.delete("/course/delete-file", {
+        fileUrl: lessonFile.url,
+      });
+
+      if (!deletedResult.success) {
+        return;
+      }
+      if (deletedResult.success) {
+        setCourseData(prev => ({
+          ...prev,
+          modules: prev.modules.map(module => {
+            if (module.position === sectionId) {
+              return {
+                ...module,
+                lessons: module.lessons.map(lesson => {
+                  if (lesson.position === lectureId) {
+                    if (type === "video") {
+                      return { ...lesson, contentUrl: { name: "", url: "" } };
+                    }
+                    return {
+                      ...lesson,
+                      files: lesson.files && lesson.files.filter(file => file.name !== fileName),
+                    };
+                  }
+                  return lesson;
+                }),
+              };
+            }
+            return module;
+          }),
+        }));
+      }
+    }
   };
 
   const handleDeleteQuiz = (moduleId: number, lessonId: number, questionId: number) => {
@@ -1358,7 +1396,11 @@ export default function CourseCurriculum({
                               )}
 
                               {/* Add File For Lessons */}
-                              {lesson.files && lesson.files.length > 0 ? (
+                              {fileLoading ? (
+                                <div className='w-full rounded border border-dashed border-gray-200 p-3 flex flex-col items-center justify-start hover:bg-gray-100/40 transition-colors'>
+                                  <Loader className='w-4 h-4 animate-spin mx-auto my-auto' />
+                                </div>
+                              ) : lesson.files && lesson.files.length > 0 ? (
                                 <>
                                   <div className='w-full rounded border border-dashed border-gray-200 p-2 flex flex-col items-center justify-start hover:bg-gray-100/40 transition-colors'>
                                     {lesson.files.map((fileName, index) => (
@@ -1989,7 +2031,8 @@ export default function CourseCurriculum({
                                                 },
                                                 pattern: {
                                                   value: /^[^<>]*$/,
-                                                  message: "Option text must not contain any opening or closing HTML tags",
+                                                  message:
+                                                    "Option text must not contain any opening or closing HTML tags",
                                                 },
                                               }
                                             )}
@@ -2042,7 +2085,8 @@ export default function CourseCurriculum({
                                                 },
                                                 pattern: {
                                                   value: /^[^<>]*$/,
-                                                  message: "Option text must not contain any opening or closing HTML tags",
+                                                  message:
+                                                    "Option text must not contain any opening or closing HTML tags",
                                                 },
                                               }
                                             )}
@@ -2095,7 +2139,8 @@ export default function CourseCurriculum({
                                                 },
                                                 pattern: {
                                                   value: /^[^<>]*$/,
-                                                  message: "Option text must not contain any opening or closing HTML tags",
+                                                  message:
+                                                    "Option text must not contain any opening or closing HTML tags",
                                                 },
                                               }
                                             )}

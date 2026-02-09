@@ -344,21 +344,20 @@ const CourseCard = memo(function CourseCard({
                 <Link href={`/watch-video/${id}`}>
                   <button
                     type='button'
-                    className='px-4 py-1 bg-orange-600 text-white rounded-lg text-md font-semibold hover:bg-orange-700 transition-all shadow-md hover:shadow-lg'
+                    className='px-4 py-1 bg-orange-600 text-white rounded text-md font-semibold hover:bg-orange-700 transition-all shadow-md hover:shadow-lg cursor-pointer'
                   >
                     Continue
                   </button>
                 </Link>
               ) : dashboardActions ? (
                 <></>
-              ) : (
-                /* If not enrolled, show Cart and Enroll buttons */
+              ) : !course?.enrollments[0]?.userId ? (
                 <>
                   {onAddToCart && (
                     <button
                       onClick={handleAddToCart}
                       disabled={isInCart}
-                      className={`p-2 rounded-lg transition-all ${
+                      className={`p-2 rounded transition-all cursor-pointer ${
                         isInCart
                           ? "bg-green-100 text-green-600 cursor-default"
                           : "bg-gray-100 text-gray-700 hover:bg-orange-100 hover:text-orange-600"
@@ -372,12 +371,21 @@ const CourseCard = memo(function CourseCard({
                   <Link href={`/checkout/${id}`}>
                     <button
                       type='button'
-                      className='px-4 py-1 bg-linear-to-r from-orange-500 to-orange-600 text-white rounded-lg text-md font-semibold hover:from-orange-600 hover:to-orange-700 transition-all shadow-md hover:shadow-lg whitespace-nowrap'
+                      className='px-4 py-1 bg-linear-to-r from-orange-500 to-orange-600 text-white rounded text-md font-semibold hover:from-orange-600 hover:to-orange-700 transition-all shadow-md hover:shadow-lg whitespace-nowrap cursor-pointer'
                     >
                       Enroll
                     </button>
                   </Link>
                 </>
+              ) : (
+                <Link href={`/watch-video/${id}`}>
+                  <button
+                    type='button'
+                    className='px-4 py-1 bg-orange-600 text-white rounded text-md font-semibold hover:bg-orange-700 transition-all shadow-md hover:shadow-lg cursor-pointer'
+                  >
+                    Continue
+                  </button>
+                </Link>
               )}
             </div>
           </div>
