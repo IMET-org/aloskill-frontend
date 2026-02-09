@@ -414,7 +414,7 @@ export default function CourseDetailPage() {
                   {/* Price */}
                   <div className='p-4 sm:p-6 bg-linear-to-br from-orange-50 via-white to-purple-50'>
                     <div className='flex items-baseline gap-2 sm:gap-3 mb-3 sm:mb-4 flex-wrap'>
-                      {course?.discountPrice ? (
+                      {course?.discountPrice && course?.discountPrice > 0 ? (
                         <>
                           <span className='text-xl font-bold text-orange-dark'>
                             ${course?.discountPrice}
@@ -435,7 +435,7 @@ export default function CourseDetailPage() {
                       )}
                     </div>
 
-                    {course?.discountPrice && (
+                    {course?.discountPrice && course?.discountPrice > 0 ? (
                       <div className='flex items-center gap-2  text-sm text-red-600 mb-3 sm:mb-4'>
                         <Clock className='w-4 h-4 shrink-0' />
                         <span className='font-semibold'>
@@ -445,6 +445,8 @@ export default function CourseDetailPage() {
                           this price!
                         </span>
                       </div>
+                    ) : (
+                      <></>
                     )}
 
                     <div className='space-y-2 sm:space-y-3'>

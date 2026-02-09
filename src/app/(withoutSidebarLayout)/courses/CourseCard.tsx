@@ -59,7 +59,7 @@ const CourseCard = memo(function CourseCard({
   const minutes = Math.floor((totalSecond % 3600) / 60);
   const totalDurationInFormatted = `${hours}:${minutes.toString().padStart(2, "0")} mins`;
 
-  const price = discountPrice ?? originalPrice;
+  const price = discountPrice && discountPrice > 0 ? discountPrice : originalPrice;
 
   const instructor = {
     name: createdBy.displayName ?? "Unknown Instructor",
