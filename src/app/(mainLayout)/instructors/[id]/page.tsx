@@ -11,10 +11,12 @@ import {
   Users,
   Youtube,
 } from "lucide-react";
+import type { StaticImageData } from "next/image";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import userFallback from "../../../../../public/images/userFallback.png";
 import type { InstructorDetail } from "../../../../types/instructor.types.ts";
 import { useSessionContext } from "../../../contexts/SessionContext.tsx";
 import { AboutTab } from "./about.tsx";
@@ -34,13 +36,10 @@ export default function InstructorDetailsPage() {
       try {
         setLoading(true);
         setError(null);
-
         const response = await apiClient.get<InstructorDetail>(
           `/user/instructor/${instructorId}?userId=${user ? user.id : ""}`
         );
-
         if (response.success && response.data) {
-          // const transformed = transformInstructorDetail(response.data);
           setInstructor(response.data);
         } else {
           setError(response.message || "Failed to fetch instructor");
@@ -56,6 +55,16 @@ export default function InstructorDetailsPage() {
       fetchInstructor();
     }
   }, [instructorId, user]);
+
+  const [imgSrc, setImgSrc] = useState<string | StaticImageData>(userFallback);
+
+  useEffect(() => {
+    if (instructor?.avatarUrl) {
+      setImgSrc(encodeURI(instructor.avatarUrl));
+    } else {
+      setImgSrc(userFallback);
+    }
+  }, [instructor]);
 
   const tabs = [
     { id: "about-us", label: "About me" },
@@ -106,13 +115,10 @@ export default function InstructorDetailsPage() {
                 <Image
                   width={128}
                   height={128}
-                  src={instructor.avatarUrl}
+                  src={imgSrc}
                   alt={instructor.displayName}
                   className='w-full h-full object-cover'
-                  onError={e => {
-                    (e.target as HTMLImageElement).src =
-                      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80";
-                  }}
+                  onError={() => setImgSrc(userFallback)}
                 />
               </div>
               {/* {instructor.status === "approved" && (

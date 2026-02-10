@@ -25,7 +25,6 @@ const CourseCard = memo(function CourseCard({
   dashboardActions,
   isEnrolled,
   isOwner,
-  
 }: CourseCardProps) {
   const {
     id,
@@ -71,13 +70,9 @@ const CourseCard = memo(function CourseCard({
   const reviewCount = _count.reviews;
   const students = _count.enrollments;
 
-  const [imageError, setImageError] = useState(false);
+  const [imgSrc, setImgSrc] = useState(thumbnailUrl || "/images/course-placeholder.png");
   const [isWishlistLoading, setIsWishlistLoading] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
-
-  const handleImageError = () => {
-    setImageError(true);
-  };
 
   const handleWishlistToggle = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -128,20 +123,19 @@ const CourseCard = memo(function CourseCard({
           className='absolute inset-0 z-0'
           aria-label={title}
         >
-          {!imageError ? (
-            <Image
-              src={thumbnailUrl ? encodeURI(thumbnailUrl) : "/images/course-placeholder.png"}
-              alt={title}
-              fill
-              sizes='(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw'
-              className='object-cover hover:scale-110 transition-transform duration-500'
-              onError={handleImageError}
-            />
-          ) : (
-            <div className='flex items-center justify-center h-full bg-linear-to-br from-gray-200 to-gray-300'>
-              <BookOpen className='w-16 h-16 text-gray-400' />
-            </div>
-          )}
+          <Image
+            src={imgSrc}
+            alt={title}
+            fill
+            sizes='(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw'
+            className='object-cover hover:scale-110 transition-transform duration-500'
+            unoptimized // ✅ important for CDN images
+            onError={() => {
+              if (imgSrc !== "/images/course-placeholder.png") {
+                setImgSrc("/images/course-placeholder.png");
+              }
+            }}
+          />
         </Link>
 
         {/* DASHBOARD MENU (OUTSIDE LINK) */}
