@@ -66,7 +66,7 @@ export default function InstructorDetailsPage() {
   // Loading State
   if (loading) {
     return (
-      <div className='min-h-screen bg-gradient-to-br from-orange-50 via-purple-50 to-blue-50 flex items-center justify-center'>
+      <div className='min-h-screen bg-linear-to-br from-orange-50 via-purple-50 to-blue-50 flex items-center justify-center'>
         <div className='text-center'>
           <Loader2 className='w-16 h-16 text-[#074079] animate-spin mx-auto mb-4' />
           <p className='text-lg text-gray-600 font-semibold'>Loading instructor details...</p>
@@ -78,7 +78,7 @@ export default function InstructorDetailsPage() {
   // Error State
   if (error || !instructor) {
     return (
-      <div className='min-h-screen bg-gradient-to-br from-orange-50 via-purple-50 to-blue-50 flex items-center justify-center'>
+      <div className='min-h-screen bg-linear-to-br from-orange-50 via-purple-50 to-blue-50 flex items-center justify-center'>
         <div className='max-w-md mx-auto text-center p-8 bg-white rounded-lg shadow-xl'>
           <div className='text-6xl mb-4'>⚠️</div>
           <h2 className='text-2xl font-bold text-red-600 mb-2'>Instructor Not Found</h2>
@@ -95,7 +95,7 @@ export default function InstructorDetailsPage() {
   }
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-orange-50 via-purple-50 to-blue-50 py-16'>
+    <div className='min-h-screen bg-linear-to-br from-orange-50 via-purple-50 to-blue-50 py-16'>
       <div className='max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8'>
         {/* Profile Card */}
         <div className='bg-white rounded-lg shadow-xl p-6 sm:p-8 mb-6 animate-fade-in'>

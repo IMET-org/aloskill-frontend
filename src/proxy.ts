@@ -39,7 +39,19 @@ const SECURITY_CONFIG = {
 
 export default withAuth(
   async function proxy(request: NextRequest) {
+    const ua = request.headers.get("user-agent") || "unknown";
+    console.log("userAgent : ", new Date().toLocaleTimeString(), ua);
+
     const response = NextResponse.next();
+
+    response.cookies.set("oauth_ua", ua, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: true,
+      path: "/",
+      maxAge: 60 * 5,
+    });
+
     const { pathname, searchParams } = request.nextUrl;
     const clientIP = getClientIP(request);
 
