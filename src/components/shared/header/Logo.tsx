@@ -4,14 +4,16 @@ import logo from "../../../../public/images/aloskill-logo.avif";
 const Logo = () => {
   return (
     <Link
-      href='/'
-      className='flex items-center gap-2 cursor-pointer select-none'
+      href={"/"}
+      aria-label='Go to homepage'
+      className={"flex items-center gap-2 select-none"}
     >
       <Image
         src={logo}
-        alt='aloskill logo'
-        width={100}
-        height={100}
+        alt='Aloskill logo'
+        priority
+        className='w-24 md:w-32 lg:w-48 h-auto object-contain'
+        sizes='(max-width: 768px) 128px, 192px'
       />
     </Link>
   );

@@ -12,7 +12,7 @@ export interface InstructorListApiResponse {
 
 export interface Instructor {
   id: string;
-  avaterUrl: string | null;
+  avatarUrl: string | null;
   role: string[];
   skills: string[];
   displayName: string;
@@ -22,7 +22,7 @@ export interface Instructor {
 
 export interface InstructorDetail {
   userId: string;
-  avatarUrl: string;
+  avatarUrl: string | null;
   displayName: string;
   ratingAverage: number;
   totalCourses: number;

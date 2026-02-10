@@ -4,7 +4,8 @@ import type { InstructorCardProps } from "@/types/instructor.types";
 import { ArrowRight, Award, Share2, Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-
+import { useState } from "react";
+import userFallback from "../../../../public/images/userFallback.png";
 function InstructorCard({
   instructor,
   isHovered,
@@ -12,6 +13,8 @@ function InstructorCard({
   onLeave,
   animationDelay = 0,
 }: InstructorCardProps) {
+  const [imgSrc, setImgSrc] = useState(instructor?.avatarUrl || userFallback);
+
   const getBorderColor = () => {
     const colors = [
       "#3b82f6", // blue
@@ -73,16 +76,12 @@ function InstructorCard({
         {/* Instructor Image */}
         <div className='relative h-72 sm:h-80 overflow-hidden bg-gray-200'>
           <Image
-            width={400}
-            height={400}
-            src={instructor.avaterUrl || ""}
-            alt={instructor.displayName || "Instructor Image"}
-            className='w-full h-full object-cover object-center hover:scale-110 transition-transform duration-500'
-            onError={e => {
-              // Fallback to placeholder if image fails to load
-              (e.target as HTMLImageElement).src =
-                "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80";
-            }}
+            width={128}
+            height={128}
+            src={imgSrc}
+            alt={instructor.displayName}
+            className='w-full h-full object-cover'
+            onError={() => setImgSrc(userFallback)}
           />
 
           {/* Hover Overlay with Stats */}
@@ -144,7 +143,9 @@ function InstructorCard({
         <div className='absolute bottom-4 left-4 right-4 bg-white rounded-lg p-2 shadow-lg'>
           <div className='flex items-center justify-between'>
             <div className='flex-1 min-w-0'>
-              <h3 className='text-md font-bold text-gray-900 mb-1 truncate'>{instructor.displayName}</h3>
+              <h3 className='text-md font-bold text-gray-900 mb-1 truncate'>
+                {instructor.displayName}
+              </h3>
               <p className='text-sm text-gray-600  truncate mb-1'>
                 {instructor?.skills && instructor?.skills.join(", ")}
               </p>
