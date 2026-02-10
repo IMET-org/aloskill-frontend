@@ -43,6 +43,11 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
+        hostname: "aloskill-backend-production.up.railway.app",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
         hostname: "securepay.sslcommerz.com",
         pathname: "/**",
       },
