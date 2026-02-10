@@ -18,6 +18,8 @@ const SORT_OPTIONS = [
   { value: "price-high", label: "Price: High to Low" },
 ];
 
+// export const dynamic = "force-static";
+
 export default function AllCoursesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredQuery, setFilteredQuery] = useState({
