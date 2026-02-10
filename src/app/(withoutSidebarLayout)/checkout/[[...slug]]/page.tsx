@@ -269,7 +269,7 @@ export default function CheckoutPage() {
                     <Image
                       width={80}
                       height={80}
-                      src={item.thumbnailUrl || ""}
+                      src={item.thumbnailUrl ? encodeURI(item.thumbnailUrl) : ""}
                       alt='Course Thumbnail'
                       className='w-16 h-16 object-cover rounded-lg'
                     />

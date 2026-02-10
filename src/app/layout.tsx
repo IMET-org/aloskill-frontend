@@ -1,7 +1,6 @@
 import { hindSiliguri, inter, playfair } from "@/styles/fonts.ts";
 import type { Metadata } from "next";
 import "./globals.css";
-// import AuthProvider from "./providers/session-provider.tsx";
 import { SessionProvider } from "./contexts/SessionContext.tsx";
 
 export const metadata: Metadata = {
@@ -74,9 +73,6 @@ export default function RootLayout({
           } as React.CSSProperties
         }
       >
-        {/* <AuthProvider>
-          <main>{children}</main>
-        </AuthProvider> */}
         <SessionProvider>
           <main>{children}</main>
         </SessionProvider>

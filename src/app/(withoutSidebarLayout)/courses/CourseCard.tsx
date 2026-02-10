@@ -130,7 +130,7 @@ const CourseCard = memo(function CourseCard({
         >
           {!imageError ? (
             <Image
-              src={thumbnailUrl || "/images/course-placeholder.png"}
+              src={thumbnailUrl ? encodeURI(thumbnailUrl) : "/images/course-placeholder.png"}
               alt={title}
               fill
               sizes='(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw'
