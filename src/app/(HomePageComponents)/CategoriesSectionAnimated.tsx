@@ -1,4 +1,4 @@
-"use client";
+// "use client";
 
 import BorderGradientButton from "@/components/buttons/BorderGradientButton.tsx";
 import SectionMiddleHeader from "@/components/sections/SectionMiddleHeader.tsx";
@@ -13,7 +13,7 @@ import {
   Music,
   Palette,
 } from "lucide-react";
-import { useState } from "react";
+// import { useState } from "react";
 
 const categoriesData = [
   {
@@ -91,7 +91,7 @@ const categoriesData = [
 ];
 
 export function CategoriesSectionAnimated() {
-  const [hoveredId, setHoveredId] = useState<number | null>(null);
+  // const [hoveredId, setHoveredId] = useState<number | null>(null);
 
   return (
     <section className='py-16 md:py-24 bg-linear-to-b from-white via-gray-50 to-white'>
@@ -105,20 +105,19 @@ export function CategoriesSectionAnimated() {
         <div className='py-16 grid grid-cols-2  lg:grid-cols-4 gap-4 xl:gap-6'>
           {categoriesData.map((category, index) => {
             const Icon = category.icon;
-            const isHovered = hoveredId === category.id;
+            // const isHovered = hoveredId === category.id;
 
             return (
               <div
                 key={category.id}
                 className={`
                   group shadow-sm relative ${category.bgColor} rounded-lg px-6 py-4
-                  transition-all duration-300 
-                  hover:shadow-xl hover:-translate-y-2
-                  cursor-pointer border border-transparent hover:border-gray-200
-                  ${isHovered ? "scale-105" : "scale-100"}
+                  transition-all duration-300 scale-100 hover:shadow-xl hover:-translate-y-2 cursor-pointer border border-transparent hover:border-gray-200 hover:scale-105
                 `}
-                onMouseEnter={() => setHoveredId(category.id)}
-                onMouseLeave={() => setHoveredId(null)}
+
+                  // ${isHovered ? "scale-105" : "scale-100"}
+                // onMouseEnter={() => setHoveredId(category.id)}
+                // onMouseLeave={() => setHoveredId(null)}
                 style={{
                   animationDelay: `${index * 100}ms`,
                 }}
@@ -127,12 +126,10 @@ export function CategoriesSectionAnimated() {
                 <div className='mb-4'>
                   <div
                     className={`
-                    w-14 h-14 ${category.bgColor} rounded-xl 
-                    flex items-center justify-center
-                    transition-all duration-300
-                    shadow-sm
-                    ${isHovered ? "scale-110 rotate-6" : "scale-100 rotate-0"}
+                    w-14 h-14 ${category.bgColor} rounded-xl
+                    flex items-center justify-center scale-100 rotate-0 transition-all duration-300 shadow-sm hover:scale-110 hover:rotate-6
                   `}
+                  // ${isHovered ? "scale-110 rotate-6" : "scale-100 rotate-0"}
                   >
                     <Icon className={`w-7 h-7 ${category.iconColor}`} />
                   </div>
@@ -142,9 +139,10 @@ export function CategoriesSectionAnimated() {
                 <div className='space-y-1 mb-3'>
                   <h4
                     className={`
-                    text-lg font-bold transition-colors
-                    ${isHovered ? "text-orange-600" : "text-gray-900"}
+                    text-lg text-gray-900 font-bold transition-colors hover:text-orange-600
+
                   `}
+                  // ${isHovered ? "text-orange-600" : "text-gray-900"}
                   >
                     {category.title}
                   </h4>
@@ -154,10 +152,11 @@ export function CategoriesSectionAnimated() {
                 {/* Course Count (Shows on Hover) */}
                 <div
                   className={`
-    hidden md:flex items-center gap-2 text-sm font-semibold text-gray-700
-    transition-all duration-300
-    ${isHovered ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"}
-  `}
+                    hidden md:flex items-center gap-2 text-sm font-semibold text-gray-700 opacity-0 translate-y-2
+                    transition-all duration-300 hover:opacity-100 hover:translate-y-0
+
+                  `}
+                  // ${isHovered ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"}
                 >
                   <span>{category.courses} Courses</span>
                   <ArrowRight className='w-4 h-4' />
@@ -166,10 +165,10 @@ export function CategoriesSectionAnimated() {
                 {/* Decorative Corner */}
                 <div
                   className={`
-                  absolute top-6 right-6 
-                  transition-all duration-300
-                  ${isHovered ? "opacity-100 scale-100" : "opacity-0 scale-50"}
+                  absolute top-6 right-6 opacity-0 scale-50 transition-all duration-300 hover:opacity-100 hover:scale-100
+
                 `}
+                // ${isHovered ? "opacity-100 scale-100" : "opacity-0 scale-50"}
                 >
                   <div className='w-8 h-8 bg-white/50 rounded-full flex items-center justify-center'>
                     <ArrowRight className='w-4 h-4 text-gray-600' />
@@ -184,9 +183,9 @@ export function CategoriesSectionAnimated() {
         <div className='text-center'>
           <BorderGradientButton
             // onClick={() => console.log("View all button clicked")}
-            icon={ArrowRight}
+            // icon={ArrowRight}
           >
-            Browse All Categories
+            Browse All Categories <ArrowRight/>
           </BorderGradientButton>
         </div>
       </div>

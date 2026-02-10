@@ -1,7 +1,8 @@
 
-"use client";
+// "use client";
 
 import { Code2, PenTool, Rocket, Search } from "lucide-react";
+import styles from './process.module.css';
 
 const steps = [
   {
@@ -42,13 +43,13 @@ export default function ProcessPerfect() {
         <div className='mb-20 text-center'>
           <h2 className='text-3xl font-bold tracking-tight text-slate-900 md:text-5xl '>
             The Execution{" "}
-            <span className='text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-fuchsia-600'>
+            <span className='text-transparent bg-clip-text bg-linear-to-r from-blue-600 to-fuchsia-600'>
               Flow
             </span>
           </h2>
         </div>
 
-        {/* ZIG-ZAG GRID LAYOUT 
+        {/* ZIG-ZAG GRID LAYOUT
           - Mobile: Single column, vertical connecting lines.
           - Desktop: Two columns, zig-zag SVG connectors.
         */}
@@ -122,14 +123,14 @@ function ProcessCard({ step }: { step: any }) {
     <div className='group relative z-10 h-full rounded-xl border border-slate-200 bg-white/50 p-8 backdrop-blur-sm transition-all duration-500 hover:-translate-y-2 hover:border-transparent hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] ]'>
       {/* Hover Gradient Border (Optional sleek effect) */}
       <div
-        className={`absolute inset-0 -z-10 rounded-xl opacity-0 transition-opacity duration-500 group-hover:opacity-100 bg-gradient-to-br ${step.color} p-[1px]`}
+        className={`absolute inset-0 -z-10 rounded-xl opacity-0 transition-opacity duration-500 group-hover:opacity-100 bg-linear-to-br ${step.color} p-px`}
       >
         <div className='h-full w-full rounded-xl bg-white ' />
       </div>
 
       <div className='flex items-center justify-between gap-4'>
         <div
-          className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${step.color} text-white shadow-lg shadow-black/5`}
+          className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-linear-to-br ${step.color} text-white shadow-lg shadow-black/5`}
         >
           <step.icon className='h-6 w-6' />
         </div>
@@ -150,7 +151,7 @@ function ProcessCard({ step }: { step: any }) {
 function MobileConnector() {
   return (
     <div className='absolute -bottom-12 left-1/2 h-12 w-px -translate-x-1/2 md:hidden'>
-      <div className='h-full w-full bg-gradient-to-b from-slate-300 to-transparent '></div>
+      <div className='h-full w-full bg-linear-to-b from-slate-300 to-transparent '></div>
     </div>
   );
 }
@@ -205,22 +206,8 @@ function BezierCurve({ direction, color }: { direction: "left" | "right"; color:
         strokeWidth='2'
         strokeDasharray='8 8'
         fill='none'
-        className='animate-flow-march'
+        className={styles['animateFlowMarch']}
       />
-
-      <style jsx>{`
-        .animate-flow-march {
-          animation: flowMarch 1.5s linear infinite;
-        }
-        @keyframes flowMarch {
-          from {
-            stroke-dashoffset: 16;
-          }
-          to {
-            stroke-dashoffset: 0;
-          }
-        }
-      `}</style>
     </svg>
   );
 }

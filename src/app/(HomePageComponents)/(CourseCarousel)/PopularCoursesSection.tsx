@@ -27,7 +27,6 @@ export default function PopularCoursesSection() {
         const response = await apiClient.get<CourseType[]>(
           `/course/public/allCourses?userId=${user ? user.id : ""}`
         );
-        // const response = await apiClient.get<CourseType[]>("/course/public/allCourses?isHome=true");
         setCourses(response.data ?? []);
       } catch (_error) {
         // console.error("Failed to fetch popular courses", error);
