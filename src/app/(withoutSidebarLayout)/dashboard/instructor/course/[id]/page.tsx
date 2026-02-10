@@ -120,7 +120,11 @@ const CourseDetailPage = () => {
             {/* Course Thumbnail */}
             <div className='shrink-0'>
               <Image
-                src={courseDetails.thumbnailUrl || "/images/course-placeholder.png"}
+                src={
+                  courseDetails.thumbnailUrl
+                    ? encodeURI(courseDetails.thumbnailUrl)
+                    : "/images/course-placeholder.png"
+                }
                 alt={courseDetails.title}
                 width={400}
                 height={225}
