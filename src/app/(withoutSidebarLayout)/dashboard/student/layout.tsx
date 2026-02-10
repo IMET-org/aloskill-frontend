@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Suspense } from "react";
+
 export default function StudentLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { user } = useSessionContext();
@@ -22,69 +23,78 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
 
   return (
     <section className='w-full'>
-      {/* 1. Gradient Background */}
-      <div className='h-48 w-full bg-linear-to-r from-orange-100 via-purple-100 to-orange-100' />
-      <div className='relative -mt-32  min-h-screen w-[83%] mx-auto '>
-        {/* back home */}
-        <div className='w-full px-4 pt-4'>
+      {/* Gradient Background */}
+      <div className='h-32 sm:h-40 md:h-48 w-full bg-linear-to-r from-orange-100 via-purple-100 to-orange-100' />
+
+      <div className='relative -mt-20 sm:-mt-24 md:-mt-32 min-h-screen w-full max-w-7xl mx-auto px-3 sm:px-6'>
+        {/* Back Home */}
+        <div className='w-full pt-4'>
           <Link
             href='/'
             className='hover:text-orange-dark'
           >
-            <p className='flex gap-2 items-center'>
+            <p className='flex gap-2 items-center text-sm sm:text-base'>
               <ChevronLeft /> Back to the Home
             </p>
           </Link>
         </div>
 
-        <div className='w-full px-4 py-4'>
-          {/* Header Card - Shared across all pages */}
-          <div className='bg-white rounded shadow-sm  pt-6 mb-6'>
-            <div className='flex items-center px-12 justify-between mb-4'>
-              <div className='flex items-center gap-4'>
-                <div className='w-16 h-16 border-2 border-orange rounded-full bg-gray-300 overflow-hidden'>
+        <div className='w-full py-4'>
+          {/* Header Card */}
+          <div className='bg-white rounded shadow-sm pt-4 sm:pt-6 mb-6'>
+            {/* Top Header */}
+            <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 px-4 sm:px-8 md:px-12 mb-4'>
+              {/* Profile Section */}
+              <div className='flex items-center gap-3 sm:gap-4'>
+                <div className='w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 border-2 border-orange rounded-full bg-gray-300 overflow-hidden'>
                   <Image
                     width={80}
                     height={80}
                     src={user?.profilePicture || "/image/avater.png"}
-                    alt='Kevin Gilbert'
+                    alt='User Avatar'
                     className='w-full h-full object-cover'
                   />
                 </div>
+
                 <div>
-                  <h2 className='text-lg font-semibold text-gray-900'>{user?.name}</h2>
-                  {/* <p className='text-gray-500 text-sm'>Web Designer & Best-Selling Instructor</p> */}
+                  <h2 className='text-base sm:text-lg font-semibold text-gray-900'>{user?.name}</h2>
                 </div>
               </div>
+
+              {/* Become Instructor Button */}
               <Link
                 href={"/auth/instructor-signup"}
-                className='px-4 py-2 bg-orange-50 text-orange-500 rounded font-medium hover:bg-orange-100 transition-colors flex items-center gap-2'
+                className='w-full sm:w-auto text-center px-3 sm:px-4 py-2 bg-orange-50 text-orange-500 rounded font-medium hover:bg-orange-100 transition-colors flex items-center justify-center gap-2 text-sm sm:text-base'
               >
                 Become Instructor
                 <ChevronRight />
               </Link>
             </div>
 
-            {/* Navigation - Works with browser back/forward */}
-            <nav className='flex justify-around border-t pt-4'>
-              {navItems.map(item => (
-                <Link
-                  key={item.path}
-                  href={item.path}
-                  className={`pb-2 font-medium transition-colors relative ${
-                    pathname === item.path ? "text-orange-500" : "text-gray-600 hover:text-gray-900"
-                  }`}
-                >
-                  {item.name}
-                  {pathname === item.path && (
-                    <span className='absolute bottom-0 left-0 right-0 h-0.5 bg-orange-500'></span>
-                  )}
-                </Link>
-              ))}
+            {/* Navigation */}
+            <nav className='border-t pt-2 sm:pt-4'>
+              <div className='flex gap-4 sm:gap-6 overflow-x-auto px-2 sm:px-6 md:px-10 scrollbar-hide'>
+                {navItems.map(item => (
+                  <Link
+                    key={item.path}
+                    href={item.path}
+                    className={`whitespace-nowrap pb-2 font-medium text-sm sm:text-base transition-colors relative ${
+                      pathname === item.path
+                        ? "text-orange-500"
+                        : "text-gray-600 hover:text-gray-900"
+                    }`}
+                  >
+                    {item.name}
+                    {pathname === item.path && (
+                      <span className='absolute bottom-0 left-0 right-0 h-0.5 bg-orange-500'></span>
+                    )}
+                  </Link>
+                ))}
+              </div>
             </nav>
           </div>
 
-          {/* Page Content with Suspense for loading states */}
+          {/* Page Content */}
           <Suspense fallback={<LoadingFallback />}>{children}</Suspense>
         </div>
       </div>
@@ -92,10 +102,9 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
   );
 }
 
-// Loading fallback component
 function LoadingFallback() {
   return (
-    <div className='bg-white rounded-lg shadow-sm p-8'>
+    <div className='bg-white rounded-lg shadow-sm p-6 sm:p-8'>
       <div className='animate-pulse space-y-4'>
         <div className='h-4 bg-gray-200 rounded w-3/4'></div>
         <div className='h-4 bg-gray-200 rounded w-1/2'></div>
@@ -104,97 +113,3 @@ function LoadingFallback() {
     </div>
   );
 }
-
-// "use client";
-// import { useSessionContext } from "@/app/contexts/SessionContext.tsx";
-// import {
-//   Calendar,
-//   GraduationCap,
-//   LayoutDashboard,
-//   LogOut,
-//   Menu,
-//   MessageSquare,
-//   Settings,
-//   Star,
-// } from "lucide-react";
-// import Image from "next/image";
-// import Link from "next/link";
-// import { usePathname } from "next/navigation";
-// import React, { useState } from "react";
-// export default function StudentLayout({ children }: { children: React.ReactNode }) {
-//   const pathname = usePathname();
-//   const { user } = useSessionContext();
-//   const navItems = [
-//     { name: "Dashboard", icon: LayoutDashboard, path: "/dashboard/student" },
-//     { name: "Courses", icon: GraduationCap, path: "/dashboard/student/courses" },
-//     { name: "Teachers", icon: Star, path: "/dashboard/student/teachers" },
-//     { name: "Message", icon: Calendar, path: "/dashboard/student/message" },
-//     { name: "Wishlist", icon: MessageSquare, path: "/dashboard/student/wishlist" },
-//     { name: "Purchase", icon: MessageSquare, path: "/dashboard/student/purchase" },
-//     { name: "Settings", icon: Settings, path: "/dashboard/student/settings" },
-//   ];
-//   const [isCollapsed, setIsCollapsed] = useState(false);
-
-//   return (
-//     <div className='flex min-h-screen bg-[#E9F3EE] p-6 '>
-//       {/* Sidebar */}
-//       <aside
-//         className={`${isCollapsed ? "w-24" : "w-50"}  bg-orange rounded-lg flex flex-col text-white p-8`}
-//       >
-//         <button
-//           className='mb-4'
-//           type='button'
-//           onClick={() => setIsCollapsed(prev => !prev)}
-//         >
-//           <Menu size={24} />
-//         </button>
-//         <div className='flex flex-col items-center mb-6'>
-//           <div className={`relative ${isCollapsed ? "w-12 h-12" : "w-20 h-20"} mb-4`}>
-//             {/* Profile Ring */}
-//             <div className='absolute inset-0 border-3 border-orange-300 rounded-full'></div>
-//             <Image
-//               src={user?.image || "/api/placeholder/80/80"}
-//               width={100}
-//               height={100}
-//               alt={user?.name || "User Avatar"}
-//               className='rounded-full w-full h-full object-cover p-1'
-//             />
-//           </div>
-//           {/* <h2
-//             className={`text-lg font-semibold text-(--color-text-dark) ${isCollapsed ? "hidden" : "block"}`}
-//           >
-//             {user?.name}
-//           </h2> */}
-//         </div>
-
-//         <nav className='flex-1 space-y-4 '>
-//           {navItems.map(item => (
-//             <Link
-//               key={item.path}
-//               href={item.path}
-//               className={`flex items-center ${isCollapsed ? "justify-center" : "gap-4 px-2"} py-2 rounded-md transition-all ${
-//                 pathname === item.path ? "bg-white text-(--color-text-dark)" : "hover:bg-white/10"
-//               }`}
-//             >
-//               <item.icon size={isCollapsed ? 26 : 24} />
-
-//               <span
-//                 className={`m-0 p-0 font-medium text-(--color-text-dark) ${isCollapsed && "hidden"}`}
-//               >
-//                 {item.name}
-//               </span>
-//             </Link>
-//           ))}
-//         </nav>
-
-//         <button className='flex items-center gap-4 px-4 py-3 mt-auto hover:bg-white/10 rounded-xl transition-all'>
-//           <LogOut size={20} />
-//           <span>Log out</span>
-//         </button>
-//       </aside>
-
-//       {/* Main Content Area */}
-//       <main className='flex-1 ml-8 overflow-y-auto'>{children}</main>
-//     </div>
-//   );
-// }
