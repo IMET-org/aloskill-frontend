@@ -1,4 +1,4 @@
-"use client";
+// "use client";
 
 import { ArrowUpRight } from "lucide-react";
 

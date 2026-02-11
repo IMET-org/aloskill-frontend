@@ -80,6 +80,7 @@ function InstructorCard({
             height={128}
             src={imgSrc}
             alt={instructor.displayName}
+            unoptimized
             className='w-full h-full object-cover'
             onError={() => setImgSrc(userFallback)}
           />
