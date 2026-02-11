@@ -4,12 +4,7 @@ import { useSessionContext } from "@/app/contexts/SessionContext.tsx";
 import BorderGradientButton from "@/components/buttons/BorderGradientButton.tsx";
 import GradientButton from "@/components/buttons/GradientButton.tsx";
 import { apiClient } from "@/lib/api/client.ts";
-import {
-  courseAddToCartHandler,
-  FadeIn,
-  getFileIdFromUrl,
-  parseCourseDescription,
-} from "@/lib/course/utils.tsx";
+import { FadeIn, getFileIdFromUrl, parseCourseDescription } from "@/lib/course/utils.tsx";
 import {
   Award,
   Calendar,
@@ -37,6 +32,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { courseAddToCartHandler } from "../../../../lib/course/courseHelper.ts";
 import type { CourseDetailsPublic } from "../allCourses.types.ts";
 import { CurriculumTab } from "./(tabs)/CurriculumTab.tsx";
 import InstructorTab from "./(tabs)/InstructorTab.tsx";

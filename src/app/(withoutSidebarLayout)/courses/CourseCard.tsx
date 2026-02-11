@@ -16,6 +16,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { memo, useState } from "react";
 import type { CourseCardProps, CourseStatus } from "./allCourses.types.ts";
+import { useSessionContext } from '../../contexts/SessionContext.tsx';
 const CourseCard = memo(function CourseCard({
   course,
   onAddToCart,
@@ -129,7 +130,7 @@ const CourseCard = memo(function CourseCard({
             fill
             sizes='(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw'
             className='object-cover hover:scale-110 transition-transform duration-500'
-            unoptimized 
+            unoptimized
             onError={() => {
               if (imgSrc !== "/images/course-placeholder.png") {
                 setImgSrc("/images/course-placeholder.png");
