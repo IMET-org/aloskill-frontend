@@ -168,16 +168,18 @@ export default function CourseDetailPage() {
     courseAddToCartHandler(courseId);
     setCartUpdate?.(prev => !prev);
   };
+
   if (isLoading) {
     return (
-      <div className='flex items-center justify-center min-h-screen'>
-        <div className='animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900'></div>
+      <div className='font-medium flex items-center justify-center gap-3 min-h-screen'>
+        {/* <div className='animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900'></div> */}
+        <Loader className='w-10 h-10 animate-spin' /> Loading Course...
       </div>
     );
   }
 
   return (
-    <div className='min-h-screen bg-gray-50 max-w-[1420px] mx-auto py-18'>
+    <div className='min-h-screen bg-gray-50 max-w-[1420px] mx-auto py-10'>
       {/* Breadcrumb */}
       <div className=''>
         <div className='  px-4 sm:px-6 lg:px-8 py-3 sm:py-4'>

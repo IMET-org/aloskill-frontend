@@ -62,6 +62,8 @@ export type CourseType = {
   _count: {
     enrollments: number;
     reviews: number;
+    LessonProgress: number;
+    courseInstructors: number;
   };
 
   lessonProgress: {
