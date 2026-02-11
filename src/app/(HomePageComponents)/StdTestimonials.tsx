@@ -1,4 +1,4 @@
-"use client";
+// "use client";
 
 import SectionHeader from "@/components/sections/SectionHeader.tsx";
 import { ArrowUpRight, Quote, TrendingUp } from "lucide-react";
@@ -82,7 +82,7 @@ export default function StdTestimonials() {
               key={idx}
               className={`break-inside-avoid rounded-lg p-1 ${
                 t.highlight
-                  ? "bg-gradient-to-br from-indigo-500 via-fuchsia-500 to-pink-500"
+                  ? "bg-linear-to-br from-indigo-500 via-fuchsia-500 to-pink-500"
                   : "bg-transparent"
               }`}
             >
