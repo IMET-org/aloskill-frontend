@@ -14,10 +14,10 @@ import {
 const SECURITY_CONFIG = {
   // Rate limiting
   RATE_LIMITS: {
-    AUTH: { max: 5, windowMs: 15 * 60 * 1000 }, // 5 attempts per 15 min
-    VIDEO: { max: 20, windowMs: 60 * 1000 }, // 20 requests per minute
-    API: { max: 100, windowMs: 60 * 1000 }, // 100 requests per minute
-    EXAM: { max: 10, windowMs: 30 * 1000 }, // 10 requests per 30 sec
+    AUTH: { max: 5, windowMs: 15 * 60 * 1000 },
+    VIDEO: { max: 20, windowMs: 60 * 1000 },
+    API: { max: 100, windowMs: 60 * 1000 },
+    EXAM: { max: 10, windowMs: 30 * 1000 },
     DEFAULT: { max: 200, windowMs: 60 * 1000 },
   },
 
@@ -200,27 +200,27 @@ export default withAuth(
       // === PHASE 2: AUTHENTICATION & SESSION SECURITY ===
 
       // 5. Session Security & Anomaly Detection
-      if (token) {
-        try {
-          const sessionCheck = await validateSessionSecurity(token, request);
-          if (!sessionCheck.valid) {
-            await auditLogger.logThreat(auditId, "session_anomaly", sessionCheck);
-            return NextResponse.redirect(
-              new URL(
-                `/auth/signout?reason=security&anomaly=${sessionCheck["anomaly"]}`,
-                request.url
-              )
-            );
-          }
+      // if (token) {
+      //   try {
+      //     const sessionCheck = await validateSessionSecurity(token, request);
+      //     if (!sessionCheck.valid) {
+      //       await auditLogger.logThreat(auditId, "session_anomaly", sessionCheck);
+      //       return NextResponse.redirect(
+      //         new URL(
+      //           `/auth/signout?reason=security&anomaly=${sessionCheck["anomaly"]}`,
+      //           request.url
+      //         )
+      //       );
+      //     }
 
-          // Update session activity
-          await updateSessionActivity(token, request);
-        } catch (error) {
-          console.error("Session validation failed:", error);
-          await auditLogger.logError(auditId, error, request);
-          // Allow request to continue
-        }
-      }
+      //     // Update session activity
+      //     await updateSessionActivity(token, request);
+      //   } catch (error) {
+      //     console.error("Session validation failed:", error);
+      //     await auditLogger.logError(auditId, error, request);
+      //     // Allow request to continue
+      //   }
+      // }
 
       // 6. Advanced Access Control
       try {
@@ -401,50 +401,50 @@ export default withAuth(
 /**
  * Advanced Session Security Validation
  */
-async function validateSessionSecurity(
-  token: any,
-  request: NextRequest
-): Promise<SessionValidationResult> {
-  const clientIP = getClientIP(request);
-  const userAgent = request.headers.get("user-agent");
-  const now = Date.now();
+// async function validateSessionSecurity(
+//   token: any,
+//   request: NextRequest
+// ): Promise<SessionValidationResult> {
+//   const clientIP = getClientIP(request);
+//   const userAgent = request.headers.get("user-agent");
+//   const now = Date.now();
 
-  // Check for session anomalies
-  const anomalies: string[] = [];
+//   // Check for session anomalies
+//   const anomalies: string[] = [];
 
-  // 1. IP Address Change Detection
-  if (token.sessionIP && token.sessionIP !== clientIP) {
-    anomalies.push("ip_change");
-  }
+//   // 1. IP Address Change Detection
+//   if (token.sessionIP && token.sessionIP !== clientIP) {
+//     anomalies.push("ip_change");
+//   }
 
-  // 2. User Agent Change Detection
-  if (token.sessionUA && token.sessionUA !== userAgent) {
-    anomalies.push("user_agent_change");
-  }
+//   // 2. User Agent Change Detection
+//   if (token.sessionUA && token.sessionUA !== userAgent) {
+//     anomalies.push("user_agent_change");
+//   }
 
-  // 3. Session Age Check
-  if (token.iat && now - token.iat * 1000 > 24 * 60 * 60 * 1000) {
-    anomalies.push("session_expired");
-  }
+//   // 3. Session Age Check
+//   if (token.iat && now - token.iat * 1000 > 24 * 60 * 60 * 1000) {
+//     anomalies.push("session_expired");
+//   }
 
-  // 4. Concurrent Session Check
-  const concurrentSessions = await checkConcurrentSessions(token.id);
-  if (concurrentSessions > 3) {
-    anomalies.push("concurrent_sessions");
-  }
+//   // 4. Concurrent Session Check
+//   const concurrentSessions = await checkConcurrentSessions(token.id);
+//   if (concurrentSessions > 3) {
+//     anomalies.push("concurrent_sessions");
+//   }
 
-  // 5. Geographic Anomaly Detection
-  const geoAnomaly = await detectGeographicAnomaly(token, request);
-  if (geoAnomaly.detected) {
-    anomalies.push("geographic_anomaly");
-  }
+//   // 5. Geographic Anomaly Detection
+//   const geoAnomaly = await detectGeographicAnomaly(token, request);
+//   if (geoAnomaly.detected) {
+//     anomalies.push("geographic_anomaly");
+//   }
 
-  return {
-    valid: anomalies.length === 0,
-    anomalies,
-    riskLevel: anomalies.length > 2 ? "high" : anomalies.length > 0 ? "medium" : "low",
-  };
-}
+//   return {
+//     valid: anomalies.length === 0,
+//     anomalies,
+//     riskLevel: anomalies.length > 2 ? "high" : anomalies.length > 0 ? "medium" : "low",
+//   };
+// }
 
 /**
  * Advanced Access Control for LMS

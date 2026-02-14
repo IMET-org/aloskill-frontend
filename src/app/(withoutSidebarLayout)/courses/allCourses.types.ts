@@ -305,7 +305,6 @@ export type PrivateLesson = {
     completedAt: string | null;
   }[];
 };
-
 export interface FilterOption {
   value: string;
   label: string;
@@ -337,6 +336,44 @@ export interface FilterSectionProps {
   onToggle: () => void;
   children: React.ReactNode;
 }
+
+export type DashboardDataType = {
+  profile: {
+    name: string;
+    overallRating: number | null;
+  };
+  counters: {
+    totalCourses: number;
+    totalEnrolled: number;
+    totalStudents: number;
+    totalOtherInstructors: number;
+  };
+  recentActivity: {
+    id: string;
+    userId: string;
+    action: string;
+    entityType: string;
+    entityId: string;
+    changesBefore: JSON | null;
+    changesAfter: JSON | null;
+    ipAddress: string | null;
+    userAgent: string | null;
+    timestamp: Date;
+  }[];
+  reviews: {
+    rating: number;
+    body: string | null;
+    createdAt: Date;
+    userDisplayName: string | undefined;
+    avatarUrl: string | null;
+  }[];
+  courseOverview: {
+    status: CourseStatus;
+    ratingAverage: number | null;
+    enrollmentCount: number;
+    title: string;
+  }[];
+};
 
 export type ViewMode = "grid" | "list";
 
