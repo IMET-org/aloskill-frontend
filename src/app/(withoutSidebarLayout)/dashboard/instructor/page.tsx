@@ -20,10 +20,13 @@ const Dashboard = async () => {
   };
 
   const data = await getDashboardData();
-  console.log("data get from db: ", data?.data);
 
   if (!data) {
-    console.log("Dashboard data not found or there was a error in server");
+    return (
+      <div className='w-full flex items-center justify-center h-64'>
+        <p className='text-gray-500 text-sm'>Failed to load dashboard data.</p>
+      </div>
+    );
   }
 
   // Mock data
