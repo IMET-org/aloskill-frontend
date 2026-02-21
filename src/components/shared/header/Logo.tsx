@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import logo from "../../../../public/images/aloskill-logo.avif";
+import logo from "../../../../public/images/aloskill-logo.jpg";
 const Logo = () => {
   return (
     <Link
