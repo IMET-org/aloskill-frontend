@@ -13,6 +13,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { useState } from "react";
+import PaymentCard from "../../../../../components/PaymentsCard.tsx";
 import PaymentModal from "./PaymentModal.tsx";
 
 const WithdrawalPage = () => {
@@ -184,7 +185,7 @@ const WithdrawalPage = () => {
             <div className='p-4 w-full flex flex-col gap-2'>
               {cards[selectedCard] && (
                 <div
-                  className={`bg-gradient-to-br ${cards[selectedCard].color} rounded p-4 text-white`}
+                  className={`bg-linear-to-br ${cards[selectedCard].color} rounded p-4 text-white`}
                 >
                   {/* Card Brand */}
                   <div className='flex items-center justify-between mb-9'>
@@ -219,6 +220,27 @@ const WithdrawalPage = () => {
                   </div>
                 </div>
               )}
+
+              <PaymentCard
+                type='mfs'
+                provider='bkash'
+                accountNumber='01712345678'
+                accountName='Abdur Rahman'
+              />
+              <PaymentCard
+                type='mfs'
+                provider='nagad'
+                accountNumber='01712345678'
+                accountName='Abdur Rahim'
+              />
+
+              <PaymentCard
+                type='bank'
+                provider='visa'
+                accountNumber='4855123456789012'
+                accountName='Vako Shvili'
+                expiry='04/24'
+              />
 
               {/* Card Navigation Dots */}
               <div className='flex items-center justify-between'>
@@ -309,7 +331,7 @@ const WithdrawalPage = () => {
 
                 {/* PayPal Notice */}
                 <div className='flex items-center gap-4 p-2 bg-blue-50 rounded'>
-                  <div className='w-6 h-6 bg-blue-600 rounded flex items-center justify-center text-white font-bold text-xs flex-shrink-0'>
+                  <div className='w-6 h-6 bg-blue-600 rounded flex items-center justify-center text-white font-bold text-xs shrink-0'>
                     P
                   </div>
                   <p className='text-sm text-gray-600'>

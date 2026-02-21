@@ -43,9 +43,10 @@ class ApiClient {
   }
 
   // GET request
-  async get<T>(endpoint: string): Promise<ApiResponse<T>> {
+  async get<T>(endpoint: string,customHeaders?: Record<string, string>): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, {
       method: "GET",
+      headers: customHeaders || {},
     });
   }
 

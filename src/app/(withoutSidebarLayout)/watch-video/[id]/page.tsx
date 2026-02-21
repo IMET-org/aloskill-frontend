@@ -332,27 +332,14 @@ export default function CoursePage() {
             {/* Lecture Title */}
             <div className='bg-transparent border-b border-gray-300 mt-4 pb-4'>
               <h2 className='text-lg font-bold text-gray-900'>{activeContent?.title}</h2>
-              <div className='flex items-end space-x-2 mt-3'>
-                <div className='flex items-center -space-x-2'>
-                  {[1, 2, 3, 4, 5].map(i => (
-                    <div
-                      key={i}
-                      className='w-7 h-7 rounded-full bg-linear-to-br from-orange to-orange-dark border-2 border-white'
-                    />
-                  ))}
-                </div>
-                <span className='text-sm! text-gray-600'>512 Students watching</span>
-                <div className='flex-1' />
-                <span className='text-sm text-gray-500'>
-                  Last updated:{" "}
-                  {new Date(course.updatedAt).toLocaleDateString("en-GB", {
-                    day: "2-digit",
-                    month: "long",
-                    year: "numeric",
-                  })}
-                </span>
-                <span className='text-sm text-gray-500'>Comments: 154</span>
-              </div>
+              <span className='text-sm text-gray-500'>
+                Last updated:{" "}
+                {new Date(course.updatedAt).toLocaleDateString("en-GB", {
+                  day: "2-digit",
+                  month: "long",
+                  year: "numeric",
+                })}
+              </span>
             </div>
 
             {/* Tabs */}

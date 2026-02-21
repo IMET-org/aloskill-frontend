@@ -57,7 +57,7 @@ const CourseCard = memo(function CourseCard({
 
   const hours = Math.floor(totalSecond / 3600);
   const minutes = Math.floor((totalSecond % 3600) / 60);
-  const totalDurationInFormatted = `${hours}:${minutes.toString().padStart(2, "0")} mins`;
+  const totalDurationInFormatted = `${hours}:${minutes.toString().padStart(2, "0")} hrs`;
 
   const price = discountPrice && discountPrice > 0 ? discountPrice : originalPrice;
 
@@ -130,7 +130,7 @@ const CourseCard = memo(function CourseCard({
             fill
             sizes='(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw'
             className='object-cover hover:scale-110 transition-transform duration-500'
-            unoptimized 
+            unoptimized
             onError={() => {
               if (imgSrc !== "/images/course-placeholder.png") {
                 setImgSrc("/images/course-placeholder.png");
@@ -205,7 +205,7 @@ const CourseCard = memo(function CourseCard({
           className={`absolute top-4 right-4 z-10 bg-white rounded px-3 shadow-lg ${dashboardActions && "mr-8"}`}
         >
           <div className='flex items-center gap-1'>
-            <span className='text-orange-600 font-black text-md '>${price}</span>
+            {price > 0 && <span className='text-orange-600 font-black text-md '>${price}</span>}
             {originalPrice && originalPrice > price && (
               <span className='text-gray-400 text-md line-through'>${originalPrice}</span>
             )}

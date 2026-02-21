@@ -26,7 +26,6 @@ interface LeftSidebarProps {
   onClose?: () => void;
 }
 
-// ✅ CLEANED: Removed duplicate items
 const navItems = [
   {
     icon: Home,

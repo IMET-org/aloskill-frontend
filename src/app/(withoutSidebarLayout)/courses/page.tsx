@@ -2,13 +2,13 @@
 import CourseGrid from "@/components/grids/CourseGrid";
 import { PageHeading } from "@/components/shared/PageHeading.tsx";
 import { apiClient } from "@/lib/api/client.ts";
-import { courseAddToCartHandler } from "@/lib/course/utils.tsx";
 import { ChevronRight, Filter, Grid, LayoutList, Search, SlidersHorizontal, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { courseDraftStorage } from "../../../lib/storage/courseDraftStorage.ts";
 import { useSessionContext } from "../../contexts/SessionContext.tsx";
 import FilterSidebar from "./(FilterSection)/FilterSidebar.tsx";
 import type { CourseType } from "./allCourses.types.ts";
+import { courseAddToCartHandler } from '../../../lib/course/courseHelper.ts';
 
 const SORT_OPTIONS = [
   { value: "popular", label: "Most Popular" },
@@ -17,8 +17,6 @@ const SORT_OPTIONS = [
   { value: "price-low", label: "Price: Low to High" },
   { value: "price-high", label: "Price: High to Low" },
 ];
-
-// export const dynamic = "force-static";
 
 export default function AllCoursesPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -67,79 +65,6 @@ export default function AllCoursesPage() {
   ) => {
     setFilteredQuery(prev => ({ ...prev, [fieldName]: value }));
   };
-  // Filter and sort logic
-  // const filteredAndSortedCourses = useMemo(() => {
-  //   // let filtered = [...ALL_COURSES];
-
-  //   // Search filter
-  //   if (searchQuery) {
-  //     filtered = filtered.filter(course =>
-  //       course.title.toLowerCase().includes(searchQuery.toLowerCase())
-  //     );
-  //   }
-
-  //   // Category filter
-  //   if (selectedCategory !== "all") {
-  //     filtered = filtered.filter(
-  //       course =>
-  //         course.category.toLowerCase().replace(/ & /g, "-").replace(/ /g, "-") === selectedCategory
-  //     );
-  //   }
-
-  //   // Level filter
-  //   if (selectedLevel !== "all") {
-  //     filtered = filtered.filter(course => course.level?.toLowerCase() === selectedLevel);
-  //   }
-
-  //   // Language filter
-  //   if (selectedLanguage !== "all") {
-  //     filtered = filtered.filter(course => course.language?.toLowerCase() === selectedLanguage);
-  //   }
-
-  //   // Rating filter
-  //   if (selectedRating !== "all") {
-  //     const minRating = parseFloat(selectedRating);
-  //     filtered = filtered.filter(course => course.rating >= minRating);
-  //   }
-
-  //
-
-  //   // Price range filter
-  //   filtered = filtered.filter(
-  //     course => course.price >= (priceRange?.[0] ?? 0) && course.price <= (priceRange?.[1] ?? 100)
-  //   );
-
-  //   // Sort
-  //   switch (sortBy) {
-  //     case "rating":
-  //       filtered.sort((a, b) => b.rating - a.rating);
-  //       break;
-  //     case "price-low":
-  //       filtered.sort((a, b) => a.price - b.price);
-  //       break;
-  //     case "price-high":
-  //       filtered.sort((a, b) => b.price - a.price);
-  //       break;
-  //     case "newest":
-  //       filtered.sort((a, b) => Number(b.id) - Number(a.id));
-  //       break;
-  //     default:
-  //       // Popular - by review count
-  //       break;
-  //   }
-
-  //   return filtered;
-  // }, [
-  //   searchQuery,
-  //   selectedCategory,
-  //   selectedLevel,
-  //   selectedLanguage,
-  //   selectedRating,
-  //   priceRange,
-  //   sortBy,
-  // ]);
-
-  // Handlers
 
   const handleAddToCart = useCallback(
     (courseId: string) => {

@@ -1,94 +1,121 @@
 import { BookOpen, Users } from "lucide-react";
-import Link from "next/link";
+import { getServerSession } from "next-auth";
+import { apiClient } from "../../../../lib/api/client";
+import { authOptions } from "../../../api/auth/[...nextauth]/route";
+import type { DashboardDataType } from "../../courses/allCourses.types";
 
-// Mock data
-const stats = [
-  {
-    label: "Total Courses",
-    value: "357",
-    icon: BookOpen,
-    color: "bg-orange-100",
-    iconColor: "text-orange-500",
-  },
-  {
-    label: "Total Students",
-    value: "19",
-    icon: Users,
-    color: "bg-purple-100",
-    iconColor: "text-purple-500",
-  },
-  {
-    label: "Total Instructors",
-    value: "241",
-    icon: Users,
-    color: "bg-orange-100",
-    iconColor: "text-orange-500",
-  },
-  {
-    label: "Total Enrolled",
-    value: "953",
-    icon: BookOpen,
-    color: "bg-green-100",
-    iconColor: "text-green-500",
-  },
-  {
-    label: "Total Courses",
-    value: "357",
-    icon: BookOpen,
-    color: "bg-orange-100",
-    iconColor: "text-orange-500",
-  },
-  {
-    label: "Total Students",
-    value: "19",
-    icon: Users,
-    color: "bg-purple-100",
-    iconColor: "text-purple-500",
-  },
-  {
-    label: "Total Instructors",
-    value: "241",
-    icon: Users,
-    color: "bg-orange-100",
-    iconColor: "text-orange-500",
-  },
-  {
-    label: "Total Enrolled",
-    value: "955",
-    icon: BookOpen,
-    color: "bg-green-100",
-    iconColor: "text-green-500",
-  },
-];
+const Dashboard = async () => {
+  const session = await getServerSession(authOptions);
+  const user = session?.user;
 
-const activities = [
-  {
-    action: "Nolan published new article",
-    detail: '"What is UX" in user\'s design what will happen',
-    time: "2 hours ago",
-    color: "bg-orange-500",
-  },
-  {
-    action: "Arlene is out of office at your course",
-    detail: "SEO take your blog",
-    time: "3 hours ago",
-    color: "bg-orange-500",
-  },
-  {
-    action: "Subbed",
-    detail: 'purchase your course "SEO" and design what will happen',
-    time: "4 hours ago",
-    color: "bg-orange-500",
-  },
-  {
-    action: "Von is trusting you course",
-    detail: "SEO has been design with your blog",
-    time: "1 hours ago",
-    color: "bg-orange-500",
-  },
-];
+  const getDashboardData = async () => {
+    const fetchData = await apiClient.get<DashboardDataType>(
+      `/course/instructorDashboard?userId=${user?.id}`,
+      { Authorization: `Bearer ${session?.accessToken}` }
+    );
+    if (!fetchData.success) {
+      return null;
+    }
+    return fetchData;
+  };
 
-const Dashboard = () => {
+  const data = await getDashboardData();
+
+  if (!data) {
+    return (
+      <div className='w-full flex items-center justify-center h-64'>
+        <p className='text-gray-500 text-sm'>Failed to load dashboard data.</p>
+      </div>
+    );
+  }
+
+  // Mock data
+  const stats = [
+    {
+      label: "Total Courses",
+      value: data?.data?.counters.totalCourses,
+      icon: BookOpen,
+      color: "bg-orange-100",
+      iconColor: "text-orange-500",
+    },
+    {
+      label: "Total Students",
+      value: data?.data?.counters.totalStudents,
+      icon: Users,
+      color: "bg-purple-100",
+      iconColor: "text-purple-500",
+    },
+    {
+      label: "Total Instructors",
+      value: data?.data?.counters.totalOtherInstructors,
+      icon: Users,
+      color: "bg-orange-100",
+      iconColor: "text-orange-500",
+    },
+    {
+      label: "Total Enrolled",
+      value: data?.data?.counters.totalEnrolled,
+      icon: BookOpen,
+      color: "bg-green-100",
+      iconColor: "text-green-500",
+    },
+    // {
+    //   label: "Total Courses",
+    //   value: "357",
+    //   icon: BookOpen,
+    //   color: "bg-orange-100",
+    //   iconColor: "text-orange-500",
+    // },
+    // {
+    //   label: "Total Students",
+    //   value: "19",
+    //   icon: Users,
+    //   color: "bg-purple-100",
+    //   iconColor: "text-purple-500",
+    // },
+    // {
+    //   label: "Total Instructors",
+    //   value: "241",
+    //   icon: Users,
+    //   color: "bg-orange-100",
+    //   iconColor: "text-orange-500",
+    // },
+    // {
+    //   label: "Total Enrolled",
+    //   value: "955",
+    //   icon: BookOpen,
+    //   color: "bg-green-100",
+    //   iconColor: "text-green-500",
+    // },
+  ];
+
+  const activities = [
+    {
+      action: "Nolan published new article",
+      detail: '"What is UX" in user\'s design what will happen',
+      time: "2 hours ago",
+      color: "bg-orange-500",
+    },
+    {
+      action: "Arlene is out of office at your course",
+      detail: "SEO take your blog",
+      time: "3 hours ago",
+      color: "bg-orange-500",
+    },
+    {
+      action: "Subbed",
+      detail: 'purchase your course "SEO" and design what will happen',
+      time: "4 hours ago",
+      color: "bg-orange-500",
+    },
+    {
+      action: "Von is trusting you course",
+      detail: "SEO has been design with your blog",
+      time: "1 hours ago",
+      color: "bg-orange-500",
+    },
+  ];
+
   return (
     <div className='w-full'>
       <div className='flex flex-col gap-4 overflow-auto'>
@@ -114,9 +141,10 @@ const Dashboard = () => {
         </div>
 
         {/* Profile Progress Section */}
-        <div className='bg-linear-to-r from-[#0F172A] to-[#0B1120] rounded p-4 sm:p-5 text-white'>
+        {/* <div className='bg-linear-to-r from-[#0F172A] to-[#0B1120] rounded p-4 sm:p-5 text-white'>
           <div className='flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4'>
-            {/* Profile */}
+
+
             <div className='flex items-center gap-3 sm:gap-4'>
               <div className='w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-white overflow-hidden'>
                 <div className='w-full h-full bg-linear-to-br from-orange-400 to-orange-600 flex items-center justify-center'>
@@ -129,7 +157,7 @@ const Dashboard = () => {
               </div>
             </div>
 
-            {/* Progress */}
+
             <div className='flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5 w-full lg:w-auto'>
               <div className='flex items-center gap-3 sm:gap-5 flex-1'>
                 <div className='text-xs sm:text-sm text-indigo-200'>1/4 Steps</div>
@@ -150,7 +178,7 @@ const Dashboard = () => {
               </Link>
             </div>
           </div>
-        </div>
+        </div> */}
 
         {/* Bottom Section */}
         <div className='w-full flex flex-col lg:flex-row gap-3'>

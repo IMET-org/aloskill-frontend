@@ -31,7 +31,7 @@ const InstructorsLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <div className='min-h-screen w-full bg-linear-to-br from-pink-100 via-purple-100 to-pink-100 flex flex-col lg:flex-row overflow-hidden'>
       {/* Sidebar */}
-      <aside className='hidden lg:flex lg:w-[260px] xl:w-[300px] h-screen bg-linear-to-t from-[#0F172A] to-[#0B1120] text-white flex-col'>
+      <aside className='hidden lg:flex lg:w-65 xl:w-75 h-screen bg-linear-to-t from-[#0F172A] to-[#0B1120] text-white flex-col'>
         <Link
           href='/'
           className='hover:text-orange p-5 text-2xl font-semibold'
@@ -83,7 +83,7 @@ const InstructorsLayout = ({ children }: { children: React.ReactNode }) => {
                 <input
                   type='text'
                   placeholder='Search...'
-                  className='w-full sm:w-[200px] pl-9 pr-3 py-1.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-orange-light text-sm'
+                  className='w-full sm:w-50 pl-9 pr-3 py-1.5 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-orange-light text-sm'
                 />
               </div>
 

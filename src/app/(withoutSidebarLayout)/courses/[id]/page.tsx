@@ -4,12 +4,7 @@ import { useSessionContext } from "@/app/contexts/SessionContext.tsx";
 import BorderGradientButton from "@/components/buttons/BorderGradientButton.tsx";
 import GradientButton from "@/components/buttons/GradientButton.tsx";
 import { apiClient } from "@/lib/api/client.ts";
-import {
-  courseAddToCartHandler,
-  FadeIn,
-  getFileIdFromUrl,
-  parseCourseDescription,
-} from "@/lib/course/utils.tsx";
+import { FadeIn, getFileIdFromUrl, parseCourseDescription } from "@/lib/course/utils.tsx";
 import {
   Award,
   Calendar,
@@ -37,6 +32,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { courseAddToCartHandler } from "../../../../lib/course/courseHelper.ts";
 import type { CourseDetailsPublic } from "../allCourses.types.ts";
 import { CurriculumTab } from "./(tabs)/CurriculumTab.tsx";
 import InstructorTab from "./(tabs)/InstructorTab.tsx";
@@ -172,16 +168,18 @@ export default function CourseDetailPage() {
     courseAddToCartHandler(courseId);
     setCartUpdate?.(prev => !prev);
   };
+
   if (isLoading) {
     return (
-      <div className='flex items-center justify-center min-h-screen'>
-        <div className='animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900'></div>
+      <div className='font-medium flex items-center justify-center gap-3 min-h-screen'>
+        {/* <div className='animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900'></div> */}
+        <Loader className='w-10 h-10 animate-spin' /> Loading Course...
       </div>
     );
   }
 
   return (
-    <div className='min-h-screen bg-gray-50 max-w-[1420px] mx-auto py-18'>
+    <div className='min-h-screen bg-gray-50 max-w-[1420px] mx-auto py-10'>
       {/* Breadcrumb */}
       <div className=''>
         <div className='  px-4 sm:px-6 lg:px-8 py-3 sm:py-4'>

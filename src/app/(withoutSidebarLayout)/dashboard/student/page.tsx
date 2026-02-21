@@ -7,8 +7,7 @@ import { useEffect, useState } from "react";
 import type { CourseType } from "../../courses/allCourses.types.ts";
 import CourseCard from "../../courses/CourseCard.tsx";
 export default function DashboardPage() {
-  const [currentSlide, setCurrentSlide] = useState(0);
-
+  // const [currentSlide, setCurrentSlide] = useState(0);
   const [courses, setCourses] = useState<CourseType[]>([]);
   const [apiError, setApiError] = useState<string>("");
   const { isLoading, user } = useSessionContext();
@@ -39,6 +38,21 @@ export default function DashboardPage() {
     getCourses();
   }, [user?.id, isLoading]);
 
+  const isCourseCompleted = (course: CourseType) => {
+    const totalLessons = course.modules.reduce((acc, module) => {
+      return acc + (module._count?.lessons || 0);
+    }, 0);
+
+    const completedLessons = course.lessonProgress?.filter(lp => lp.completed === true).length;
+
+    return totalLessons > 0 && completedLessons === totalLessons;
+  };
+
+  const completed = courses.reduce(
+    (value, course) => (isCourseCompleted(course) ? value + 1 : value),
+    0
+  );
+
   if (isLoading) {
     return (
       <p className='text-md font-semibold text-gray-600 flex items-center gap-2'>
@@ -50,25 +64,25 @@ export default function DashboardPage() {
   const stats = [
     {
       icon: "🕐",
-      value: "957",
+      value: courses.length,
       label: "Enrolled Courses",
       bgColor: "bg-orange-100",
     },
     {
       icon: "📚",
-      value: "6",
+      value: courses.filter(course => course._count.LessonProgress > 0).length,
       label: "Active Courses",
       bgColor: "bg-blue-200",
     },
     {
       icon: "✓",
-      value: "951",
+      value: completed,
       label: "Completed Courses",
       bgColor: "bg-green-200",
     },
     {
       icon: "👥",
-      value: "241",
+      value: courses.reduce((value, course) => course._count.courseInstructors + value, 0),
       label: "Course Instructors",
       bgColor: "bg-orange-200",
     },
@@ -120,7 +134,7 @@ export default function DashboardPage() {
               />
             ))
           ) : (
-            <p>Yet You have no purchased course!</p>
+            <p>{apiError ? apiError : "Yet You have no purchased course!"}</p>
           )}
         </div>
       </div>

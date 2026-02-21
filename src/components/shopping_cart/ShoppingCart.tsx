@@ -133,7 +133,7 @@ export default function ShoppingCartPage() {
             {cartItems.map((item, index) => (
               <div
                 key={item.id}
-                className='bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300 p-4 animate-fade-in-up'
+                className='bg-white rounded shadow-sm hover:shadow-md transition-all duration-300 p-4 animate-fade-in-up'
                 style={{ animationDelay: `${index * 100}ms` }}
               >
                 <div className='grid grid-cols-1 md:grid-cols-12 gap-4 items-center'>
@@ -146,17 +146,19 @@ export default function ShoppingCartPage() {
                     >
                       <X className='w-5 h-5' />
                     </button>
-                    <Image
-                      width={80}
-                      height={80}
-                      src={item.thumbnailUrl ? encodeURI(item.thumbnailUrl) : ""}
-                      alt={item.title}
-                      className='w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-lg'
-                    />
-                    <div className='flex-1 min-w-0'>
-                      <h3 className='text-sm font-medium text-[#074079] line-clamp-2'>
-                        {item.title}
-                      </h3>
+                    <div className='flex items-center gap-2'>
+                      <Image
+                        width={80}
+                        height={80}
+                        src={item.thumbnailUrl ? encodeURI(item.thumbnailUrl) : ""}
+                        alt={item.title}
+                        className='w-20 h-20 sm:w-24 sm:h-24 object-cover rounded'
+                      />
+                      <div className='flex-1 min-w-0'>
+                        <h3 className='text-base font-medium text-gray-700 line-clamp-2'>
+                          {item.title}
+                        </h3>
+                      </div>
                     </div>
                   </div>
 
@@ -186,7 +188,7 @@ export default function ShoppingCartPage() {
                   {/* Quantity */}
                   <div className='col-span-1 md:col-span-2 flex md:justify-center items-center gap-2'>
                     <span className='md:hidden text-sm text-gray-600 font-medium'>Quantity:</span>
-                    <div className='flex items-center gap-2 bg-gray-100 rounded-lg p-1'>
+                    <div className='flex items-center gap-2 bg-gray-100 rounded p-1'>
                       <button
                         onClick={() => updateQuantity(item.id, "minus")}
                         className='w-8 h-8 flex items-center justify-center hover:bg-white rounded transition-colors duration-200'
@@ -225,14 +227,14 @@ export default function ShoppingCartPage() {
             {/* Action Buttons */}
             <div className='flex flex-col sm:flex-row gap-4 pt-4 animate-fade-in'>
               <Link href='/courses'>
-                <button className='w-full flex items-center justify-center gap-2 px-6 py-2 border-2 border-[#DA7C36] text-[#DA7C36] rounded-lg hover:bg-[#DA7C36] hover:text-white transition-all duration-300 font-medium'>
+                <button className='w-full flex items-center justify-center gap-2 px-6 py-2 border-2 border-[#DA7C36] text-[#DA7C36] rounded hover:bg-[#DA7C36] hover:text-white transition-all duration-300 font-medium'>
                   <ArrowLeft className='w-5 h-5' />
                   RETURN TO SHOP
                 </button>
               </Link>
               <button
                 onClick={handleUpdateCart}
-                className='flex items-center justify-center gap-2 px-6 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-all duration-300 font-medium cursor-pointer'
+                className='flex items-center justify-center gap-2 px-6 py-2 border-2 border-gray-300 text-gray-700 rounded hover:bg-gray-100 transition-all duration-300 font-medium cursor-pointer'
               >
                 UPDATE CART
               </button>
@@ -244,7 +246,7 @@ export default function ShoppingCartPage() {
             className='lg:col-span-1 animate-fade-in-up'
             style={{ animationDelay: "300ms" }}
           >
-            <div className='bg-white rounded-lg shadow-lg p-6 sticky top-24 space-y-6'>
+            <div className='bg-white rounded shadow-lg p-6 sticky top-24 space-y-6'>
               {/* Coupon Code */}
               <div className='space-y-3'>
                 <label className='text-sm font-medium text-[#074079] flex items-center gap-2'>
@@ -257,9 +259,9 @@ export default function ShoppingCartPage() {
                     value={couponCode}
                     onChange={e => setCouponCode(e.target.value)}
                     placeholder='Coupon code'
-                    className='flex-1 px-2 py-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#DA7C36] focus:border-transparent transition-all duration-200'
+                    className='flex-1 px-2 py-1 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-orange focus:border-transparent transition-all duration-200'
                   />
-                  <button className='px-4 py-1 bg-[#074079] text-white rounded-lg hover:bg-[#053055] transition-colors duration-300 font-medium'>
+                  <button className='px-4 py-1 bg-orange text-white rounded hover:bg-orange-dark transition-colors duration-300 font-medium'>
                     Apply
                   </button>
                 </div>
@@ -273,7 +275,7 @@ export default function ShoppingCartPage() {
                 </div>
                 <div className='flex justify-between text-gray-700'>
                   <span>Coupon Discount</span>
-                  <span className='font-semibold text-green-600'>5%</span>
+                  <span className='font-semibold text-orange'>5%</span>
                 </div>
                 <div className='flex justify-between text-gray-700'>
                   <span>Tax</span>
@@ -289,7 +291,7 @@ export default function ShoppingCartPage() {
               <Link href='/checkout'>
                 <button
                   disabled={cartItems.length === 0}
-                  className='w-full py-2 bg-linear-to-r from-[#DA7C36] to-[#d15100] text-white rounded-lg font-bold text-base hover:shadow-lg hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed'
+                  className='w-full py-2 bg-linear-to-r from-[#DA7C36] to-[#d15100] text-white rounded font-bold text-base hover:shadow-lg hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed'
                 >
                   Proceed to Checkout
                   <svg

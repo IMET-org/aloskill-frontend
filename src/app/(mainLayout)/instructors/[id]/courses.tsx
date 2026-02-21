@@ -1,10 +1,10 @@
 //courses.tsx - COURSES TAB COMPONENT
 import CourseCard from "@/app/(withoutSidebarLayout)/courses/CourseCard.tsx";
 import { useSessionContext } from "@/app/contexts/SessionContext.tsx";
-import { courseAddToCartHandler } from "@/lib/course/utils.tsx";
 import type { InstructorDetail } from "@/types/instructor.types.ts";
 import { BookOpen } from "lucide-react";
 import { useCallback, useState } from "react";
+import { courseAddToCartHandler } from '../../../../lib/course/courseHelper';
 
 export function CoursesTab({
   courses,
