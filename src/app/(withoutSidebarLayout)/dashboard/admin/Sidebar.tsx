@@ -1,6 +1,5 @@
 "use client";
 
-import styles from "./AdminDashboard.module.css";
 import {
   Award,
   BarChart2,
@@ -68,155 +67,142 @@ export default function Sidebar({
     if (setMobileOpen) setMobileOpen(false);
   };
 
+  const handleToggle = () => {
+    if (window.innerWidth < 1024) {
+      setMobileOpen?.(!mobileOpen);
+    } else {
+      setCollapsed(!collapsed);
+    }
+  };
+
+  // On desktop: show logo text only when NOT collapsed
+  // On mobile:  show logo text always (sidebar is full-width when open)
+  const showLogoText = !collapsed || mobileOpen;
+
   return (
     <>
       {/* Mobile overlay */}
       {mobileOpen && (
         <div
-          className={styles["sidebarOverlay"]}
-          onClick={() => setMobileOpen && setMobileOpen(false)}
-          style={{ display: "block" }}
+          onClick={() => setMobileOpen?.(false)}
+          className='fixed inset-0 z-40 bg-[rgba(5,13,26,0.8)] backdrop-blur-sm'
         />
       )}
 
       <aside
         className={[
-          styles["sidebar"],
-          collapsed && !mobileOpen ? styles["sidebarCollapsed"] : "",
-          mobileOpen ? styles["sidebarOpen"] : "",
+          "flex flex-col shrink-0 overflow-hidden h-screen",
+          "bg-[linear-gradient(180deg,#070f1e_0%,#050d1a_100%)] border-r border-[#1a3158]",
+          "lg:sticky lg:top-0",
+          "lg:transition-[width] lg:duration-300 lg:ease-[cubic-bezier(0.4,0,0.2,1)]",
+          collapsed && !mobileOpen ? "lg:w-[68px]" : "lg:w-[260px]",
+          "max-lg:fixed max-lg:top-0 max-lg:left-0 max-lg:z-50 max-lg:w-[260px]",
+          "max-lg:transition-[transform,width] max-lg:duration-300 max-lg:ease-[cubic-bezier(0.4,0,0.2,1)]",
+          mobileOpen ? "max-lg:translate-x-0" : "max-lg:-translate-x-full",
         ]
           .filter(Boolean)
           .join(" ")}
       >
-        {/* Logo */}
+        {/* ── Logo row ─────────────────────────────────────────
+            Layout strategy:
+            - Expanded:  [ZapIcon] [AloSkill text — flex-1] [MenuBtn]
+            - Collapsed: [ZapIcon + MenuBtn centered in a column]
+              We switch to flex-col + items-center when collapsed so
+              both the logo mark and the toggle are always visible and
+              never overflow the 68px width.
+        ──────────────────────────────────────────────────────── */}
         <div
-          style={{
-            padding: "20px 14px 16px",
-            borderBottom: "1px solid #1a3158",
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
-            minHeight: 68,
-          }}
+          className={[
+            "border-b border-[#1a3158] min-h-[68px]",
+            // Expanded: single row
+            showLogoText
+              ? "flex flex-row items-center gap-2.5 px-3.5 py-4"
+              : // Collapsed desktop: stack icon + toggle vertically, centered
+                "flex flex-col items-center justify-center gap-2 py-3 px-0",
+          ].join(" ")}
         >
-          <div
-            style={{
-              width: 38,
-              height: 38,
-              borderRadius: 10,
-              background: "linear-gradient(135deg, #da7c36, #d15100)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              flexShrink: 0,
-              boxShadow: "0 0 20px rgba(218,124,54,0.4)",
-            }}
-          >
+          {/* Logo mark */}
+          <div className='w-[38px] h-[38px] rounded-[10px] bg-[linear-gradient(135deg,#da7c36,#d15100)] flex items-center justify-center flex-shrink-0 shadow-[0_0_20px_rgba(218,124,54,0.4)]'>
             <Zap
               size={18}
               color='white'
             />
           </div>
-          {(!collapsed || mobileOpen) && (
-            <>
-              <div style={{ flex: 1, overflow: "hidden" }}>
-                <div
-                  className={styles["syneFont"]}
-                  style={{
-                    fontWeight: 800,
-                    fontSize: 16,
-                    color: "#e8f0fe",
-                    letterSpacing: "-0.3px",
-                  }}
-                >
-                  AloSkill
-                </div>
-                <div
-                  className={styles["monoText"]}
-                  style={{
-                    fontSize: 10,
-                    color: "#3d5a80",
-                    textTransform: "uppercase",
-                    letterSpacing: "1.5px",
-                  }}
-                >
-                  Admin Panel
-                </div>
+
+          {/* Brand text — only when expanded */}
+          {showLogoText && (
+            <div className='flex-1 overflow-hidden'>
+              <div className='font-extrabold text-[16px] text-[#e8f0fe] tracking-[-0.3px]'>
+                AloSkill
               </div>
-            </>
+              <div className='text-[10px] text-[#3d5a80] uppercase tracking-[1.5px]'>
+                Admin Panel
+              </div>
+            </div>
           )}
+
+          {/* Toggle button — always rendered, never hidden */}
           <button
-            onClick={() => {
-              if (window.innerWidth < 1024) {
-                setMobileOpen?.(!mobileOpen);
-              } else {
-                setCollapsed(!collapsed);
-              }
-            }}
-            style={{
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              color: "#3d5a80",
-              padding: 4,
-              flexShrink: 0,
-              display: "flex",
-            }}
+            onClick={handleToggle}
+            className={[
+              "flex items-center justify-center flex-shrink-0",
+              "bg-transparent border-none cursor-pointer",
+              "w-7 h-7 rounded-lg",
+              "text-[#3d5a80] hover:text-[#8aa4c8]",
+              "hover:bg-[rgba(255,255,255,0.06)]",
+              "transition-colors duration-150",
+            ].join(" ")}
           >
             <Menu
               size={16}
-              color='#3d5a80'
+              color='currentColor'
             />
           </button>
         </div>
 
         {/* Nav */}
-        <nav style={{ flex: 1, overflowY: "auto", padding: "10px 8px" }}>
+        <nav className='flex-1 overflow-y-auto py-2.5 px-2'>
           {NAV_ITEMS.map(item => {
             const isActive = activeId === item.id;
             return (
               <div
                 key={item.id}
-                className={[styles["navItem"], isActive ? styles["navItemActive"] : ""].join(" ")}
                 onClick={() => handleNav(item.id)}
                 title={collapsed && !mobileOpen ? item.label : undefined}
-                style={{ justifyContent: collapsed && !mobileOpen ? "center" : "flex-start" }}
+                className={[
+                  "relative flex items-center gap-2.5 px-3 py-2.5 rounded-[10px] cursor-pointer mb-0.5",
+                  "text-[13.5px] font-medium transition-all duration-150 select-none",
+                  collapsed && !mobileOpen ? "justify-center" : "justify-start",
+                  isActive
+                    ? "bg-[linear-gradient(135deg,rgba(218,124,54,0.18),rgba(218,124,54,0.08))] text-white border border-[rgba(218,124,54,0.25)]"
+                    : "text-[#3d5a80] hover:bg-[rgba(255,255,255,0.04)] hover:text-[#8aa4c8]",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
               >
                 <span
-                  className={styles["navIcon"]}
+                  className='flex flex-shrink-0'
                   style={{
-                    flexShrink: 0,
-                    display: "flex",
                     color: isActive ? "#da7c36" : "#3d5a80",
                     filter: isActive ? "drop-shadow(0 0 6px rgba(218,124,54,0.6))" : "none",
                   }}
                 >
                   {NAV_ICONS[item.id]}
                 </span>
+
                 {(!collapsed || mobileOpen) && (
                   <>
-                    <span style={{ flex: 1 }}>{item.label}</span>
-                    {item.badge && <span className={styles["navBadge"]}>{item.badge}</span>}
+                    <span className='flex-1'>{item.label}</span>
+                    {item.badge && (
+                      <span className='bg-[#da7c36] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none'>
+                        {item.badge}
+                      </span>
+                    )}
                   </>
                 )}
+
                 {collapsed && !mobileOpen && item.badge && (
-                  <div
-                    style={{
-                      position: "absolute",
-                      top: 5,
-                      right: 5,
-                      width: 14,
-                      height: 14,
-                      borderRadius: "50%",
-                      background: "#da7c36",
-                      fontSize: 9,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      color: "white",
-                      fontWeight: 700,
-                    }}
-                  >
+                  <div className='absolute top-1 right-1 w-3.5 h-3.5 rounded-full bg-[#da7c36] text-[9px] flex items-center justify-center text-white font-bold'>
                     {item.badge}
                   </div>
                 )}
@@ -226,49 +212,28 @@ export default function Sidebar({
         </nav>
 
         {/* Profile */}
-        <div style={{ padding: "12px 8px", borderTop: "1px solid #1a3158" }}>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 10,
-              padding: "10px",
-              borderRadius: 10,
-              background: "#0d1f3c",
-              border: "1px solid #1a3158",
-            }}
-          >
+        <div className='px-2 py-3 border-t border-[#1a3158]'>
+          <div className='flex items-center gap-2.5 p-2.5 rounded-[10px] bg-[#0d1f3c] border border-[#1a3158]'>
             <Avatar
               name='Super Admin'
               size={34}
               gradient='135deg, #da7c36, #d15100'
             />
-            {(!collapsed || mobileOpen) && (
+
+            {showLogoText && (
               <>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 600,
-                      color: "#e8f0fe",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
+                <div className='flex-1 min-w-0'>
+                  <div className='text-[13px] font-semibold text-[#e8f0fe] truncate'>
                     Super Admin
                   </div>
-                  <div
-                    className={styles["monoText"]}
-                    style={{ fontSize: 10, color: "#3d5a80" }}
-                  >
+                  <div className='text-[10px] text-[#3d5a80] uppercase tracking-[1.5px]'>
                     FULL ACCESS
                   </div>
                 </div>
                 <LogOut
                   size={15}
                   color='#3d5a80'
-                  style={{ cursor: "pointer", flexShrink: 0 }}
+                  className='cursor-pointer flex-shrink-0'
                 />
               </>
             )}

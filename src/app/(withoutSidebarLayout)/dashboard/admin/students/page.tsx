@@ -169,7 +169,6 @@ export default function StudentsPage() {
           style={{ padding: "14px 18px", borderTop: "1px solid #1a3158" }}
         >
           <span
-            className={styles["monoText"]}
             style={{ fontSize: 12, color: "#3d5a80" }}
           >
             Showing {filtered.length} of {STUDENTS.length}
@@ -210,7 +209,6 @@ export default function StudentsPage() {
             />
             <div>
               <div
-                className={styles["syneFont"]}
                 style={{ fontWeight: 700, fontSize: 18, color: "#e8f0fe" }}
               >
                 {panel.name}

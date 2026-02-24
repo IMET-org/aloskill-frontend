@@ -1,6 +1,5 @@
 "use client";
 
-import styles from "./AdminDashboard.module.css";
 import { BookOpen, DollarSign, GraduationCap, RefreshCw, ShoppingBag, Users } from "lucide-react";
 import {
   Area,
@@ -136,24 +135,23 @@ const kpis = [
   },
 ];
 
+const cardStyle: React.CSSProperties = {
+  background: "#0d1f3c",
+  border: "1px solid #1a3158",
+  borderRadius: 16,
+  position: "relative",
+  overflow: "hidden",
+};
+
 export default function AdminDashboardPage() {
   return (
-    <div className={styles["pageEnter"]}>
+    <div className='animate-fadeUp'>
       <SectionHeader
         title='Platform Overview'
         sub='Real-time KPIs and performance metrics'
       />
 
-      {/* KPIs */}
-      <div
-        className={styles["kpiGrid6"]}
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(6, 1fr)",
-          gap: 14,
-          marginBottom: 24,
-        }}
-      >
+      <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6 gap-[14px] mb-6'>
         {kpis.map(k => (
           <KpiCard
             key={k.label}
@@ -162,39 +160,45 @@ export default function AdminDashboardPage() {
         ))}
       </div>
 
-      {/* Charts row 1 */}
-      <div
-        className={styles["chartRow2col"]}
-        style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 16, marginBottom: 16 }}
-      >
-        {/* Area chart */}
+      <div className='grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-4 mb-4'>
         <div
-          className={styles["card"]}
-          style={{ padding: 24 }}
+          style={cardStyle}
+          className='p-6'
         >
           <div className='flex justify-between items-center mb-6'>
             <div>
               <div
-                className={styles["syneFont"]}
-                style={{ fontWeight: 700, fontSize: 15, color: "#e8f0fe" }}
+                className='font-bold text-[15px]'
+                style={{ fontFamily: "'Syne', sans-serif", color: "#e8f0fe" }}
               >
-                Revenue & Enrollment Trends
+                Revenue &amp; Enrollment Trends
               </div>
+              {/* metricLabel */}
               <div
-                className={styles["metricLabel"]}
-                style={{ marginTop: 3 }}
+                className='text-[11px] uppercase tracking-[1px] mt-[3px]'
+                style={{ fontFamily: "'DM Mono', monospace", color: "#3d5a80" }}
               >
                 Last 7 months
               </div>
             </div>
+            {/* select → custom styled */}
             <select
-              className={styles["select"]}
-              style={{ width: "auto", fontSize: 12, padding: "6px 28px 6px 10px" }}
+              className='text-[12px] rounded-[9px] outline-none cursor-pointer appearance-none transition-[border] duration-[180ms]'
+              style={{
+                background:
+                  "#070f1e url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%233d5a80' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\") no-repeat right 12px center",
+                border: "1px solid #1a3158",
+                padding: "6px 28px 6px 10px",
+                color: "#e8f0fe",
+                fontFamily: "'Outfit', sans-serif",
+                width: "auto",
+              }}
             >
               <option>Last 7 Months</option>
               <option>Last Year</option>
             </select>
           </div>
+
           <ResponsiveContainer
             width='100%'
             height={220}
@@ -274,23 +278,24 @@ export default function AdminDashboardPage() {
           </ResponsiveContainer>
         </div>
 
-        {/* Pie */}
+        {/* Pie / Stats Card */}
         <div
-          className={styles["card"]}
-          style={{ padding: 24 }}
+          style={cardStyle}
+          className='p-6'
         >
           <div
-            className={styles["syneFont"]}
-            style={{ fontWeight: 700, fontSize: 15, color: "#e8f0fe", marginBottom: 4 }}
+            className='font-bold text-[15px] mb-1'
+            style={{ fontFamily: "'Syne', sans-serif", color: "#e8f0fe" }}
           >
             Revenue Split
           </div>
           <div
-            className={styles["metricLabel"]}
-            style={{ marginBottom: 16 }}
+            className='text-[11px] uppercase tracking-[1px] mb-4'
+            style={{ fontFamily: "'DM Mono', monospace", color: "#3d5a80" }}
           >
             Courses vs Books
           </div>
+
           <ResponsiveContainer
             width='100%'
             height={140}
@@ -319,6 +324,8 @@ export default function AdminDashboardPage() {
               />
             </PieChart>
           </ResponsiveContainer>
+
+          {/* Legend */}
           <div className='flex gap-4 justify-center mt-2'>
             {pieData.map((d, i) => (
               <div
@@ -326,20 +333,26 @@ export default function AdminDashboardPage() {
                 className='flex items-center gap-2'
               >
                 <div
-                  style={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: 2,
-                    background: i === 0 ? "#4a9eff" : "#da7c36",
-                  }}
+                  className='w-2 h-2 rounded-[2px]'
+                  style={{ background: i === 0 ? "#4a9eff" : "#da7c36" }}
                 />
-                <span style={{ fontSize: 12, color: "#7a9cc4" }}>
+                <span
+                  className='text-[12px]'
+                  style={{ color: "#7a9cc4" }}
+                >
                   {d.name} <strong style={{ color: "#e8f0fe" }}>{d.value}%</strong>
                 </span>
               </div>
             ))}
           </div>
-          <div style={{ height: 1, background: "#1a3158", margin: "16px 0" }} />
+
+          {/* Divider */}
+          <div
+            className='h-px my-4'
+            style={{ background: "#1a3158" }}
+          />
+
+          {/* Mini stats */}
           {[
             { l: "Platform Rating", v: "4.8 ⭐" },
             { l: "Completion Rate", v: "68.4%" },
@@ -349,34 +362,41 @@ export default function AdminDashboardPage() {
               key={x.l}
               className='flex justify-between mb-2'
             >
-              <span className={styles["metricLabel"]}>{x.l}</span>
-              <span style={{ fontSize: 13, fontWeight: 600, color: "#e8f0fe" }}>{x.v}</span>
+              <span
+                className='text-[11px] uppercase tracking-[1px]'
+                style={{ fontFamily: "'DM Mono', monospace", color: "#3d5a80" }}
+              >
+                {x.l}
+              </span>
+              <span
+                className='text-[13px] font-semibold'
+                style={{ color: "#e8f0fe" }}
+              >
+                {x.v}
+              </span>
             </div>
           ))}
         </div>
       </div>
-
-      {/* Charts row 2 */}
-      <div
-        className={styles["chartRow2col"]}
-        style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}
-      >
+      <div className='grid grid-cols-1 md:grid-cols-2 gap-4 mb-4'>
+        {/* Bar Chart Card */}
         <div
-          className={styles["card"]}
-          style={{ padding: 24 }}
+          style={cardStyle}
+          className='p-6'
         >
           <div
-            className={styles["syneFont"]}
-            style={{ fontWeight: 700, fontSize: 15, color: "#e8f0fe", marginBottom: 4 }}
+            className='font-bold text-[15px] mb-1'
+            style={{ fontFamily: "'Syne', sans-serif", color: "#e8f0fe" }}
           >
             Revenue by Category
           </div>
           <div
-            className={styles["metricLabel"]}
-            style={{ marginBottom: 20 }}
+            className='text-[11px] uppercase tracking-[1px] mb-5'
+            style={{ fontFamily: "'DM Mono', monospace", color: "#3d5a80" }}
           >
             This month
           </div>
+
           <ResponsiveContainer
             width='100%'
             height={180}
@@ -411,45 +431,61 @@ export default function AdminDashboardPage() {
           </ResponsiveContainer>
         </div>
 
+        {/* Top Courses Card */}
         <div
-          className={styles["card"]}
-          style={{ padding: 24 }}
+          style={cardStyle}
+          className='p-6'
         >
           <div
-            className={styles["syneFont"]}
-            style={{ fontWeight: 700, fontSize: 15, color: "#e8f0fe", marginBottom: 20 }}
+            className='font-bold text-[15px] mb-5'
+            style={{ fontFamily: "'Syne', sans-serif", color: "#e8f0fe" }}
           >
             Top Performing Courses
           </div>
+
           {topCourses.map((c, i) => (
             <div
               key={c.name}
               className='flex items-center gap-3 mb-4'
             >
+              {/* Rank number — monoText */}
               <div
-                className={`${styles["monoText"]} text-right`}
-                style={{ fontSize: 11, color: "#3d5a80", width: 16 }}
+                className='text-right text-[11px] w-4'
+                style={{ fontFamily: "'DM Mono', monospace", color: "#3d5a80" }}
               >
                 0{i + 1}
               </div>
+
+              {/* Course info */}
               <div className='flex-1 min-w-0'>
                 <div
-                  style={{
-                    fontSize: 13,
-                    fontWeight: 600,
-                    color: "#e8f0fe",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                  }}
+                  className='text-[13px] font-semibold truncate'
+                  style={{ color: "#e8f0fe" }}
                 >
                   {c.name}
                 </div>
-                <div style={{ fontSize: 11, color: "#3d5a80" }}>{c.instructor}</div>
+                <div
+                  className='text-[11px]'
+                  style={{ color: "#3d5a80" }}
+                >
+                  {c.instructor}
+                </div>
               </div>
+
+              {/* Revenue + rating */}
               <div className='text-right shrink-0'>
-                <div style={{ fontSize: 13, fontWeight: 700, color: "#00e5a0" }}>{c.rev}</div>
-                <div style={{ fontSize: 11, color: "#3d5a80" }}>⭐ {c.rating}</div>
+                <div
+                  className='text-[13px] font-bold'
+                  style={{ color: "#00e5a0" }}
+                >
+                  {c.rev}
+                </div>
+                <div
+                  className='text-[11px]'
+                  style={{ color: "#3d5a80" }}
+                >
+                  ⭐ {c.rating}
+                </div>
               </div>
             </div>
           ))}

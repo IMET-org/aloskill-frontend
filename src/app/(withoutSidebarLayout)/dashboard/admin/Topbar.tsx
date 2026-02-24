@@ -1,7 +1,6 @@
 "use client";
 
-import styles from "./AdminDashboard.module.css";
-import { Bell, ChevronRight, Menu, Search, Settings } from "lucide-react";
+import { Bell, ChevronRight, Menu, Settings } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { Avatar } from "./Components";
 
@@ -31,103 +30,54 @@ export default function Topbar({ onMenuClick }: { onMenuClick?: () => void }) {
   const pageLabel = PAGE_LABELS[pageId] || "Dashboard";
 
   return (
-    <header
-      style={{
-        height: 64,
-        background: "#070f1e",
-        borderBottom: "1px solid #1a3158",
-        display: "flex",
-        alignItems: "center",
-        padding: "0 24px",
-        gap: 16,
-        position: "sticky",
-        top: 0,
-        zIndex: 20,
-      }}
-    >
+    <header className='h-16 bg-[#070f1e] border-b border-[#1a3158] flex items-center px-6 gap-4 sticky top-0 z-20'>
       {/* Mobile menu button */}
       <button
         onClick={onMenuClick}
-        className='lg:hidden'
-        style={{
-          background: "none",
-          border: "none",
-          cursor: "pointer",
-          display: "flex",
-          color: "#7a9cc4",
-          padding: 4,
-        }}
+        className='lg:hidden flex items-center justify-center bg-transparent border-none cursor-pointer text-[#7a9cc4] p-1'
       >
         <Menu size={20} />
       </button>
 
       {/* Breadcrumb */}
       <div className='flex items-center gap-2'>
-        <span style={{ color: "#3d5a80", fontSize: 13 }}>AloSkill</span>
+        <span className='text-[#3d5a80] text-[13px]'>AloSkill</span>
         <ChevronRight
           size={14}
           color='#3d5a80'
         />
-        <span style={{ color: "#e8f0fe", fontSize: 13, fontWeight: 600 }}>{pageLabel}</span>
+        <span className='text-[#e8f0fe] text-[13px] font-semibold'>{pageLabel}</span>
       </div>
 
       {/* Live indicator */}
       <div className='flex items-center gap-2 ml-4'>
-        <div className={styles["pulseDot"]} />
-        <span
-          className={`${styles["monoText"]} hidden sm:block`}
-          style={{ fontSize: 11, color: "#3d5a80" }}
-        >
+        {/* pulseDot — bg + glow shadow + pulse animation via Tailwind */}
+        <div className='w-2 h-2 rounded-full bg-[#00e5a0] shadow-[0_0_8px_#00e5a0] animate-pulse' />
+        <span className='hidden sm:block text-[11px] text-[#3d5a80] font-mono uppercase tracking-widest'>
           LIVE
         </span>
       </div>
 
-      <div style={{ flex: 1 }} />
-
-      {/* Search */}
-      <div
-        className='relative hidden md:block'
-        style={{ width: 240 }}
-      >
-        <Search
-          size={14}
-          color='#3d5a80'
-          style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)" }}
-        />
-        <input
-          className={styles["input"]}
-          placeholder='Quick search...'
-          style={{ paddingLeft: 34, height: 36, fontSize: 13 }}
-        />
-      </div>
+      <div className='flex-1' />
 
       {/* Actions */}
       <div className='flex gap-2'>
-        <div
-          className={styles["topbarAction"]}
-          style={{ position: "relative" }}
-        >
+        {/* Bell */}
+        <div className='relative w-[38px] h-[38px] rounded-[9px] border border-[#1a3158] bg-[#070f1e] flex items-center justify-center cursor-pointer text-[#3d5a80] flex-shrink-0 transition-all duration-[180ms] hover:border-[#2a4a78] hover:text-[#7a9cc4]'>
           <Bell size={16} />
-          <div
-            style={{
-              position: "absolute",
-              top: 8,
-              right: 8,
-              width: 7,
-              height: 7,
-              borderRadius: "50%",
-              background: "#da7c36",
-              border: "2px solid #070f1e",
-            }}
-          />
+          {/* notification dot */}
+          <div className='absolute top-2 right-2 w-[7px] h-[7px] rounded-full bg-[#da7c36] border-2 border-[#070f1e]' />
         </div>
-        <div className={`${styles["topbarAction"]} hidden sm:flex`}>
+
+        {/* Settings */}
+        <div className='hidden sm:flex w-[38px] h-[38px] rounded-[9px] border border-[#1a3158] bg-[#070f1e] items-center justify-center cursor-pointer text-[#3d5a80] flex-shrink-0 transition-all duration-[180ms] hover:border-[#2a4a78] hover:text-[#7a9cc4]'>
           <Settings size={16} />
         </div>
-        <div
-          style={{ width: 1, background: "#1a3158", height: 28, alignSelf: "center" }}
-          className='hidden sm:block'
-        />
+
+        {/* Divider */}
+        <div className='hidden sm:block w-px bg-[#1a3158] h-7 self-center' />
+
+        {/* Avatar + name */}
         <div className='hidden sm:flex items-center gap-2'>
           <Avatar
             name='Super Admin'
@@ -135,13 +85,10 @@ export default function Topbar({ onMenuClick }: { onMenuClick?: () => void }) {
             gradient='135deg, #da7c36, #d15100'
           />
           <div className='hidden md:block'>
-            <div style={{ fontSize: 12, fontWeight: 600, color: "#e8f0fe", lineHeight: 1.2 }}>
+            <div className='text-[12px] font-semibold text-[#e8f0fe] leading-tight'>
               Super Admin
             </div>
-            <div
-              className={styles["monoText"]}
-              style={{ fontSize: 10, color: "#3d5a80" }}
-            >
+            <div className='text-[10px] text-[#3d5a80] font-mono uppercase tracking-widest'>
               OWNER
             </div>
           </div>
