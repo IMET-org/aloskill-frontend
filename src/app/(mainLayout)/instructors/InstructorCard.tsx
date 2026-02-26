@@ -13,6 +13,7 @@ function InstructorCard({
   onLeave,
   animationDelay = 0,
 }: InstructorCardProps) {
+  
   const [imgSrc, setImgSrc] = useState(instructor?.avatarUrl || userFallback);
 
   const getBorderColor = () => {

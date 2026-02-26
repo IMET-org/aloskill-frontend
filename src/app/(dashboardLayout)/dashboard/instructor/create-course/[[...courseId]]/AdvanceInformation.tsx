@@ -467,7 +467,7 @@ function AdvanceInformation({
       <form onSubmit={handleSubmit(onSubmit)}>
         <div>
           {/* Course Thumbnail and Trailer */}
-          <div className='p-6 flex items-center gap-4 w-full h-[220px] border-b border-gray-200'>
+          <div className='p-6 flex items-center gap-4 w-full h-55 border-b border-gray-200'>
             {/* Course Thumbnail */}
             <div className='w-full flex flex-col gap-3 h-full'>
               <h4 className='font-semibold text-gray-900'>Course Thumbnail</h4>

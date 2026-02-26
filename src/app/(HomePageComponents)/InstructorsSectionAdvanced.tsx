@@ -28,14 +28,12 @@ export function InstructorsSectionAdvanced() {
     const fetchFeatured = async () => {
       try {
         setLoading(true);
-
-        // ✅ Fetch from homepage
         const response = await apiClient.get<Instructor[]>("/user/instructors/all");
         if (response.success && response.data) {
           setFeaturedInstructors(response.data);
         }
       } catch (error) {
-        // console.error("Error:", error);
+        
       } finally {
         setLoading(false);
       }

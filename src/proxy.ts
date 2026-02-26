@@ -14,10 +14,10 @@ import {
 const SECURITY_CONFIG = {
   // Rate limiting
   RATE_LIMITS: {
-    AUTH: { max: 5, windowMs: 15 * 60 * 1000 }, // 5 attempts per 15 min
-    VIDEO: { max: 20, windowMs: 60 * 1000 }, // 20 requests per minute
-    API: { max: 100, windowMs: 60 * 1000 }, // 100 requests per minute
-    EXAM: { max: 10, windowMs: 30 * 1000 }, // 10 requests per 30 sec
+    AUTH: { max: 5, windowMs: 15 * 60 * 1000 },
+    VIDEO: { max: 20, windowMs: 60 * 1000 },
+    API: { max: 100, windowMs: 60 * 1000 },
+    EXAM: { max: 10, windowMs: 30 * 1000 },
     DEFAULT: { max: 200, windowMs: 60 * 1000 },
   },
 
@@ -200,27 +200,27 @@ export default withAuth(
       // === PHASE 2: AUTHENTICATION & SESSION SECURITY ===
 
       // 5. Session Security & Anomaly Detection
-      if (token) {
-        try {
-          const sessionCheck = await validateSessionSecurity(token, request);
-          if (!sessionCheck.valid) {
-            await auditLogger.logThreat(auditId, "session_anomaly", sessionCheck);
-            return NextResponse.redirect(
-              new URL(
-                `/auth/signout?reason=security&anomaly=${sessionCheck["anomaly"]}`,
-                request.url
-              )
-            );
-          }
+      // if (token) {
+      //   try {
+      //     const sessionCheck = await validateSessionSecurity(token, request);
+      //     if (!sessionCheck.valid) {
+      //       await auditLogger.logThreat(auditId, "session_anomaly", sessionCheck);
+      //       return NextResponse.redirect(
+      //         new URL(
+      //           `/auth/signout?reason=security&anomaly=${sessionCheck["anomaly"]}`,
+      //           request.url
+      //         )
+      //       );
+      //     }
 
-          // Update session activity
-          await updateSessionActivity(token, request);
-        } catch (error) {
-          console.error("Session validation failed:", error);
-          await auditLogger.logError(auditId, error, request);
-          // Allow request to continue
-        }
-      }
+      //     // Update session activity
+      //     await updateSessionActivity(token, request);
+      //   } catch (error) {
+      //     console.error("Session validation failed:", error);
+      //     await auditLogger.logError(auditId, error, request);
+      //     // Allow request to continue
+      //   }
+      // }
 
       // 6. Advanced Access Control
       try {
@@ -401,50 +401,50 @@ export default withAuth(
 /**
  * Advanced Session Security Validation
  */
-async function validateSessionSecurity(
-  token: any,
-  request: NextRequest
-): Promise<SessionValidationResult> {
-  const clientIP = getClientIP(request);
-  const userAgent = request.headers.get("user-agent");
-  const now = Date.now();
+// async function validateSessionSecurity(
+//   token: any,
+//   request: NextRequest
+// ): Promise<SessionValidationResult> {
+//   const clientIP = getClientIP(request);
+//   const userAgent = request.headers.get("user-agent");
+//   const now = Date.now();
 
-  // Check for session anomalies
-  const anomalies: string[] = [];
+//   // Check for session anomalies
+//   const anomalies: string[] = [];
 
-  // 1. IP Address Change Detection
-  if (token.sessionIP && token.sessionIP !== clientIP) {
-    anomalies.push("ip_change");
-  }
+//   // 1. IP Address Change Detection
+//   if (token.sessionIP && token.sessionIP !== clientIP) {
+//     anomalies.push("ip_change");
+//   }
 
-  // 2. User Agent Change Detection
-  if (token.sessionUA && token.sessionUA !== userAgent) {
-    anomalies.push("user_agent_change");
-  }
+//   // 2. User Agent Change Detection
+//   if (token.sessionUA && token.sessionUA !== userAgent) {
+//     anomalies.push("user_agent_change");
+//   }
 
-  // 3. Session Age Check
-  if (token.iat && now - token.iat * 1000 > 24 * 60 * 60 * 1000) {
-    anomalies.push("session_expired");
-  }
+//   // 3. Session Age Check
+//   if (token.iat && now - token.iat * 1000 > 24 * 60 * 60 * 1000) {
+//     anomalies.push("session_expired");
+//   }
 
-  // 4. Concurrent Session Check
-  const concurrentSessions = await checkConcurrentSessions(token.id);
-  if (concurrentSessions > 3) {
-    anomalies.push("concurrent_sessions");
-  }
+//   // 4. Concurrent Session Check
+//   const concurrentSessions = await checkConcurrentSessions(token.id);
+//   if (concurrentSessions > 3) {
+//     anomalies.push("concurrent_sessions");
+//   }
 
-  // 5. Geographic Anomaly Detection
-  const geoAnomaly = await detectGeographicAnomaly(token, request);
-  if (geoAnomaly.detected) {
-    anomalies.push("geographic_anomaly");
-  }
+//   // 5. Geographic Anomaly Detection
+//   const geoAnomaly = await detectGeographicAnomaly(token, request);
+//   if (geoAnomaly.detected) {
+//     anomalies.push("geographic_anomaly");
+//   }
 
-  return {
-    valid: anomalies.length === 0,
-    anomalies,
-    riskLevel: anomalies.length > 2 ? "high" : anomalies.length > 0 ? "medium" : "low",
-  };
-}
+//   return {
+//     valid: anomalies.length === 0,
+//     anomalies,
+//     riskLevel: anomalies.length > 2 ? "high" : anomalies.length > 0 ? "medium" : "low",
+//   };
+// }
 
 /**
  * Advanced Access Control for LMS
@@ -664,12 +664,13 @@ function addAdvancedSecurityHeaders(response: NextResponse, _request: NextReques
   const cspDirectives = [
     "default-src 'self' https://iframe.mediadelivery.net",
     // Added Google for scripts
-    "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://accounts.google.com http://assets.mediadelivery.net/playerjs/playerjs-latest.min.js",
+    "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://accounts.google.com http://assets.mediadelivery.net/playerjs/playerjs-latest.min.js http://unpkg.com/pdfjs-dist@5.4.296/build/pdf.worker.min.mjs unpkg.com",
+    "worker-src 'self' blob:",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "img-src 'self' data: https: blob:",
     "font-src 'self' https://fonts.gstatic.com",
     // Added Google and Railway backend
-    `connect-src 'self' http://localhost:5000 ${envConfig.NEXT_PUBLIC_BACKEND_BASE_URL} https://vitals.vercel-insights.com https://video.bunnycdn.com https://fortunate-kindness-production.up.railway.app https://accounts.google.com https://assets.mediadelivery.net`,
+    `connect-src 'self' http://localhost:5000 ${envConfig.NEXT_PUBLIC_BACKEND_BASE_URL} https://vitals.vercel-insights.com https://video.bunnycdn.com https://fortunate-kindness-production.up.railway.app https://accounts.google.com https://assets.mediadelivery.net blob: unpkg.com`,
     "media-src 'self' blob: https:",
     "object-src 'none'",
     "base-uri 'self'",

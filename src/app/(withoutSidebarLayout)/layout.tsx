@@ -5,7 +5,6 @@ import AnnouncementBar from "@/components/shared/header/AnnouncementBar.tsx";
 import NavBar from "@/components/shared/header/NavBar";
 import LeftSidebar from "@/components/shared/sidebars/LeftSidebar.tsx";
 import { useState } from "react";
-
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
