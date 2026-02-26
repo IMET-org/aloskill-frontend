@@ -151,7 +151,7 @@ export default function AdminDashboardPage() {
         sub='Real-time KPIs and performance metrics'
       />
 
-      <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6 gap-[14px] mb-6'>
+      <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6 gap-3.5 mb-6'>
         {kpis.map(k => (
           <KpiCard
             key={k.label}
@@ -175,7 +175,7 @@ export default function AdminDashboardPage() {
               </div>
               {/* metricLabel */}
               <div
-                className='text-[11px] uppercase tracking-[1px] mt-[3px]'
+                className='text-[11px] uppercase tracking-[1px] mt-0.75'
                 style={{ fontFamily: "'DM Mono', monospace", color: "#3d5a80" }}
               >
                 Last 7 months
@@ -183,7 +183,7 @@ export default function AdminDashboardPage() {
             </div>
             {/* select → custom styled */}
             <select
-              className='text-[12px] rounded-[9px] outline-none cursor-pointer appearance-none transition-[border] duration-[180ms]'
+              className='text-[12px] rounded-[9px] outline-none cursor-pointer appearance-none transition-[border] duration-180'
               style={{
                 background:
                   "#070f1e url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%233d5a80' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\") no-repeat right 12px center",
@@ -333,7 +333,7 @@ export default function AdminDashboardPage() {
                 className='flex items-center gap-2'
               >
                 <div
-                  className='w-2 h-2 rounded-[2px]'
+                  className='w-2 h-2 rounded-xs'
                   style={{ background: i === 0 ? "#4a9eff" : "#da7c36" }}
                 />
                 <span

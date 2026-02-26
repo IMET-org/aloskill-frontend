@@ -21,54 +21,83 @@ import {
   User,
   X,
 } from "lucide-react";
+import dynamic from "next/dynamic";
+import Image from "next/image";
 import Link from "next/link";
 import React, { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { Document, Page, pdfjs } from "react-pdf";
-import "react-pdf/dist/Page/AnnotationLayer.css";
-import "react-pdf/dist/Page/TextLayer.css";
 import * as z from "zod";
 
-// ─── PDF WORKER SETUP ──────────────────────────────────────────────
-// Essential for react-pdf to work without external configuration
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
+const PdfPreviewModal = dynamic(() => import("./PdfPreviewModal"), {
+  ssr: false,
+});
 
-// ─── ZOD SCHEMA ────────────────────────────────────────────────────
-const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 
 const bookSchema = z
   .object({
-    title: z.string().min(1, "Book title is required"),
-    author: z.string().min(1, "Author name is required"),
-    translator: z.string().optional(),
-    editor: z.string().optional(),
-    publisher: z.string().min(1, "Publisher is required"),
-    description: z.string().min(10, "Description must be at least 10 characters"),
+    title: z
+      .string()
+      .min(1, "Book title is required")
+      .regex(/^[^<>]*$/, "Title must not contain any opening or closing HTML tags"),
+    author: z
+      .string()
+      .min(1, "Author name is required")
+      .regex(/^[^<>]*$/, "Author name must not contain any opening or closing HTML tags"),
+    translator: z
+      .string()
+      .regex(/^[^<>]*$/, "Translator name must not contain any opening or closing HTML tags")
+      .optional(),
+    editor: z
+      .string()
+      .regex(/^[^<>]*$/, "Editor name must not contain any opening or closing HTML tags")
+      .optional(),
+    publisher: z
+      .string()
+      .min(1, "Publisher is required")
+      .regex(/^[^<>]*$/, "Publisher name must not contain any opening or closing HTML tags"),
+    description: z
+      .string()
+      .min(10, "Description must be at least 10 characters")
+      .regex(/^[^<>]*$/, "Description must not contain any opening or closing HTML tags"),
 
     regularPrice: z.coerce.number().min(0, "Price cannot be negative"),
     salePrice: z.coerce.number().min(0, "Price cannot be negative"),
     stock: z.coerce.number().int().min(0, "Stock cannot be negative"),
 
-    isbn: z.string().optional(),
-    edition: z.string().optional(),
-    pages: z.coerce.number().int().positive().optional(),
+    isbn: z
+      .string()
+      .regex(/^[^<>]*$/, "ISBN must not contain any opening or closing HTML tags")
+      .optional(),
+    edition: z
+      .string()
+      .regex(/^[^<>]*$/, "Edition must not contain any opening or closing HTML tags")
+      .optional(),
+    pages: z.coerce
+      .number()
+      .int()
+      .positive("Pages must not contain any negative numbers")
+      .optional(),
     language: z.string().min(1, "Language is required"),
 
     category: z.string().min(1, "Category is required"),
     formats: z.array(z.string()).min(1, "Select at least one format"),
 
-    metaKeywords: z.string().optional(),
-    metaDescription: z.string().optional(),
+    metaKeywords: z
+      .string()
+      .regex(/^[^<>]*$/, "Objectives must not contain any opening or closing HTML tags")
+      .optional(),
+    metaDescription: z
+      .string()
+      .regex(/^[^<>]*$/, "Meta description must not contain any opening or closing HTML tags")
+      .optional(),
 
-    // Files are handled manually for validation logic but tracked here
     coverImage: z.custom<File>(v => v instanceof File, "Cover image is required"),
     previewPdf: z.custom<File>(v => v instanceof File, "Preview PDF is required"),
     ebookPdf: z.custom<File>(v => v instanceof File).optional(),
   })
   .refine(
     data => {
-      // If "E-Book" format is selected, ebookPdf is required
       if (data.formats.includes("E-Book") && !data.ebookPdf) {
         return false;
       }
@@ -80,7 +109,7 @@ const bookSchema = z
     }
   );
 
-type BookFormValues = z.infer<typeof bookSchema>;
+type BookFormValues = z.input<typeof bookSchema>;
 
 // ─── MAIN COMPONENT ────────────────────────────────────────────────
 export default function AddBookPage() {
@@ -125,7 +154,7 @@ export default function AddBookPage() {
         return;
       }
 
-      const img = new Image();
+      const img = document.createElement("img");
       const objectUrl = URL.createObjectURL(file);
 
       img.onload = () => {
@@ -175,20 +204,18 @@ export default function AddBookPage() {
 
   const onSubmit = async (data: BookFormValues) => {
     console.log("Form Data Validated:", data);
-    // TODO: Send FormData to your backend API
-    await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate API
     alert("Book successfully validated and ready for upload!");
   };
 
   return (
-    <div className='min-h-screen bg-[#070a0f] text-white font-sans'>
+    <div className='text-white font-sans'>
       {/* Sticky Top Bar */}
-      <header className='sticky top-0 z-40 bg-[#070a0f]/80 backdrop-blur-xl border-b border-white/5'>
-        <div className='max-w-6xl mx-auto px-8 h-16 flex items-center justify-between'>
+      <header className='sticky top-0 z-30 bg-[#070F1D] border-b border-white/5'>
+        <div className='px-7 h-16 flex items-center justify-between'>
           <div className='flex items-center gap-3'>
             <Link
               href='/admin/books'
-              className='p-2 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all'
+              className='p-2 rounded text-gray-400 hover:text-white hover:bg-white/5 transition-all'
             >
               <ArrowLeft size={20} />
             </Link>
@@ -203,14 +230,14 @@ export default function AddBookPage() {
             <button
               type='button'
               disabled={isSubmitting}
-              className='px-4 py-2 text-sm font-medium text-gray-400 border border-white/10 rounded-xl hover:bg-white/5 hover:text-white transition-all disabled:opacity-50'
+              className='px-4 py-2 text-sm font-medium text-gray-400 border border-white/10 rounded hover:bg-white/5 hover:text-white transition-all disabled:opacity-50 cursor-pointer'
             >
               Save Draft
             </button>
             <button
               onClick={handleSubmit(onSubmit)}
               disabled={isSubmitting}
-              className='flex items-center gap-2 px-5 py-2 text-sm font-semibold rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 shadow-lg shadow-indigo-500/20 transition-all disabled:opacity-70 disabled:cursor-not-allowed'
+              className='flex items-center gap-2 px-5 py-2 text-sm font-semibold rounded bg-linear-to-r from-orange to-orange-dark hover:from-orange-dark hover:to-orange shadow shadow-orange/20 transition-colors duration-500 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer'
             >
               {isSubmitting ? (
                 <span className='animate-pulse'>Processing...</span>
@@ -225,8 +252,8 @@ export default function AddBookPage() {
         </div>
       </header>
 
-      <main className='max-w-6xl mx-auto px-8 py-10'>
-        <div className='mb-8'>
+      <main className='p-7 animate-slide-up'>
+        <div className='mb-7'>
           <div className='inline-flex items-center gap-1.5 text-xs font-medium text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 rounded-full px-3 py-1 mb-3'>
             <BookOpen size={11} />
             New Entry
@@ -374,7 +401,8 @@ export default function AddBookPage() {
                   <input
                     {...register("regularPrice")}
                     type='number'
-                    className={getInputClass(!!errors.regularPrice)}
+                    min={0}
+                    className={`${getInputClass(!!errors.regularPrice)}`}
                   />
                 </Field>
                 <Field
@@ -384,6 +412,7 @@ export default function AddBookPage() {
                   <input
                     {...register("salePrice")}
                     type='number'
+                    min={0}
                     className={getInputClass(!!errors.salePrice)}
                   />
                 </Field>
@@ -394,6 +423,7 @@ export default function AddBookPage() {
                   <input
                     {...register("stock")}
                     type='number'
+                    min={0}
                     className={getInputClass(!!errors.stock)}
                   />
                 </Field>
@@ -460,6 +490,43 @@ export default function AddBookPage() {
                 </Field>
               </div>
             </Card>
+
+            {/* SEO Meta */}
+            <Card
+              icon={
+                <Search
+                  size={15}
+                  className='text-violet-400'
+                />
+              }
+              iconBg='bg-violet-500/10'
+              title='SEO Meta'
+            >
+              <div className='space-y-4'>
+                <Field
+                  label='Meta Keywords'
+                  error={errors.metaKeywords?.message}
+                >
+                  <input
+                    {...register("metaKeywords")}
+                    type='text'
+                    className={getInputClass(!!errors.metaKeywords)}
+                    placeholder='Islamic, Spirituality...'
+                  />
+                </Field>
+                <Field
+                  label='Meta Description'
+                  error={errors.metaDescription?.message}
+                >
+                  <textarea
+                    {...register("metaDescription")}
+                    rows={3}
+                    className={`${getInputClass(!!errors.metaDescription)} resize-none`}
+                    placeholder='Short SEO summary...'
+                  />
+                </Field>
+              </div>
+            </Card>
           </div>
 
           {/* ── RIGHT COLUMN ── */}
@@ -480,8 +547,10 @@ export default function AddBookPage() {
                 error={(errors.coverImage?.message as string) || imageError || undefined}
               >
                 {uploadedCover && coverPreview ? (
-                  <div className='relative rounded-xl overflow-hidden border border-white/10 group'>
-                    <img
+                  <div className='relative rounded overflow-hidden border border-white/10 group'>
+                    <Image
+                      width={800}
+                      height={1200}
                       src={coverPreview}
                       alt='Cover'
                       className='w-full h-auto object-cover'
@@ -506,7 +575,7 @@ export default function AddBookPage() {
                       onChange={handleImageUpload}
                     />
                     <div
-                      className={`border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center transition-all ${imageError || errors.coverImage ? "border-red-500/30 bg-red-500/5" : "border-white/10 hover:border-indigo-500/30 hover:bg-indigo-500/5"}`}
+                      className={`border-2 border-dashed rounded p-8 flex flex-col items-center justify-center transition-all ${imageError || errors.coverImage ? "border-red-500/30 bg-red-500/5" : "border-white/10 hover:border-indigo-500/30 hover:bg-indigo-500/5"}`}
                     >
                       <div className='w-11 h-11 rounded-xl bg-white/5 flex items-center justify-center mb-3'>
                         <Upload
@@ -551,7 +620,7 @@ export default function AddBookPage() {
                       className='absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10'
                       onChange={e => handlePdfUpload(e, "previewPdf")}
                     />
-                    <div className='border-2 border-dashed border-white/10 rounded-xl p-6 flex flex-col items-center justify-center hover:border-cyan-500/30 hover:bg-cyan-500/5 transition-all'>
+                    <div className='border-2 border-dashed border-white/10 rounded p-6 flex flex-col items-center justify-center hover:border-cyan-500/30 hover:bg-cyan-500/5 transition-all'>
                       <Upload
                         size={18}
                         className='text-gray-500 mb-2'
@@ -603,7 +672,7 @@ export default function AddBookPage() {
                           {["Hardcover", "E-Book"].map(fmt => (
                             <label
                               key={fmt}
-                              className={`flex items-center gap-3 border rounded-xl px-4 py-3 cursor-pointer transition-all ${field.value.includes(fmt) ? "bg-indigo-500/10 border-indigo-500/50" : "bg-[#080b10] border-white/10 hover:border-white/20"}`}
+                              className={`flex items-center gap-3 border rounded px-4 py-3 cursor-pointer transition-colors duration-300 ${field.value.includes(fmt) ? "bg-orange border-0" : "bg-transparent border-white/10 hover:border-white/20"}`}
                             >
                               <input
                                 type='checkbox'
@@ -616,7 +685,7 @@ export default function AddBookPage() {
                                     : field.value.filter(v => v !== fmt);
                                   field.onChange(newValue);
                                 }}
-                                className='w-4 h-4 accent-indigo-500'
+                                className='w-4 h-4 accent-orange-dark'
                               />
                               <span className='text-sm'>{fmt}</span>
                             </label>
@@ -631,7 +700,7 @@ export default function AddBookPage() {
 
             {/* Conditional E-Book Upload */}
             {isEbookSelected && (
-              <div className='animate-in fade-in slide-in-from-top-4 duration-300'>
+              <div className='animate-slide-up'>
                 <Card
                   icon={
                     <FileText
@@ -659,7 +728,7 @@ export default function AddBookPage() {
                           className='absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10'
                           onChange={e => handlePdfUpload(e, "ebookPdf")}
                         />
-                        <div className='border-2 border-dashed border-white/10 rounded-xl p-6 flex flex-col items-center justify-center hover:border-orange-500/30 hover:bg-orange-500/5 transition-all'>
+                        <div className='border-2 border-dashed border-white/10 rounded p-6 flex flex-col items-center justify-center hover:border-orange-500/30 hover:bg-orange-500/5 transition-all'>
                           <Upload
                             size={18}
                             className='text-gray-500 mb-2'
@@ -672,43 +741,6 @@ export default function AddBookPage() {
                 </Card>
               </div>
             )}
-
-            {/* SEO Meta */}
-            <Card
-              icon={
-                <Search
-                  size={15}
-                  className='text-violet-400'
-                />
-              }
-              iconBg='bg-violet-500/10'
-              title='SEO Meta'
-            >
-              <div className='space-y-4'>
-                <Field
-                  label='Meta Keywords'
-                  error={errors.metaKeywords?.message}
-                >
-                  <input
-                    {...register("metaKeywords")}
-                    type='text'
-                    className={getInputClass(!!errors.metaKeywords)}
-                    placeholder='Islamic, Spirituality...'
-                  />
-                </Field>
-                <Field
-                  label='Meta Description'
-                  error={errors.metaDescription?.message}
-                >
-                  <textarea
-                    {...register("metaDescription")}
-                    rows={3}
-                    className={`${getInputClass(!!errors.metaDescription)} resize-none`}
-                    placeholder='Short SEO summary...'
-                  />
-                </Field>
-              </div>
-            </Card>
           </div>
         </form>
       </main>
@@ -727,78 +759,6 @@ export default function AddBookPage() {
 
 // ─── HELPER COMPONENTS ─────────────────────────────────────────────
 
-// 1. PDF Preview Component (Library Based)
-function PdfPreviewModal({
-  url,
-  fileName,
-  onClose,
-}: {
-  url: string;
-  fileName: string;
-  onClose: () => void;
-}) {
-  const [numPages, setNumPages] = useState<number>(0);
-
-  function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
-    setNumPages(numPages);
-  }
-
-  return (
-    <div className='fixed inset-0 z-50 flex items-center justify-center p-4'>
-      <div
-        className='absolute inset-0 bg-black/80 backdrop-blur-sm'
-        onClick={onClose}
-      />
-
-      <div className='relative z-10 w-full max-w-4xl h-[85vh] bg-[#1a1d24] border border-white/10 rounded-2xl shadow-2xl flex flex-col overflow-hidden'>
-        {/* Header */}
-        <div className='flex items-center justify-between px-6 py-4 border-b border-white/5 bg-[#0e1117] shrink-0'>
-          <div className='flex items-center gap-3'>
-            <div className='p-2 bg-indigo-500/10 rounded-lg'>
-              <FileText
-                size={16}
-                className='text-indigo-400'
-              />
-            </div>
-            <div>
-              <p className='text-sm font-semibold leading-tight text-white'>{fileName}</p>
-              <p className='text-xs text-gray-500'>Pages: {numPages || "Loading..."}</p>
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            className='p-2 rounded-xl text-gray-400 hover:text-white hover:bg-white/10'
-          >
-            <X size={20} />
-          </button>
-        </div>
-
-        {/* PDF Viewer */}
-        <div className='flex-1 overflow-y-auto bg-[#2b2f36] p-4 flex justify-center'>
-          <Document
-            file={url}
-            onLoadSuccess={onDocumentLoadSuccess}
-            loading={<div className='text-white text-sm'>Loading PDF...</div>}
-            error={<div className='text-red-400 text-sm'>Failed to load PDF.</div>}
-            className='flex flex-col gap-4'
-          >
-            {Array.from(new Array(numPages), (el, index) => (
-              <Page
-                key={`page_${index + 1}`}
-                pageNumber={index + 1}
-                width={600} // Fixed width for consistent preview
-                renderAnnotationLayer={false}
-                renderTextLayer={false}
-                className='shadow-lg'
-              />
-            ))}
-          </Document>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // 2. File Item UI
 function FilePreviewItem({
   file,
@@ -810,8 +770,8 @@ function FilePreviewItem({
   onPreview?: () => void;
 }) {
   return (
-    <div className='flex items-center gap-3 bg-[#080b10] border border-white/10 rounded-xl p-3 group'>
-      <div className='w-10 h-10 bg-indigo-500/10 rounded-lg flex items-center justify-center shrink-0'>
+    <div className='flex items-center gap-3 bg-transparent border border-white/10 rounded p-3 group'>
+      <div className='w-10 h-10 bg-indigo-500/10 rounded flex items-center justify-center shrink-0'>
         <FileText
           size={17}
           className='text-indigo-400'
@@ -826,7 +786,7 @@ function FilePreviewItem({
           <button
             type='button'
             onClick={onPreview}
-            className='p-1.5 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 transition-colors'
+            className='p-1.5 rounded bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 transition-colors'
             title='Preview PDF'
           >
             <Eye size={14} />
@@ -835,7 +795,7 @@ function FilePreviewItem({
         <button
           type='button'
           onClick={onRemove}
-          className='p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-colors'
+          className='p-1.5 rounded bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-colors'
           title='Remove'
         >
           <X size={14} />
@@ -884,9 +844,9 @@ function Card({
   children: React.ReactNode;
 }) {
   return (
-    <div className='bg-[#0e1117] border border-white/[0.07] rounded-2xl overflow-hidden'>
-      <div className='flex items-center gap-3 px-6 py-4 border-b border-white/[0.05]'>
-        <div className={`p-2 rounded-lg ${iconBg}`}>{icon}</div>
+    <div className='bg-transparent border border-white/[0.07] rounded overflow-hidden'>
+      <div className='flex items-center gap-3 px-6 py-4 border-b border-white/5'>
+        <div className={`p-2 rounded ${iconBg}`}>{icon}</div>
         <h2 className='text-sm font-semibold text-white'>{title}</h2>
       </div>
       <div className='p-6'>{children}</div>
@@ -895,8 +855,8 @@ function Card({
 }
 
 const getInputClass = (hasError: boolean) =>
-  `w-full bg-[#080b10] border rounded-xl px-4 py-3 text-sm placeholder:text-gray-600 focus:outline-none transition-all ${
+  `w-full bg-transparent border rounded px-4 py-3 text-sm placeholder:text-gray-600 focus:outline-none focus:border-none [&>option]:bg-[#070F1D] [&::-webkit-inner-spin-button]:appearance-none transition-all ${
     hasError
       ? "border-red-500/50 focus:border-red-500 focus:ring-1 focus:ring-red-500/20"
-      : "border-white/10 focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20"
+      : "border-white/[0.07] focus:ring-1 focus:ring-orange"
   }`;
