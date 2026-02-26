@@ -1,9 +1,8 @@
 "use client";
 
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Download } from "lucide-react";
-import { SectionHeader, CustomTooltip } from "../Components";
-import styles from "../AdminDashboard.module.css";
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { CustomTooltip, SectionHeader } from "../Components";
 
 const completionData = [
   { cat: "Dev", v: 74 },
@@ -24,46 +23,85 @@ const reports = [
 
 export default function AnalyticsPage() {
   return (
-    <div className={styles['pageEnter']}>
+    /* Using the custom animation defined in global.css theme */
+    <div className='animate-page-enter'>
       <SectionHeader
-        title="Analytics & Reports"
-        sub="Deep insights and downloadable CSV reports"
+        title='Analytics & Reports'
+        sub='Deep insights and downloadable CSV reports'
         action={
-          <div className="flex gap-3">
-            <button className={`${styles['btn']} ${styles['btnGhost']}`}>
+          <div className='flex gap-3'>
+            <button className="inline-flex items-center gap-1.5 px-[18px] py-[9px] rounded-[9px] font-['Outfit'] text-[13px] font-semibold cursor-pointer transition-all duration-150 bg-transparent text-[#7a9cc4] border border-[#1a3158] hover:bg-[#0d1f3c] hover:text-[#e8f0fe] hover:border-[#2a4a78]">
               <Download size={13} /> Export CSV
             </button>
-            <button className={`${styles['btn']} ${styles['btnPrimary']}`}>
-              <Download size={13} color="white" /> Export PDF
+            <button className="inline-flex items-center gap-1.5 px-[18px] py-[9px] rounded-[9px] font-['Outfit'] text-[13px] font-semibold cursor-pointer transition-all duration-150 border-none bg-gradient-to-br from-[#da7c36] to-[#d15100] text-white shadow-[0_4px_14px_rgba(218,124,54,0.25)] hover:shadow-[0_6px_20px_rgba(218,124,54,0.45)] hover:-translate-y-px">
+              <Download
+                size={13}
+                color='white'
+              />{" "}
+              Export PDF
             </button>
           </div>
         }
       />
-      <div className={`${styles['kpiGrid3']}`} style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14, marginBottom: 24 }}>
-        {reports.map((r) => (
-          <div key={r.name} className={styles['card']} style={{ padding: "16px 20px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+
+      <div className='grid grid-cols-1 md:grid-cols-3 gap-[14px] mb-6'>
+        {reports.map(r => (
+          <div
+            key={r.name}
+            className="relative overflow-hidden bg-[#0d1f3c] border border-[#1a3158] rounded-[16px] p-4 px-5 flex justify-between items-center before:content-[''] before:absolute before:inset-0 before:bg-gradient-to-br before:from-white/5 before:to-transparent before:pointer-events-none"
+          >
             <div>
-              <div style={{ fontWeight: 600, fontSize: 13, color: "#e8f0fe", marginBottom: 3 }}>{r.name}</div>
-              <div className={styles['monoText']} style={{ fontSize: 11, color: "#3d5a80" }}>{r.size} · {r.updated}</div>
+              <div className='font-semibold text-[13px] text-[#e8f0fe] mb-[3px]'>{r.name}</div>
+              <div className='font-mono text-[11px] text-[#3d5a80]'>
+                {r.size} · {r.updated}
+              </div>
             </div>
-            <button className={`${styles['btn']} ${styles['btnGhost']}`} style={{ padding: "6px 12px", fontSize: 12, flexShrink: 0 }}>
+            <button className="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[9px] font-['Outfit'] text-[12px] font-semibold cursor-pointer transition-all duration-150 bg-transparent text-[#7a9cc4] border border-[#1a3158] hover:bg-[#0d1f3c] hover:text-[#e8f0fe] hover:border-[#2a4a78]">
               <Download size={12} />
             </button>
           </div>
         ))}
       </div>
-      <div className={styles['card']} style={{ padding: 24 }}>
-        <div className={styles['syneFont']} style={{ fontWeight: 700, fontSize: 15, color: "#e8f0fe", marginBottom: 4 }}>
+
+      <div className="relative overflow-hidden bg-[#0d1f3c] border border-[#1a3158] rounded-[16px] p-6 before:content-[''] before:absolute before:inset-0 before:bg-gradient-to-br before:from-white/5 before:to-transparent before:pointer-events-none">
+        <div className="font-['Syne'] font-bold text-[15px] text-[#e8f0fe] mb-1">
           Course Completion Rate by Category
         </div>
-        <div className={styles['metricLabel']} style={{ marginBottom: 24 }}>Current month performance</div>
-        <ResponsiveContainer width="100%" height={240}>
-          <BarChart data={completionData} barSize={36}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#1a3158" />
-            <XAxis dataKey="cat" tick={{ fontSize: 11, fill: "#3d5a80", fontFamily: "'DM Mono',monospace" }} axisLine={false} tickLine={false} />
-            <YAxis tick={{ fontSize: 11, fill: "#3d5a80", fontFamily: "'DM Mono',monospace" }} axisLine={false} tickLine={false} unit="%" />
+        <div className='font-mono text-[11px] uppercase tracking-widest text-[#3d5a80] mb-6'>
+          Current month performance
+        </div>
+
+        <ResponsiveContainer
+          width='100%'
+          height={240}
+        >
+          <BarChart
+            data={completionData}
+            barSize={36}
+          >
+            <CartesianGrid
+              strokeDasharray='3 3'
+              stroke='#1a3158'
+            />
+            <XAxis
+              dataKey='cat'
+              tick={{ fontSize: 11, fill: "#3d5a80", fontFamily: "'DM Mono',monospace" }}
+              axisLine={false}
+              tickLine={false}
+            />
+            <YAxis
+              tick={{ fontSize: 11, fill: "#3d5a80", fontFamily: "'DM Mono',monospace" }}
+              axisLine={false}
+              tickLine={false}
+              unit='%'
+            />
             <Tooltip content={<CustomTooltip />} />
-            <Bar dataKey="v" fill="#da7c36" radius={[6, 6, 0, 0]} name="Completion %" />
+            <Bar
+              dataKey='v'
+              fill='#da7c36'
+              radius={[6, 6, 0, 0]}
+              name='Completion %'
+            />
           </BarChart>
         </ResponsiveContainer>
       </div>

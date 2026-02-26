@@ -1,6 +1,5 @@
 "use client";
 
-import styles from "../AdminDashboard.module.css";
 import { Archive, Eye, Home, Search } from "lucide-react";
 import { useState } from "react";
 import { Badge, ProgressBar, SectionHeader } from "../Components";
@@ -33,114 +32,75 @@ export default function CoursesPage() {
   };
 
   return (
-    <div className={styles["pageEnter"]}>
+    <div className='animate-page-enter'>
       <SectionHeader
         title='Course Management'
         sub='Review, approve and curate all courses'
       />
+
       <div className='flex gap-3 mb-5 items-center flex-wrap'>
-        <div className={styles["tabNav"]}>
+        {/* Tab Navigation */}
+        <div className='flex gap-0.5 bg-[#070f1e] rounded-xl p-1 border border-[#1a3158] overflow-x-auto flex-nowrap scrollbar-hide'>
           {(["all", "approved", "pending", "draft", "rejected"] as const).map(s => (
             <button
               key={s}
-              className={`${styles["tabItem"]} ${statusFilter === s ? styles["tabItemActive"] : styles["tabItemInactive"]}`}
               onClick={() => setStatusFilter(s)}
+              className={`px-[18px] py-2 rounded-lg text-[13px] font-semibold cursor-pointer transition-all font-['Outfit'] whitespace-nowrap border ${
+                statusFilter === s
+                  ? "bg-[#0d1f3c] text-[#fc9759] border-[#da7c36]/25 shadow-lg"
+                  : "bg-transparent text-[#3d5a80] border-transparent hover:text-[#7a9cc4]"
+              }`}
             >
               {s.charAt(0).toUpperCase() + s.slice(1)}{" "}
-              <span style={{ opacity: 0.6, fontSize: 11 }}>({counts[s]})</span>
+              <span className='opacity-60 text-[11px]'>({counts[s]})</span>
             </button>
           ))}
         </div>
+
+        {/* Search Bar */}
         <div className='relative'>
           <Search
             size={14}
-            color='#3d5a80'
-            style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)" }}
+            className='absolute left-3 top-1/2 -translate-y-1/2 text-[#3d5a80]'
           />
           <input
-            className={styles["input"]}
+            className="w-56 bg-[#070f1e] border border-[#1a3158] rounded-lg py-2.5 pl-9 pr-3.5 text-[13.5px] text-[#e8f0fe] font-['Outfit'] outline-none transition-all focus:border-[#da7c36] focus:ring-3 focus:ring-[#da7c36]/10 placeholder:text-[#3d5a80]"
             placeholder='Search courses...'
             value={search}
             onChange={e => setSearch(e.target.value)}
-            style={{ paddingLeft: 34, width: 220 }}
           />
         </div>
       </div>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
-          gap: 16,
-        }}
-      >
+      {/* Course Grid */}
+      <div className='grid grid-cols-1 md:grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-4'>
         {filtered.map(c => (
           <div
             key={c.id}
-            className={styles["card"]}
-            style={{ overflow: "hidden" }}
+            className='group relative overflow-hidden bg-[#0d1f3c] border border-[#1a3158] rounded-2xl transition-all hover:border-[#2a4a78] hover:-translate-y-0.5 hover:shadow-2xl before:absolute before:inset-0 before:bg-gradient-to-br before:from-white/5 before:to-transparent before:pointer-events-none'
           >
-            <div
-              style={{
-                background: "linear-gradient(135deg, #0a1628, #0d1f3c)",
-                padding: "16px 20px",
-                borderBottom: "1px solid #1a3158",
-                position: "relative",
-              }}
-            >
+            {/* Header / Featured Ribbon */}
+            <div className='bg-gradient-to-br from-[#0a1628] to-[#0d1f3c] px-5 py-4 border-b border-[#1a3158] relative'>
               {c.featured && (
-                <div
-                  style={{
-                    position: "absolute",
-                    top: 0,
-                    right: 0,
-                    background: "#da7c36",
-                    color: "white",
-                    fontSize: 10,
-                    fontWeight: 700,
-                    padding: "4px 10px",
-                    borderBottomLeftRadius: 8,
-                    fontFamily: "'DM Mono', monospace",
-                    letterSpacing: "0.5px",
-                  }}
-                >
+                <div className='absolute top-0 right-0 bg-[#da7c36] text-white text-[10px] font-bold px-2.5 py-1 rounded-bl-lg font-mono tracking-wider'>
                   FEATURED
                 </div>
               )}
               <div className='flex justify-between items-center'>
                 <Badge variant={statusV[c.status]}>{c.status}</Badge>
-                <span
-                  className={styles["monoText"]}
-                  style={{ fontSize: 11, color: "#3d5a80" }}
-                >
-                  {c.cat}
-                </span>
+                <span className='font-mono text-[11px] text-[#3d5a80]'>{c.cat}</span>
               </div>
             </div>
-            <div style={{ padding: "18px 20px" }}>
-              <div
-                className={styles["syneFont"]}
-                style={{
-                  fontWeight: 700,
-                  fontSize: 14,
-                  color: "#e8f0fe",
-                  marginBottom: 4,
-                  lineHeight: 1.3,
-                }}
-              >
+
+            {/* Body */}
+            <div className='p-5'>
+              <div className="font-['Syne'] font-bold text-sm text-[#e8f0fe] mb-1 leading-snug">
                 {c.title}
               </div>
-              <div style={{ fontSize: 12, color: "#3d5a80", marginBottom: 16 }}>
-                by {c.instructor}
-              </div>
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(4, 1fr)",
-                  gap: 8,
-                  marginBottom: 14,
-                }}
-              >
+              <div className='text-[12px] text-[#3d5a80] mb-4'>by {c.instructor}</div>
+
+              {/* Stats Grid */}
+              <div className='grid grid-cols-4 gap-2 mb-3.5'>
                 {[
                   { l: "Students", v: c.enr.toLocaleString() },
                   { l: "Revenue", v: c.rev ? `$${c.rev.toLocaleString()}` : "$0" },
@@ -149,72 +109,52 @@ export default function CoursesPage() {
                 ].map(s => (
                   <div
                     key={s.l}
-                    style={{ textAlign: "center" }}
+                    className='text-center'
                   >
-                    <div
-                      className={styles["monoText"]}
-                      style={{ fontSize: 14, fontWeight: 700, color: "#e8f0fe" }}
-                    >
-                      {s.v}
-                    </div>
-                    <div
-                      className={styles["metricLabel"]}
-                      style={{ marginTop: 2 }}
-                    >
+                    <div className='font-mono text-sm font-bold text-[#e8f0fe]'>{s.v}</div>
+                    <div className='font-mono text-[10px] uppercase tracking-widest text-[#3d5a80] mt-0.5'>
                       {s.l}
                     </div>
                   </div>
                 ))}
               </div>
+
+              {/* Progress Section */}
               {c.pct > 0 && (
-                <div style={{ marginBottom: 14 }}>
+                <div className='mb-3.5'>
                   <div className='flex justify-between mb-1'>
-                    <span className={styles["metricLabel"]}>Completion Rate</span>
-                    <span
-                      className={styles["monoText"]}
-                      style={{ fontSize: 11, color: "#da7c36" }}
-                    >
-                      {c.pct}%
+                    <span className='font-mono text-[10px] uppercase tracking-widest text-[#3d5a80]'>
+                      Completion Rate
                     </span>
+                    <span className='font-mono text-[11px] text-[#da7c36]'>{c.pct}%</span>
                   </div>
                   <ProgressBar value={c.pct} />
                 </div>
               )}
+
+              {/* Action Buttons */}
               <div className='flex gap-2 flex-wrap'>
-                <button
-                  className={`${styles["btn"]} ${styles["btnGhost"]} flex-1 justify-center`}
-                  style={{ fontSize: 12 }}
-                >
+                <button className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg font-['Outfit'] text-[12px] font-semibold transition-all bg-transparent text-[#7a9cc4] border border-[#1a3158] hover:bg-[#0d1f3c] hover:text-[#e8f0fe] hover:border-[#2a4a78]">
                   <Eye size={12} /> View
                 </button>
+
                 {c.status === "Pending" && (
                   <>
-                    <button
-                      className={`${styles["btn"]} ${styles["btnSuccess"]} flex-1 justify-center`}
-                      style={{ fontSize: 12 }}
-                    >
+                    <button className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg font-['Outfit'] text-[12px] font-semibold transition-all bg-[#00e5a0]/10 text-[#00e5a0] border border-[#00e5a0]/20 hover:bg-[#00e5a0]/20">
                       ✓ Approve
                     </button>
-                    <button
-                      className={`${styles["btn"]} ${styles["btnDanger"]} flex-1 justify-center`}
-                      style={{ fontSize: 12 }}
-                    >
+                    <button className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg font-['Outfit'] text-[12px] font-semibold transition-all bg-[#ff4757]/10 text-[#ff4757] border border-[#ff4757]/20 hover:bg-[#ff4757]/20">
                       ✗ Reject
                     </button>
                   </>
                 )}
+
                 {c.status === "Approved" && (
                   <>
-                    <button
-                      className={`${styles["btn"]} ${styles["btnGhost"]} flex-1 justify-center`}
-                      style={{ fontSize: 12 }}
-                    >
+                    <button className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg font-['Outfit'] text-[12px] font-semibold transition-all bg-transparent text-[#7a9cc4] border border-[#1a3158] hover:bg-[#0d1f3c] hover:text-[#e8f0fe] hover:border-[#2a4a78]">
                       <Home size={12} /> Feature
                     </button>
-                    <button
-                      className={`${styles["btn"]} ${styles["btnGhost"]} flex-1 justify-center`}
-                      style={{ fontSize: 12 }}
-                    >
+                    <button className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg font-['Outfit'] text-[12px] font-semibold transition-all bg-transparent text-[#7a9cc4] border border-[#1a3158] hover:bg-[#0d1f3c] hover:text-[#e8f0fe] hover:border-[#2a4a78]">
                       <Archive size={12} /> Archive
                     </button>
                   </>
