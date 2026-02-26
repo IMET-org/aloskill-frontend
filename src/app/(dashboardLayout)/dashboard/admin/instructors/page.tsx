@@ -18,7 +18,7 @@ export default function InstructorsPage() {
         sub={`${INSTRUCTORS.length} instructors · ${INSTRUCTORS.filter(i => i.status === "Pending").length} pending`}
       />
 
-      <div className='bg-slate-900 border border-slate-800 rounded-2xl relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-br before:from-white/5 before:to-transparent before:pointer-events-none'>
+      <div className='bg-slate-900 border border-slate-800 rounded-2xl relative overflow-hidden before:absolute before:inset-0 before:bg-linear-to-br before:from-white/5 before:to-transparent before:pointer-events-none'>
         <div className='overflow-x-auto'>
           <table className='w-full border-collapse'>
             <thead>
@@ -176,7 +176,7 @@ export default function InstructorsPage() {
                 max={100}
               />
               <span className='text-slate-400 font-mono'>%</span>
-              <button className='ml-auto inline-flex items-center px-4 py-2 rounded-lg bg-gradient-to-br from-orange-500 to-orange-700 text-white text-[13px] font-semibold shadow-lg shadow-orange-500/20 hover:shadow-orange-500/40 hover:-translate-y-px transition-all cursor-pointer'>
+              <button className='ml-auto inline-flex items-center px-4 py-2 rounded-lg bg-linear-to-br from-orange-500 to-orange-700 text-white text-[13px] font-semibold shadow-lg shadow-orange-500/20 hover:shadow-orange-500/40 hover:-translate-y-px transition-all cursor-pointer'>
                 Update
               </button>
             </div>

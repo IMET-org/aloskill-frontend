@@ -46,7 +46,7 @@ export default function NotificationsPage() {
 
       <div className='grid grid-cols-1 lg:grid-cols-2 gap-5'>
         {/* Compose Section */}
-        <div className='bg-slate-900 border border-slate-800 rounded-2xl p-6 relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-br before:from-white/5 before:to-transparent before:pointer-events-none'>
+        <div className='bg-slate-900 border border-slate-800 rounded-2xl p-6 relative overflow-hidden before:absolute before:inset-0 before:bg-linear-to-br before:from-white/5 before:to-transparent before:pointer-events-none'>
           <div className="font-['Syne'] font-bold text-[15px] text-slate-100 mb-5">
             Compose & Send
           </div>
@@ -64,7 +64,7 @@ export default function NotificationsPage() {
                 key={id}
                 className={`flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   channel === id
-                    ? "bg-gradient-to-br from-orange-500 to-orange-700 text-white shadow-lg shadow-orange-500/20"
+                    ? "bg-linear-to-br from-orange-500 to-orange-700 text-white shadow-lg shadow-orange-500/20"
                     : "bg-transparent text-slate-400 border border-slate-800 hover:bg-slate-800 hover:text-slate-100"
                 }`}
                 onClick={() => setChannel(id as string)}
@@ -110,7 +110,7 @@ export default function NotificationsPage() {
           </div>
 
           <div className='flex gap-3'>
-            <button className='flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg bg-gradient-to-br from-orange-500 to-orange-700 text-white font-semibold shadow-lg shadow-orange-500/20 hover:shadow-orange-500/40 hover:-translate-y-px transition-all cursor-pointer'>
+            <button className='flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg bg-linear-to-br from-orange-500 to-orange-700 text-white font-semibold shadow-lg shadow-orange-500/20 hover:shadow-orange-500/40 hover:-translate-y-px transition-all cursor-pointer'>
               Send Now
             </button>
             <button className='inline-flex items-center gap-1.5 px-6 py-2.5 rounded-lg bg-transparent text-slate-400 border border-slate-800 font-semibold hover:bg-slate-800 hover:text-slate-100 transition-all cursor-pointer'>
@@ -120,7 +120,7 @@ export default function NotificationsPage() {
         </div>
 
         {/* History Section */}
-        <div className='bg-slate-900 border border-slate-800 rounded-2xl p-6 relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-br before:from-white/5 before:to-transparent before:pointer-events-none'>
+        <div className='bg-slate-900 border border-slate-800 rounded-2xl p-6 relative overflow-hidden before:absolute before:inset-0 before:bg-linear-to-br before:from-white/5 before:to-transparent before:pointer-events-none'>
           <div className="font-['Syne'] font-bold text-[15px] text-slate-100 mb-5">
             Recent Broadcasts
           </div>

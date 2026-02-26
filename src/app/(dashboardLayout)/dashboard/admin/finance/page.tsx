@@ -85,11 +85,11 @@ export default function FinancialPage() {
 
       {/* Content Sections */}
       {tab === "overview" && (
-        <div className='bg-slate-900 border border-slate-800 rounded-2xl p-6 relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-br before:from-white/5 before:to-transparent before:pointer-events-none'>
+        <div className='bg-slate-900 border border-slate-800 rounded-2xl p-6 relative overflow-hidden before:absolute before:inset-0 before:bg-linear-to-br before:from-white/5 before:to-transparent before:pointer-events-none'>
           <div className="font-['Syne'] font-bold text-base text-slate-100 mb-6">
             Revenue vs Payouts vs Platform
           </div>
-          <div className='h-[280px] w-full'>
+          <div className='h-70 w-full'>
             <ResponsiveContainer
               width='100%'
               height='100%'

@@ -57,7 +57,7 @@ export default function SettingsPage() {
         {settingSections.map(s => (
           <div
             key={s.title}
-            className='bg-slate-900 border border-slate-800 rounded-2xl p-6 relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-br before:from-white/5 before:to-transparent before:pointer-events-none'
+            className='bg-slate-900 border border-slate-800 rounded-2xl p-6 relative overflow-hidden before:absolute before:inset-0 before:bg-linear-to-br before:from-white/5 before:to-transparent before:pointer-events-none'
           >
             <div className="font-['Syne'] font-bold text-[15px] text-slate-100 mb-5">{s.title}</div>
             {s.fields.map(f => (
@@ -90,7 +90,7 @@ export default function SettingsPage() {
                 )}
               </div>
             ))}
-            <button className="w-full mt-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg bg-gradient-to-br from-orange-500 to-orange-700 text-white font-['Outfit'] font-semibold text-[13px] shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 hover:-translate-y-px transition-all cursor-pointer">
+            <button className="w-full mt-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg bg-linear-to-br from-orange-500 to-orange-700 text-white font-['Outfit'] font-semibold text-[13px] shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 hover:-translate-y-px transition-all cursor-pointer">
               Save Changes
             </button>
           </div>
@@ -98,7 +98,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Feature Toggles Card */}
-      <div className='bg-slate-900 border border-slate-800 rounded-2xl p-6 relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-br before:from-white/5 before:to-transparent before:pointer-events-none'>
+      <div className='bg-slate-900 border border-slate-800 rounded-2xl p-6 relative overflow-hidden before:absolute before:inset-0 before:bg-linear-to-br before:from-white/5 before:to-transparent before:pointer-events-none'>
         <div className="font-['Syne'] font-bold text-[15px] text-slate-100 mb-5">
           ⚙️ Feature Toggles
         </div>

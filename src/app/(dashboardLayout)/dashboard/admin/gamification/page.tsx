@@ -80,7 +80,7 @@ export default function GamificationPage() {
 
       <div className='grid grid-cols-1 md:grid-cols-2 gap-5'>
         {/* Leaderboard Card */}
-        <div className='bg-slate-900 border border-slate-800 rounded-2xl p-6 relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-br before:from-white/5 before:to-transparent before:pointer-events-none'>
+        <div className='bg-slate-900 border border-slate-800 rounded-2xl p-6 relative overflow-hidden before:absolute before:inset-0 before:bg-linear-to-br before:from-white/5 before:to-transparent before:pointer-events-none'>
           <div className="font-['Syne'] font-bold text-[15px] text-slate-100 mb-5">
             🏆 Student Leaderboard
           </div>
@@ -110,12 +110,12 @@ export default function GamificationPage() {
         </div>
 
         {/* Achievements Card */}
-        <div className='bg-slate-900 border border-slate-800 rounded-2xl p-6 relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-br before:from-white/5 before:to-transparent before:pointer-events-none'>
+        <div className='bg-slate-900 border border-slate-800 rounded-2xl p-6 relative overflow-hidden before:absolute before:inset-0 before:bg-linear-to-br before:from-white/5 before:to-transparent before:pointer-events-none'>
           <div className='flex justify-between items-center mb-5'>
             <div className="font-['Syne'] font-bold text-[15px] text-slate-100">
               🎯 Achievements
             </div>
-            <button className='inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-br from-orange-500 to-orange-700 text-white text-xs font-semibold shadow-lg shadow-orange-500/20 hover:shadow-orange-500/40 hover:-translate-y-px transition-all cursor-pointer'>
+            <button className='inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-linear-to-br from-orange-500 to-orange-700 text-white text-xs font-semibold shadow-lg shadow-orange-500/20 hover:shadow-orange-500/40 hover:-translate-y-px transition-all cursor-pointer'>
               <Plus
                 size={12}
                 className='text-white'

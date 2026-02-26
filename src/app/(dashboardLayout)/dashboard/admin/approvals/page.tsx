@@ -13,6 +13,7 @@ const typeIcon: Record<string, string> = {
 
 export default function ApprovalsPage() {
   return (
+    /* Using the custom animation defined in global.css */
     <div className='animate-page-enter'>
       <SectionHeader
         title='Approval Workflow'
@@ -24,13 +25,13 @@ export default function ApprovalsPage() {
           <div
             key={item.id}
             className={`
-              relative overflow-hidden flex items-center gap-4 px-6 py-[18px] rounded-2xl border bg-brand-dark transition-all
-              ${item.priority === "High" ? "border-red-500/25" : "border-gray-400"}
-              before:absolute before:inset-0 before:bg-gradient-to-br before:from-white/2 before:to-transparent before:pointer-events-none
+              relative overflow-hidden flex items-center gap-4 px-6 py-4.5 rounded-2xl border bg-slate-900 transition-all
+              ${item.priority === "High" ? "border-red-500/25 shadow-lg shadow-red-500/5" : "border-slate-800"}
+              before:absolute before:inset-0 before:bg-linear-to-br before:from-white/5 before:to-transparent before:pointer-events-none
             `}
           >
             {/* Icon Container */}
-            <div className='flex shrink-0 items-center justify-center w-[46px] h-[46px] rounded-xl bg-brand-deep border border-gray-400 text-[20px]'>
+            <div className='flex shrink-0 items-center justify-center w-11.5 h-11.5 rounded-xl bg-slate-950 border border-slate-800 text-xl'>
               {typeIcon[item.type]}
             </div>
 
@@ -41,27 +42,27 @@ export default function ApprovalsPage() {
                 {item.priority === "High" && <Badge variant='red'>🔴 High Priority</Badge>}
               </div>
 
-              <div className=' font-bold text-[14px] text-gray-400 mb-[3px]'>{item.title}</div>
+              <div className='font-bold text-sm text-slate-100 mb-1'>{item.title}</div>
 
-              <div className='text-[12px] text-gray-400'>
+              <div className='text-xs text-slate-500 font-medium'>
                 {item.by} · {item.date} · {item.id}
               </div>
             </div>
 
             {/* Action Buttons */}
             <div className='flex flex-wrap gap-2 shrink-0'>
-              {/* btnGhost mapping */}
-              <button className="inline-flex items-center px-[18px] py-[9px] rounded-[9px] font-['Outfit'] text-[12px] font-semibold cursor-pointer transition-all border border-gray-400 text-[#7a9cc4] hover:bg-brand-dark hover:text-brand-text hover:border-[#2a4a78]">
+              {/* Review Button (Ghost) */}
+              <button className="inline-flex items-center px-4.5 py-2 rounded-lg font-['Outfit'] text-xs font-semibold cursor-pointer transition-all border border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-slate-100 hover:border-slate-700">
                 Review
               </button>
 
-              {/* btnSuccess mapping */}
-              <button className="inline-flex items-center px-[18px] py-[9px] rounded-[9px] font-['Outfit'] text-[12px] font-semibold cursor-pointer transition-all border border-green-500/20 bg-green-500/10 text-[#00e5a0] hover:bg-green-500/20">
+              {/* Approve Button (Success) */}
+              <button className="inline-flex items-center px-4.5 py-2 rounded-lg font-['Outfit'] text-xs font-semibold cursor-pointer transition-all border border-emerald-500/20 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20">
                 ✓ Approve
               </button>
 
-              {/* btnDanger mapping */}
-              <button className="inline-flex items-center px-[18px] py-[9px] rounded-[9px] font-['Outfit'] text-[12px] font-semibold cursor-pointer transition-all border border-red-500/20 bg-red-500/10 text-[#ff4757] hover:bg-red-500/20">
+              {/* Reject Button (Danger) */}
+              <button className="inline-flex items-center px-4.5 py-2 rounded-lg font-['Outfit'] text-xs font-semibold cursor-pointer transition-all border border-red-500/20 bg-red-500/10 text-red-400 hover:bg-red-500/20">
                 ✗ Reject
               </button>
             </div>

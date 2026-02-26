@@ -38,7 +38,7 @@ export default function ReviewsPage() {
       </div>
 
       {/* Reviews List Card */}
-      <div className='bg-slate-900 border border-slate-800 rounded-2xl relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-br before:from-white/5 before:to-transparent before:pointer-events-none'>
+      <div className='bg-slate-900 border border-slate-800 rounded-2xl relative overflow-hidden before:absolute before:inset-0 before:bg-linear-to-br before:from-white/5 before:to-transparent before:pointer-events-none'>
         {REVIEWS.map((r, i) => (
           <div
             key={r.id}
