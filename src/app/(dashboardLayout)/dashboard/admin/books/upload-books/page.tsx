@@ -13,6 +13,7 @@ import {
   ImageIcon,
   Info,
   Languages,
+  Loader,
   PenTool,
   Save,
   Search,
@@ -27,6 +28,8 @@ import Link from "next/link";
 import React, { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import * as z from "zod";
+import { apiClient } from "../../../../../../lib/api/client";
+import { useSessionContext } from "../../../../../contexts/SessionContext";
 
 const PdfPreviewModal = dynamic(() => import("./PdfPreviewModal"), {
   ssr: false,
@@ -91,7 +94,16 @@ const bookSchema = z
       .string()
       .regex(/^[^<>]*$/, "Meta description must not contain any opening or closing HTML tags")
       .optional(),
-
+    coverImageUrl: z.url("Cover Image url must be a valid URL"),
+    files: z.array(
+      z.object({
+        name: z
+          .string()
+          .regex(/^[^<>]*$/, "File names must not contain any opening or closing HTML tags"),
+        url: z.url("File url must be a valid URL"),
+        fileType: z.enum(["PREVIEW", "EBOOK"]),
+      })
+    ),
     coverImage: z.custom<File>(v => v instanceof File, "Cover image is required"),
     previewPdf: z.custom<File>(v => v instanceof File, "Preview PDF is required"),
     ebookPdf: z.custom<File>(v => v instanceof File).optional(),
@@ -117,6 +129,12 @@ export default function AddBookPage() {
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null);
   const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
+  const [imageUploadError, setImageUploadError] = useState<string>("");
+  const [fileUploadError, setFileUploadError] = useState<string>("");
+  const [fileLoading, setFileLoading] = useState<boolean>(false);
+  const [imageUploadLoading, setImageUploadLoading] = useState<boolean>(false);
+
+  const { user } = useSessionContext();
 
   const {
     register,
@@ -144,6 +162,77 @@ export default function AddBookPage() {
 
   // ─── HANDLERS ────────────────────────────────────────────────────
 
+  const uploadFileToBunny = async (file: File): Promise<{ name: string; url: string }> => {
+    setFileLoading(true);
+    setFileUploadError("");
+
+    if (!user?.id) {
+      setFileUploadError("User not authenticated.");
+      setFileLoading(false);
+      return { name: "", url: "" };
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await apiClient.postFormData<string>(
+        `/course/file-upload?folder=${user?.id}`,
+        formData
+      );
+
+      if (!response.success || !response.data) {
+        setFileUploadError(response.message || "Upload failed: try different Image or try again");
+        return { name: "", url: "" };
+      }
+
+      return {
+        name: file.name,
+        url: response.data as string,
+      };
+    } catch (error: unknown) {
+      setFileUploadError(error instanceof Error ? error.message : "An unknown error occurred.");
+      return { name: "", url: "" };
+    } finally {
+      setFileLoading(false);
+    }
+  };
+
+  const uploadImageToBunny = async (file: File): Promise<{ url: string }> => {
+    setImageUploadLoading(true);
+    setImageUploadError("");
+    if (!user?.id) {
+      setImageUploadError("User not authenticated.");
+      setImageUploadLoading(false);
+      return { url: "" };
+    }
+
+    try {
+      setImageUploadError("");
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await apiClient.postFormData<string>(
+        `/course/file-upload?folder=${user.id}`,
+        formData
+      );
+
+      if (!response.success || !response.data) {
+        setImageUploadError("Upload failed: try different Image or try again");
+        return { url: "" };
+      }
+
+      return {
+        url: response.data,
+      };
+    } catch (error: unknown) {
+      setImageUploadError(error instanceof Error ? error.message : "An unknown error occurred.");
+      return { url: "" };
+    } finally {
+      setImageUploadLoading(false);
+    }
+  };
+
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     setImageError(null);
@@ -157,11 +246,15 @@ export default function AddBookPage() {
       const img = document.createElement("img");
       const objectUrl = URL.createObjectURL(file);
 
-      img.onload = () => {
+      img.onload = async () => {
         if (img.width === 800 && img.height === 1200) {
-          setCoverPreview(objectUrl);
-          setValue("coverImage", file);
-          trigger("coverImage");
+          const uploadedImage = await uploadImageToBunny(file);
+          if (uploadedImage.url !== "") {
+            setValue("coverImageUrl", uploadedImage.url);
+            setCoverPreview(objectUrl);
+            setValue("coverImage", file);
+            trigger("coverImage");
+          }
         } else {
           setImageError(
             `Invalid dimensions. Got ${img.width}x${img.height}px. Required: 800x1200px.`
@@ -174,31 +267,82 @@ export default function AddBookPage() {
     }
   };
 
-  const handlePdfUpload = (
+  const handlePdfUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
     field: "previewPdf" | "ebookPdf"
   ) => {
     const file = e.target.files?.[0];
     if (file && file.type === "application/pdf") {
-      setValue(field, file);
-      trigger(field);
+      const uploadedResult = await uploadFileToBunny(file);
+      if (uploadedResult && uploadedResult.url !== "") {
+        const currentFileType = field === "previewPdf" ? "PREVIEW" : "EBOOK";
 
-      if (field === "previewPdf") {
-        setPdfPreviewUrl(URL.createObjectURL(file));
+        const fileItem = {
+          name: uploadedResult.name,
+          url: uploadedResult.url,
+          fileType: currentFileType,
+        } as const;
+
+        const currentFiles = watch("files") || [];
+
+        const filteredFiles = currentFiles.filter(item => item.fileType !== currentFileType);
+
+        setValue("files", [...filteredFiles, fileItem]);
+        setValue(field, file);
+        trigger(field);
+
+        if (field === "previewPdf") {
+          setPdfPreviewUrl(URL.createObjectURL(file));
+        }
       }
     }
   };
 
-  const removeFile = (field: "coverImage" | "previewPdf" | "ebookPdf") => {
-    setValue(field, undefined as any);
+  const removeFile = async (field: "coverImage" | "previewPdf" | "ebookPdf") => {
+    // setValue(field, undefined as any);
     if (field === "coverImage") {
-      if (coverPreview) URL.revokeObjectURL(coverPreview);
-      setCoverPreview(null);
-      setImageError(null);
+      const deletedResult = await apiClient.delete("/course/delete-file", {
+        fileUrl: watch("coverImageUrl"),
+      });
+      if (deletedResult.success) {
+        if (coverPreview) URL.revokeObjectURL(coverPreview);
+        setValue("coverImage", undefined as any);
+        setValue("coverImageUrl", undefined as any);
+        setCoverPreview(null);
+        setImageError(null);
+        setImageUploadError("");
+      }
+      return;
     }
+
+    const currentFileType = field === "previewPdf" ? "PREVIEW" : "EBOOK";
+    const currentFiles = watch("files") || [];
+    const filteredFiles = currentFiles.filter(item => item.fileType !== currentFileType);
+
     if (field === "previewPdf") {
+      const deletedResult = await apiClient.delete("/course/delete-file", {
+        fileUrl: currentFiles.find(f => f.fileType === "PREVIEW")?.url || "",
+      });
+      if (!deletedResult.success) {
+        return;
+      }
+      setValue("files", [...filteredFiles]);
+      setValue("previewPdf", undefined as any);
       if (pdfPreviewUrl) URL.revokeObjectURL(pdfPreviewUrl);
       setPdfPreviewUrl(null);
+      setFileUploadError("");
+    }
+
+    if (field === "ebookPdf") {
+      const deletedResult = await apiClient.delete("/course/delete-file", {
+        fileUrl: currentFiles.find(f => f.fileType === "EBOOK")?.url || "",
+      });
+      if (!deletedResult.success) {
+        return;
+      }
+      setValue("files", [...filteredFiles]);
+      setValue("ebookPdf", undefined as any);
+      setFileUploadError("");
     }
   };
 
@@ -544,49 +688,64 @@ export default function AddBookPage() {
             >
               <Field
                 label=''
-                error={(errors.coverImage?.message as string) || imageError || undefined}
+                error={
+                  (errors.coverImage?.message as string) ||
+                  imageError ||
+                  imageUploadError ||
+                  undefined
+                }
               >
-                {uploadedCover && coverPreview ? (
-                  <div className='relative rounded overflow-hidden border border-white/10 group'>
-                    <Image
-                      width={800}
-                      height={1200}
-                      src={coverPreview}
-                      alt='Cover'
-                      className='w-full h-auto object-cover'
-                    />
-                    <button
-                      type='button'
-                      onClick={() => removeFile("coverImage")}
-                      className='absolute top-2 right-2 p-2 bg-red-500/90 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-all'
-                    >
-                      <X size={16} />
-                    </button>
-                    <div className='absolute bottom-2 left-2 px-2 py-1 bg-black/60 backdrop-blur rounded text-[10px] text-white'>
-                      800 × 1200px
-                    </div>
+                {imageUploadLoading ? (
+                  <div className='p-6 rounded border border-white/10 flex items-center justify-center gap-2'>
+                    <Loader className='animate-spin' /> Uploading...
                   </div>
                 ) : (
-                  <div className='relative'>
-                    <input
-                      type='file'
-                      accept='.jpg,.jpeg,.png,.webp'
-                      className='absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10'
-                      onChange={handleImageUpload}
-                    />
-                    <div
-                      className={`border-2 border-dashed rounded p-8 flex flex-col items-center justify-center transition-all ${imageError || errors.coverImage ? "border-red-500/30 bg-red-500/5" : "border-white/10 hover:border-indigo-500/30 hover:bg-indigo-500/5"}`}
-                    >
-                      <div className='w-11 h-11 rounded-xl bg-white/5 flex items-center justify-center mb-3'>
-                        <Upload
-                          size={18}
-                          className='text-gray-500'
+                  <>
+                    {uploadedCover && coverPreview ? (
+                      <div className='relative rounded overflow-hidden border border-white/10 group'>
+                        <Image
+                          width={800}
+                          height={1200}
+                          src={coverPreview}
+                          alt='Cover'
+                          className='w-full h-auto object-cover'
                         />
+                        <button
+                          type='button'
+                          onClick={() => removeFile("coverImage")}
+                          className='absolute top-2 right-2 p-2 bg-red-500/90 text-white rounded opacity-0 group-hover:opacity-100 transition-all cursor-pointer'
+                        >
+                          <X size={16} />
+                        </button>
+                        <div className='absolute bottom-2 left-2 px-2 py-1 bg-black/60 backdrop-blur rounded text-[10px] text-white'>
+                          800 × 1200px
+                        </div>
                       </div>
-                      <p className='text-sm font-medium text-gray-400 text-center'>Upload Cover</p>
-                      <span className='text-xs text-gray-600 mt-1'>Required: 800 × 1200px</span>
-                    </div>
-                  </div>
+                    ) : (
+                      <div className='relative'>
+                        <input
+                          type='file'
+                          accept='.jpg,.jpeg,.png,.webp'
+                          className='absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10'
+                          onChange={handleImageUpload}
+                        />
+                        <div
+                          className={`border-2 border-dashed rounded p-8 flex flex-col items-center justify-center transition-all ${imageError || imageUploadError || errors.coverImage ? "border-red-500/30 bg-red-500/5" : "border-white/10 hover:border-indigo-500/30 hover:bg-indigo-500/5"}`}
+                        >
+                          <div className='w-11 h-11 rounded-xl bg-white/5 flex items-center justify-center mb-3'>
+                            <Upload
+                              size={18}
+                              className='text-gray-500'
+                            />
+                          </div>
+                          <p className='text-sm font-medium text-gray-400 text-center'>
+                            Upload Cover
+                          </p>
+                          <span className='text-xs text-gray-600 mt-1'>Required: 800 × 1200px</span>
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
               </Field>
             </Card>
@@ -604,30 +763,38 @@ export default function AddBookPage() {
             >
               <Field
                 label='For User Preview'
-                error={errors.previewPdf?.message as string}
+                error={(errors.previewPdf?.message as string) || fileUploadError}
               >
-                {uploadedPreviewPdf ? (
-                  <FilePreviewItem
-                    file={uploadedPreviewPdf as File}
-                    onRemove={() => removeFile("previewPdf")}
-                    onPreview={() => setIsPdfModalOpen(true)}
-                  />
-                ) : (
-                  <div className='relative'>
-                    <input
-                      type='file'
-                      accept='.pdf'
-                      className='absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10'
-                      onChange={e => handlePdfUpload(e, "previewPdf")}
-                    />
-                    <div className='border-2 border-dashed border-white/10 rounded p-6 flex flex-col items-center justify-center hover:border-cyan-500/30 hover:bg-cyan-500/5 transition-all'>
-                      <Upload
-                        size={18}
-                        className='text-gray-500 mb-2'
-                      />
-                      <span className='text-xs text-gray-400'>Upload PDF for Preview</span>
-                    </div>
+                {fileLoading ? (
+                  <div className='p-6 rounded border border-white/10 flex items-center justify-center gap-2'>
+                    <Loader className='animate-spin' /> Uploading file...
                   </div>
+                ) : (
+                  <>
+                    {uploadedPreviewPdf ? (
+                      <FilePreviewItem
+                        file={uploadedPreviewPdf as File}
+                        onRemove={() => removeFile("previewPdf")}
+                        onPreview={() => setIsPdfModalOpen(true)}
+                      />
+                    ) : (
+                      <div className='relative'>
+                        <input
+                          type='file'
+                          accept='.pdf'
+                          className='absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10'
+                          onChange={e => handlePdfUpload(e, "previewPdf")}
+                        />
+                        <div className='border-2 border-dashed border-white/10 rounded p-6 flex flex-col items-center justify-center hover:border-cyan-500/30 hover:bg-cyan-500/5 transition-all'>
+                          <Upload
+                            size={18}
+                            className='text-gray-500 mb-2'
+                          />
+                          <span className='text-xs text-gray-400'>Upload PDF for Preview</span>
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
               </Field>
             </Card>
@@ -715,27 +882,35 @@ export default function AddBookPage() {
                     label='Product File'
                     error={errors.ebookPdf?.message as string}
                   >
-                    {uploadedEbookPdf ? (
-                      <FilePreviewItem
-                        file={uploadedEbookPdf as File}
-                        onRemove={() => removeFile("ebookPdf")}
-                      />
-                    ) : (
-                      <div className='relative'>
-                        <input
-                          type='file'
-                          accept='.pdf'
-                          className='absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10'
-                          onChange={e => handlePdfUpload(e, "ebookPdf")}
-                        />
-                        <div className='border-2 border-dashed border-white/10 rounded p-6 flex flex-col items-center justify-center hover:border-orange-500/30 hover:bg-orange-500/5 transition-all'>
-                          <Upload
-                            size={18}
-                            className='text-gray-500 mb-2'
-                          />
-                          <span className='text-xs text-gray-400'>Upload Full Book PDF</span>
-                        </div>
+                    {fileLoading ? (
+                      <div className='p-6 rounded border border-white/10 flex items-center justify-center gap-2'>
+                        <Loader className='animate-spin' /> Uploading file...
                       </div>
+                    ) : (
+                      <>
+                        {uploadedEbookPdf ? (
+                          <FilePreviewItem
+                            file={uploadedEbookPdf as File}
+                            onRemove={() => removeFile("ebookPdf")}
+                          />
+                        ) : (
+                          <div className='relative'>
+                            <input
+                              type='file'
+                              accept='.pdf'
+                              className='absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10'
+                              onChange={e => handlePdfUpload(e, "ebookPdf")}
+                            />
+                            <div className='border-2 border-dashed border-white/10 rounded p-6 flex flex-col items-center justify-center hover:border-orange-500/30 hover:bg-orange-500/5 transition-all'>
+                              <Upload
+                                size={18}
+                                className='text-gray-500 mb-2'
+                              />
+                              <span className='text-xs text-gray-400'>Upload Full Book PDF</span>
+                            </div>
+                          </div>
+                        )}
+                      </>
                     )}
                   </Field>
                 </Card>
